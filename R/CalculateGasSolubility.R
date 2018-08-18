@@ -30,9 +30,12 @@ GasSolubility <- function(t, S, gas){
 
 
 
+# 
+# t=20
+# S=seq(0,1.2,.1)
 
-t=20
-S=seq(0,1.2,.1)
+t=(15:25)
+S=1
 
 N2vec<-GasSolubility(t, S, 'N2')
 Arvec<-GasSolubility(t, S, 'Ar')
