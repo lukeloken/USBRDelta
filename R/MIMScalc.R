@@ -35,6 +35,18 @@ MIMScalc<-function(MIMSdata){
   O2arsatv<- (MIMSdata$O2satv / MIMSdata$arsatv) #Calculated saturation O2:Ar ratio
   MIMSdata$O2arsatv<-O2arsatv
   
+  if ('X34' %in% names(MIMSdata)){
+  O18ar<- (MIMSdata$`O2-18.Ar`) #Measured O18:Ar ratio
+  MIMSdata$O18ar<- O18ar
+  O18satv<-osat1(MIMSdata$Temp, MIMSdata$Pressure)* 0.00204 #Calculated saturation of oxygen multiplied by the atmospheric ratio () O18-O2
+  MIMSdata$O18satv<-O18satv
+  O18arsatv<- (MIMSdata$O18satv / MIMSdata$arsatv) #Calculated saturation N2:Ar ratio
+  MIMSdata$O18arsatv<-O18arsatv
+  calvars<-c('narsatv', 'nar', 'O2arsatv', 'O2ar', 'arsatv', 'X40', 'nsatv', 'X28', 'O2satv', 'X32',  'O18satv', 'O18arsatv', 'X34', 'O18ar')
+  } else {
+    calvars<-c('narsatv', 'nar', 'O2arsatv', 'O2ar', 'arsatv', 'X40', 'nsatv', 'X28', 'O2satv', 'X32')
+  }
+  
   #subsampling
   calibMIMSdata<-MIMSdata[MIMSdata$Sampletype=="Calibrate",]
   samplesMIMSdata<-MIMSdata[MIMSdata$Sampletype=="Samp",]
@@ -49,8 +61,9 @@ MIMScalc<-function(MIMSdata){
   #Calculate summaries for each calibration batch
   calmeans <- calibMIMSdata %>% 
     group_by(Calibnum) %>%
-    summarize_at(c('narsatv', 'nar', 'O2arsatv', 'O2ar', 'arsatv', 'X40', 'nsatv', 'X28', 'O2satv', 'X32'), mean)
+    summarize_at(calvars, mean)
   
+
   calmeans_bysamp<-as.data.frame(sapply(calmeans, roll_mean, n=2))
   calmeans_bysamp$Calibnum<-floor(calmeans_bysamp$Calibnum)
   
@@ -61,6 +74,7 @@ MIMScalc<-function(MIMSdata){
   samplesMIMSdata$n_coef1<-calmeans_bysamp$X28[as.numeric(samplesMIMSdata$Sampnum)]/calmeans_bysamp$nsatv[as.numeric(samplesMIMSdata$Sampnum)]
   samplesMIMSdata$O2_coef1<-calmeans_bysamp$X32[as.numeric(samplesMIMSdata$Sampnum)]/calmeans_bysamp$O2satv[as.numeric(samplesMIMSdata$Sampnum)]
   
+
   # Calculate corrected (_calc) for ratios and concentrations
   samplesMIMSdata$narcalc<-samplesMIMSdata$nar/samplesMIMSdata$nar_coef1
   samplesMIMSdata$O2arcalc<-samplesMIMSdata$O2ar/samplesMIMSdata$O2ar_coef1
@@ -75,6 +89,18 @@ MIMScalc<-function(MIMSdata){
   # Calculate (_calc) for n and O2 using the calculated ratio and argon 
   samplesMIMSdata$ncalc2<-samplesMIMSdata$narcalc*samplesMIMSdata$arcalc
   samplesMIMSdata$O2calc2<-samplesMIMSdata$O2arcalc*samplesMIMSdata$arcalc
+  
+  #If monitoring X34 (heavy oxygen and or nitric oxide)
+  if ('X34' %in% names(MIMSdata)){
+  samplesMIMSdata$O18ar_coef1<-calmeans_bysamp$O18ar[as.numeric(samplesMIMSdata$Sampnum)]/calmeans_bysamp$O18arsatv[as.numeric(samplesMIMSdata$Sampnum)]
+  samplesMIMSdata$O18_coef1<-calmeans_bysamp$X34[as.numeric(samplesMIMSdata$Sampnum)]/calmeans_bysamp$O18satv[as.numeric(samplesMIMSdata$Sampnum)]
+  
+  samplesMIMSdata$O18arcalc<-samplesMIMSdata$O18ar/samplesMIMSdata$O18ar_coef1
+  samplesMIMSdata$O18calc<-samplesMIMSdata$X34/samplesMIMSdata$O18_coef1
+  
+  samplesMIMSdata$O18arcalc2<-samplesMIMSdata$O18calc/samplesMIMSdata$arcalc
+  samplesMIMSdata$O18calc2<-samplesMIMSdata$O18arcalc*samplesMIMSdata$arcalc
+  }
   
   outdf<-samplesMIMSdata
   return(outdf)
