@@ -35,8 +35,15 @@ MIMSdata_Run1<-read_excel(paste0(data_dir, "/Data/MIMS/MIMS_Run1_2018_08_18.xlsx
 MIMSdata_Run2<-read_excel(paste0(data_dir, "/Data/MIMS/MIMS_Run2_2018_08_18.xlsx"))
 
 #Rename columns
-names(MIMSdata_Run1)[which(names(MIMSdata_Run1) %in% c('18', '28', '32', '40', 'N2/Ar', 'O2/Ar'))]<-c('X18', 'X28', 'X32', 'X40', 'N2.Ar', 'O2.Ar')
-names(MIMSdata_Run2)[which(names(MIMSdata_Run2) %in% c('18', '28', '32', '40', 'N2/Ar', 'O2/Ar'))]<-c('X18', 'X28', 'X32', 'X40', 'N2.Ar', 'O2.Ar')
+names(MIMSdata_Run1)[match(c('18', '28', '32', '40', 'N2/Ar', 'O2/Ar'), names(MIMSdata_Run1))]<-c('X18', 'X28', 'X32', 'X40', 'N2.Ar', 'O2.Ar')
+names(MIMSdata_Run2)[match(c('18', '28', '32', '40', 'N2/Ar', 'O2/Ar'), names(MIMSdata_Run2))]<-c('X18', 'X28', 'X32', 'X40', 'N2.Ar', 'O2.Ar')
+
+if ('34' %in% names(MIMSdata_Run1)){
+  names(MIMSdata_Run1)[match(c('34', 'O2-18/Ar'), names(MIMSdata_Run1))]<-c('X34', 'O2-18.Ar')
+}
+if ('34' %in% names(MIMSdata_Run2)){
+  names(MIMSdata_Run2)[match(c('34', 'O2-18/Ar'), names(MIMSdata_Run2))]<-c('X34', 'O2-18.Ar')
+}
 
 # The needed columns for this code include: 
 # X28, X32, X40, N2.Ar, O2.Ar = columns from the MIMS output. These can come from MIMS_datasheet_mean_example.R too.  
@@ -87,7 +94,7 @@ par(cex.axis=.8)
 colors<-c('#1f78b4', '#b2df8a')
 
 boxplot(MIMS_outdf_Full$O2calc~ MIMS_outdf_Full$SampleID, col=colors[1])
-# boxplot(MIMS_outdf_Full$osat1v~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+# boxplot(MIMS_outdf_Full$O2satv ~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
 abline(h=mean(MIMS_outdf_Full$O2satv), lty=3)
 mtext(expression(paste(O[2], ' (mg L'^'-1', ')')), 2, 1.75)
 
@@ -125,8 +132,8 @@ par(cex.axis=.7)
 colors<-c('#1f78b4', '#b2df8a')
 
 boxplot(MIMS_outdf_Full$O2calc~ MIMS_outdf_Full$SampleID, col=colors[1])
-# boxplot(MIMS_outdf_Full$osat1v~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
-abline(h=mean(MIMS_outdf_Full$osat1v), lty=3)
+# boxplot(MIMS_outdf_Full$O2satv ~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+abline(h=mean(MIMS_outdf_Full$O2satv ), lty=3)
 mtext(expression(paste(O[2], ' (mg L'^'-1', ')')), 2, 1.75)
 
 # legend('topleft', 'Saturation', lty=3, bty='n')
@@ -141,3 +148,43 @@ mtext('Station ID', 1, 0, outer=T)
 dev.off()
 
 
+
+
+
+png(paste0(data_dir, '/Figures/MIMS/2018August_MIMS_Boxplots_O18_withRatios.png'), width=5, height=10, units='in', res=200)
+par(mar=c(2,3.75,0.5,0.5))
+par(oma=c(1,0,0,0))
+par(mgp=c(3,0.5,0))
+par(mfrow=c(5,1))
+par(cex.axis=.7)
+colors<-c('#1f78b4', '#b2df8a', '#a6cee3')
+
+boxplot(MIMS_outdf_Full$O2calc~ MIMS_outdf_Full$SampleID, col=colors[1])
+# boxplot(MIMS_outdf_Full$O2satv ~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+abline(h=mean(MIMS_outdf_Full$O2satv ), lty=3)
+mtext(expression(paste(O[2], ' (mg L'^'-1', ')')), 2, 1.75)
+
+
+boxplot(MIMS_outdf_Full$O2arcalc~ MIMS_outdf_Full$SampleID, col=colors[1])
+# boxplot(MIMS_outdf_Full$O2arsatv~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+abline(h=mean(MIMS_outdf_Full$O2arsatv), lty=3)
+mtext(expression(paste(O[2], ':Ar', ' (molar ratio)')), 2,  1.75)
+
+
+boxplot(MIMS_outdf_Full$O18calc~ MIMS_outdf_Full$SampleID, col=colors[3])
+# boxplot(MIMS_outdf_Full$O18satv~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+abline(h=mean(MIMS_outdf_Full$O18satv, na.rm=T), lty=3)
+mtext(expression(paste(''^'18','O-',  O[2], ' (mg L'^'-1', ')')), 2, 1.75)
+
+boxplot(MIMS_outdf_Full$O18arcalc~ MIMS_outdf_Full$SampleID, col=colors[3])
+# boxplot(MIMS_outdf_Full$O18arsatv~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+abline(h=mean(MIMS_outdf_Full$O18arsatv, na.rm=T), lty=3)
+mtext(expression(paste(''^'18','O-',O[2], ':Ar', ' (molar ratio)')), 2,  1.75)
+
+boxplot(MIMS_outdf_Full$O18arcalc/MIMS_outdf_Full$O2arcalc*1000~ MIMS_outdf_Full$SampleID, col='grey60')
+# boxplot(MIMS_outdf_Full$O18arsatv~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+# abline(h=mean(MIMS_outdf_Full$O18arsatv, na.rm=T), lty=3)
+mtext(expression(paste(''^'18', 'O:', ''^'16','O-',O[2], ' (per mil)')), 2,  1.75)
+
+
+dev.off()
