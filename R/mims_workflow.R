@@ -149,7 +149,7 @@ dev.off()
 
 
 
-
+if ('X34' %in% names(MIMS_outdf_Full)){
 
 png(paste0(data_dir, '/Figures/MIMS/2018August_MIMS_Boxplots_O18_withRatios.png'), width=5, height=10, units='in', res=200)
 par(mar=c(2,3.75,0.5,0.5))
@@ -188,3 +188,5 @@ mtext(expression(paste(''^'18', 'O:', ''^'16','O-',O[2], ' (per mil)')), 2,  1.7
 
 
 dev.off()
+
+}
