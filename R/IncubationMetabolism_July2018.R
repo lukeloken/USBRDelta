@@ -62,7 +62,7 @@ DOsd <- DOdata[,-1] %>%
   summarize_all(sd)
 
 png('Figures/Incubations/2018JulyMetabolism_WithinSampleSD.png', width=5, height=4, units='in', res=200)
-par(mar(3,3,0.5,0.5))
+par(mar=c(3,3,0.5,0.5))
 par(mgp=c(3,0.5,0))
 
 boxplot(DOsd[2:10], col=c(rep(c('grey50', 'darkgreen'),4), 'grey50'), boxwex=0.5, cex=0.8)
