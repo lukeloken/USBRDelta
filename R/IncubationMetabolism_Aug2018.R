@@ -26,7 +26,7 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 #Set date %m%d%y
 Date<-'081618'
-
+# Date<-'071218'
 
 # ####################
 # Don't change below
@@ -169,36 +169,20 @@ write.csv(DOrate_mean_long_table, file=paste0(dropbox_dir, '/Data/Incubations/Me
 
 
 
-#Create tables of each metabolism metric
-GPPtable<- DOrate_mean_long_table %>%
-  filter(Metric=='GPP')
-GPPrange<-range(GPPtable$Value, na.rm=T)
-
-ERtable<- DOrate_mean_long_table %>%
-  filter(Metric=='ER')
-ERrange<-range(ERtable$Value, na.rm=T)
-
-NEPtable<- DOrate_mean_long_table %>%
-  filter(Metric=='NEP')
-NEPrange<-range(NEPtable$Value, na.rm=T)
-
-#Create tables of each metabolism metric (median)
-GPPtable_median<- DOrate_median_long_table %>%
-  filter(Metric=='GPP')
-GPPrange_median<-range(GPPtable_median$Value, na.rm=T)
-
-ERtable_median<- DOrate_median_long_table %>%
-  filter(Metric=='ER')
-ERrange_median<-range(ERtable_median$Value, na.rm=T)
-
-NEPtable_median<- DOrate_median_long_table %>%
-  filter(Metric=='NEP')
-NEPrange_median<-range(NEPtable_median$Value, na.rm=T)
 
 
 # #####################
 # plotting
 # #####################
+
+
+
+# ##############################################
+# multi panel of metabolism estimates over time 
+# Each panel is a site/metric
+# X is day, y is value, color is treatment
+# #############################################
+
 
 #Plotting parameters
 jitterwidth=0.15
@@ -237,45 +221,137 @@ for (plot_nu in 1:nrow(uniquetable)){
   
 }
 
-
-
-
-
+#Add and extract legend from first plot
 plot_withlegend <- plot_list[[1]] + 
   theme(legend.position='bottom')
 
 mylegend<-g_legend(plot_withlegend)
 
 
-
 # arrange plots without legend
 p2<-grid.arrange(grobs=plot_list, ncol=3, as.table=F)
 
-# arrange multi plot with legend below and save to project folder
-png(paste0(dropbox_dir, '/Figures/VerticalProfiles/', Date, '_VerticalProfiles.png'), width=8, height=16, units='in', res=200)
-
-grid.arrange(p2, mylegend, nrow=2,heights=c(10, 0.25))
-
-dev.off()
-
-
-
-
+#Add legend to bottom of figure and save
 png(paste0(dropbox_dir, '/Figures/Incubations/', Date, 'Metabolism_Timeseries.png'), width=8, height=12, units='in', res=200)
 
-grid.arrange(GPP_site34, GPP_site64, GPP_site70, GPP_site74, ER_site34, ER_site64, ER_site70, ER_site74, NEP_site34, NEP_site64, NEP_site70, NEP_site74 , ncol=3, as.table=F)
+grid.arrange(p2, mylegend, nrow=2,heights=c(10, length(unique(uniquetable$Site))/16))
 
 dev.off()
 
 
+# ##########################################
+# Boxplot of within jar standard deviations
+# ##########################################
+
 png(paste0(dropbox_dir, '/Figures/Incubations/', Date, 'Metabolism_WithinSampleSD_boxplot.png'), width=5, height=4, units='in', res=200)
-par(mar=c(3,3,0.5,0.5))
+par(mar=c(2.5,3,0.5,0.5))
 par(mgp=c(3,0.5,0))
 xlabels<-paste0('T', 1:(ncol(DOsd)-1))
 
 boxplot(DOsd[2:10], names=xlabels, col=c(rep(c('grey50', 'darkgreen'),4), 'grey50'), boxwex=0.5, cex=0.8)
-axis(1, at=1:9, line=1, labels=c(rep(c('AM', 'PM'),4), 'AM'), tick=F, lty=0)
+# axis(1, at=1:9, line=1, labels=c(rep(c('AM', 'PM'),4), 'AM'), tick=F, lty=0)
 mtext('Within measurement SD (mg O2/L)', 2, 2)
-mtext('Timepoint', 1, 2.5)
+mtext('Timepoint', 1, 1.5)
+legend('topleft', inset=0.02, bty='n', pt.bg=c('grey50', 'darkgreen'), c('AM', 'PM'), pt.cex=3, pch=22, cex=1, y.intersp=2)
 
 dev.off()
+
+
+
+# ##########################################
+# Boxplot of treatment effect
+# ##########################################
+
+
+uniquetable<-unique(DOrate_mean_long_table[c('Metric', 'Site')])
+uniquetable$Metric<-factor(uniquetable$Metric, c('GPP', 'ER', 'NEP'))
+uniquetable<-uniquetable[order(uniquetable$Site),]
+uniquetable<-uniquetable[order(uniquetable$Metric),]
+
+boxplot(DOsd[2:10], names=xlabels, col=c(rep(c('grey50', 'darkgreen'),4), 'grey50'), boxwex=0.5, cex=0.8)
+
+table<-DOrate_mean_long_table[DOrate_mean_long_table$Metric==metric & 
+                                DOrate_mean_long_table$Site==site,]
+
+
+#Create tables of each metabolism metric
+GPPtable<- DOrate_mean_long_table %>%
+  filter(Metric=='GPP')
+GPPrange<-range(GPPtable$Value, na.rm=T)
+
+ERtable<- DOrate_mean_long_table %>%
+  filter(Metric=='ER')
+ERrange<-range(ERtable$Value, na.rm=T)
+
+NEPtable<- DOrate_mean_long_table %>%
+  filter(Metric=='NEP')
+NEPrange<-range(NEPtable$Value, na.rm=T)
+
+#Create tables of each metabolism metric (median)
+GPPtable_median<- DOrate_median_long_table %>%
+  filter(Metric=='GPP')
+GPPrange_median<-range(GPPtable_median$Value, na.rm=T)
+
+ERtable_median<- DOrate_median_long_table %>%
+  filter(Metric=='ER')
+ERrange_median<-range(ERtable_median$Value, na.rm=T)
+
+NEPtable_median<- DOrate_median_long_table %>%
+  filter(Metric=='NEP')
+NEPrange_median<-range(NEPtable_median$Value, na.rm=T)
+
+
+#Plotting parameters
+colorset<-'Dark2'
+colors<-brewer.pal(3, colorset)[c(1,3,2)]
+
+
+
+uniquemetrics<-unique(DOrate_mean_long_table[c('Metric')])
+uniquemetrics<-factor(uniquemetrics[,1], c('GPP', 'ER', 'NEP'))
+uniquemetrics<-uniquemetrics[order(uniquemetrics)]
+
+
+box_list<-list()
+plot_nu<-1
+for (plot_nu in 1:length(uniquemetrics)){
+  
+  metric<-uniquemetrics[plot_nu]
+  box_table<-DOrate_mean_long_table[DOrate_mean_long_table$Metric==metric,]
+  
+
+#Common theme for all metabolism panels
+commonTheme_boxplot<-list(
+  scale_fill_manual(values = colors),
+  scale_colour_manual(values = colors),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none"),
+  geom_boxplot(outlier.size=0.5)
+)
+
+box_list[[plot_nu]] <- ggplot(aes(y = Value, x = Site, fill = Treatment), data = box_table) + 
+  labs(x='Site', y=metric) +
+  commonTheme_boxplot
+}
+
+
+#Add and extract legend from first plot
+box_withlegend <- box_list[[1]] + 
+  scale_colour_manual(values = colors) + 
+  theme(legend.position='bottom') 
+
+mylegend_box<-g_legend(box_withlegend)
+
+
+# arrange plots without legend
+p2_box<-grid.arrange(grobs=box_list, ncol=3, as.table=F)
+
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/Incubations/', Date, 'Metabolism_Boxplot.png'), width=8, height=3, units='in', res=200)
+
+grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 1))
+
+dev.off()
+
