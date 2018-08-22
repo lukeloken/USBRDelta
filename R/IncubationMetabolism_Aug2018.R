@@ -14,18 +14,9 @@ library(RColorBrewer)
 
 library(lubridate)
 
-#Function to read in all sheets from an excel file
-read_excel_allsheets <- function(filename, tibble = FALSE) {
-  # I prefer straight data.frames
-  # but if you like tidyverse tibbles (the default with read_excel)
-  # then just pass tibble = TRUE
-  sheets <- readxl::excel_sheets(filename)
-  x <- lapply(sheets, function(X) readxl::read_excel(filename, sheet = X))
-  if(!tibble) x <- lapply(x, as.data.frame)
-  names(x) <- sheets
-  x
-}
 
+source('R/read_excel_allsheets.R')
+source('R/g_legend.R')
 
 # Project folder where outputs are stored
 dropbox_dir<-'C:/Dropbox/USBR Delta Project'
@@ -37,9 +28,11 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 Date<-'081618'
 
 
+# ####################
+# Don't change below
+# Code looks into the dropbox directory/incubation data and loads the correct file using 'Date'
 
-#Don't change below
-
+# ####################
 
 files<-list.files(paste0(dropbox_dir, '/Data/Incubations/', Date))
 
@@ -109,7 +102,7 @@ row.names(time_diff_mean)<-row.names(DO_diff_mean)
 #Calculate metabolism for each jar/time
 #Note that ER is negative
 DOrate_mean<-as.data.frame(matrix(nrow=ncol(DO_diff_mean), ncol=nrow(DO_diff_mean)+1))
-names(DOrate_mean)<-c('Jar', 'NEP1', 'ER1', 'NEP2', 'ER2', 'NEP3', 'ER3', 'NEP4', 'ER4')
+names(DOrate_mean)<-c('Jar', row.names(DO_diff_mean))
 DOrate_mean[,1]<-names(DO_diff_mean)
 DOrate_median <- DOrate_mean
 
@@ -128,16 +121,25 @@ for (row in 1:nrow(DOrate_mean)){
   
 }
 
+day=1
+for (day in 1:((ncol(DOrate_mean)-1)/2)){
 #Calculate GPP as the difference between daytime GPP and the ER from the following night
-DOrate_mean$GPP1<-DOrate_mean$NEP1-DOrate_mean$ER1
-DOrate_mean$GPP2<-DOrate_mean$NEP2-DOrate_mean$ER2
-DOrate_mean$GPP3<-DOrate_mean$NEP3-DOrate_mean$ER3
-DOrate_mean$GPP4<-DOrate_mean$NEP4-DOrate_mean$ER4
+  NEP<-DOrate_mean[,paste0('NEP', day)]
+  ER<-DOrate_mean[,paste0('ER', day)]
+  GPP<-NEP-ER
+  
+  DOrate_mean[,ncol(DOrate_mean)+1] <- GPP
+  names(DOrate_mean)[ncol(DOrate_mean)]<-paste0('GPP', day)
+  
+  #median
+  NEP_median<-DOrate_median[,paste0('NEP', day)]
+  ER_median<-DOrate_median[,paste0('ER', day)]
+  GPP_median<-NEP_median-ER_median
+  
+  DOrate_median[,ncol(DOrate_median)+1] <- GPP
+  names(DOrate_median)[ncol(DOrate_median)]<-paste0('GPP', day)
 
-DOrate_median$GPP1<-DOrate_median$NEP1-DOrate_median$ER1
-DOrate_median$GPP2<-DOrate_median$NEP2-DOrate_median$ER2
-DOrate_median$GPP3<-DOrate_median$NEP3-DOrate_median$ER3
-DOrate_median$GPP4<-DOrate_median$NEP4-DOrate_median$ER4
+}
 
 #Link Treatments and Sites to Jars
 DOrate_mean$Treatment<-factor(JarData$Treatment__1[match(DOrate_mean$Jar, JarData$Jar__1)])
@@ -212,68 +214,50 @@ commonTheme<-list(
   theme(plot.title = element_text(hjust=0.5), legend.position="none")
 )
 
-GPP_site34 <- ggplot(GPPtable[GPPtable$Site=='NL34',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='GPP') +
-  ggtitle('Site 34') +
-  commonTheme + 
-  theme(plot.title = element_text(hjust=0.5), legend.position = c(0.25, 0.7), legend.background = element_rect(fill=NA)) 
+uniquetable<-unique(DOrate_mean_long_table[c('Metric', 'Site')])
+uniquetable$Metric<-factor(uniquetable$Metric, c('GPP', 'ER', 'NEP'))
+uniquetable<-uniquetable[order(uniquetable$Site),]
+uniquetable<-uniquetable[order(uniquetable$Metric),]
 
-GPP_site64 <-ggplot(GPPtable[GPPtable$Site=='NL64',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='GPP') +
-  ggtitle('Site 64') +
-  commonTheme
 
-GPP_site70 <- ggplot(GPPtable[GPPtable$Site=='NL70',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='GPP') +
-  ggtitle('Site 70') +
-  commonTheme
+plot_list<-list()
+plot_nu<-1
+for (plot_nu in 1:nrow(uniquetable)){
+  
+  site<-uniquetable$Site[plot_nu]
+  metric<-uniquetable$Metric[plot_nu]
+  
+  table<-DOrate_mean_long_table[DOrate_mean_long_table$Metric==metric & 
+                                  DOrate_mean_long_table$Site==site,]
 
-GPP_site74 <- ggplot(GPPtable[GPPtable$Site=='NL74',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='GPP') +
-  ggtitle('Site 74') +
-  commonTheme
-
-#ER
-ER_site34 <- ggplot(ERtable[ERtable$Site=='NL34',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='ER') +
-  ggtitle('Site 34') +
+  plot_list[[plot_nu]] <- ggplot(table, aes(Day, Value, colour=Treatment)) + 
+  labs(x='Day', y=metric) +
+  ggtitle(site) +
   commonTheme 
+  
+}
 
-ER_site64 <-ggplot(ERtable[ERtable$Site=='NL64',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='ER') +
-  ggtitle('Site 64') +
-  commonTheme
 
-ER_site70 <- ggplot(ERtable[ERtable$Site=='NL70',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='ER') +
-  ggtitle('Site 70') +
-  commonTheme
 
-ER_site74 <- ggplot(ERtable[ERtable$Site=='NL74',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='ER') +
-  ggtitle('Site 74') +
-  commonTheme
 
-#NEP
-NEP_site34 <- ggplot(NEPtable[NEPtable$Site=='NL34',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='NEP') +
-  ggtitle('Site 34') +
-  commonTheme 
 
-NEP_site64 <-ggplot(NEPtable[NEPtable$Site=='NL64',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='NEP') +
-  ggtitle('Site 64') +
-  commonTheme
+plot_withlegend <- plot_list[[1]] + 
+  theme(legend.position='bottom')
 
-NEP_site70 <- ggplot(NEPtable[NEPtable$Site=='NL70',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='NEP') +
-  ggtitle('Site 70') +
-  commonTheme
+mylegend<-g_legend(plot_withlegend)
 
-NEP_site74 <- ggplot(NEPtable[NEPtable$Site=='NL74',], aes(Day, Value, colour=Treatment)) + 
-  labs(x='Day', y='NEP') +
-  ggtitle('Site 74') +
-  commonTheme
+
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=3, as.table=F)
+
+# arrange multi plot with legend below and save to project folder
+png(paste0(dropbox_dir, '/Figures/VerticalProfiles/', Date, '_VerticalProfiles.png'), width=8, height=16, units='in', res=200)
+
+grid.arrange(p2, mylegend, nrow=2,heights=c(10, 0.25))
+
+dev.off()
+
 
 
 
