@@ -204,7 +204,7 @@ commonTheme<-list(
   scale_colour_manual(values = colors),
   scale_fill_manual(values = colors),
   # geom_smooth(method='loess',  se=F),
-  geom_smooth(method='lm', formula='y~poly(x,3)', se=T, alpha=.2),
+  geom_smooth(method='auto', se=T, alpha=.2),
   geom_jitter(size=2, width=jitterwidth, height=0),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="none")
@@ -216,7 +216,6 @@ uniquetable<-unique(DOrate_mean_long_table[c('Metric', 'Site')])
 uniquetable$Metric<-factor(uniquetable$Metric, c('GPP', 'ER', 'NEP'))
 uniquetable<-uniquetable[order(uniquetable$Site),]
 uniquetable<-uniquetable[order(uniquetable$Metric),]
-uniquetable$min<-min(DOrate_mean_long_table$Value[DOrate_mean_long_table$Metric == uniquetable$Metric], na.rm=T)
 
 ranges<-sapply(uniquetable$Metric, function(x) extendrange(DOrate_mean_long_table$Value[DOrate_mean_long_table$Metric ==x], f=0.05))
 
