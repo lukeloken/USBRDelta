@@ -66,17 +66,24 @@ FirstProfile<-function(df){
 YSI_list_i3<-lapply(YSI_list_i2, function(l) FirstProfile(l))
 
 #Order each sheet by depth
-YSI_list_i_ordered<-lapply(YSI_list_i3, function(l) l[order(l$'Depth feet'),])
-YSI_list_i_noNA<-lapply(YSI_list_i_ordered, function(l) l[!is.na(l$'Depth feet'),])
+YSI_list_i_ordered<-lapply(YSI_list_i3, function(l) l[order(l$'Depth'),])
+YSI_list_i_noNA<-lapply(YSI_list_i_ordered, function(l) l[!is.na(l$'Depth'),])
 
 YSI_df_i<-ldply(YSI_list_i_noNA, data.frame)
 
-YSI_df_i$Date<-as.Date(YSI_df_i$Date.M.D.Y)
+column_names<-names(YSI_df_i)
+
+YSI_df_i$Date<-as.Date(YSI_df_i$Date)
+
+if ('Time.HH.MM.SS' %in% column_names){
 YSI_df_i$Time<-strftime(force_tz(YSI_df_i$Time.HH.MM.SS, "America/Los_Angeles"), format="%H:%M:%S")
+} else {
+  YSI_df_i$Time<-strftime(force_tz(YSI_df_i[,2], "America/Los_Angeles"), format="%H:%M:%S")
+}
 YSI_df_i$DateTime.PT<-ymd_hms(paste(YSI_df_i$Date, YSI_df_i$Time), tz='America/Los_Angeles')
 
 #Used for final name
-Date<-median(as.Date(YSI_df_i$Date.M.D.Y), na.rm=T)
+Date<-median(as.Date(YSI_df_i$Date), na.rm=T)
 
 #Change station names
 site<-stations[2]
@@ -84,6 +91,9 @@ for (site in stations){
   YSI_df_i$'.id'[grep(site, YSI_df_i$'.id')]<-site
 }
 
+if ('Depth.meters' %in% column_names){
+  YSI_df_i$Depth.feet <- YSI_df_i$Depth.meters*3.28084
+}
 
 variables<-c("Station", "DateTime.PT", "Depth.feet", "Temp.C", "SpCond.uS", "pH", "Chl.ug.L", "Chl.RFU", "ODOsat..", "ODO.mg.L", "Turbid..NTU")
 
