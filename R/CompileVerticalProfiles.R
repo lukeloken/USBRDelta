@@ -10,6 +10,7 @@ library(ggplot2)
 library(gridExtra)
 
 source('R/read_excel_allsheets.R')
+source('R/g_legend.R')
 
 # Project folder where outputs are stored
 dropbox_dir<-'C:/Dropbox/USBR Delta Project'
@@ -129,12 +130,6 @@ for (var_nu in 4:ncol(df_plot)){
   
   }
 
-# function to extract legent from gg object
-g_legend<-function(a.gplot){
-  tmp <- ggplot_gtable(ggplot_build(a.gplot))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  legend <- tmp$grobs[[leg]]
-  return(legend)}
 
 # add legeng to first plot and then extract it
 p1<-plot_list[[1]] + 
