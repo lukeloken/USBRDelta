@@ -189,4 +189,10 @@ mtext(expression(paste(''^'18', 'O:', ''^'16','O-',O[2], ' (per mil)')), 2,  1.7
 
 dev.off()
 
+boxplot((MIMS_outdf_Full$O18calc/MIMS_outdf_Full$O2calc/0.002005-1)*1000~ MIMS_outdf_Full$SampleID, col=colors[4])
+# boxplot(MIMS_outdf_Full$O18arsatv~ MIMS_outdf_Full$SampleID, add=T, border='blue', boxwex=0.3, lwd=3)
+# abline(h=mean(MIMS_outdf_Full$O18arsatv, na.rm=T), lty=3)
+mtext(expression(paste(delta,''^'18', 'O (per mil)')), 2,  1.75)
+
+
 }
