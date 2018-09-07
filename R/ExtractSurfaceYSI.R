@@ -42,6 +42,8 @@ biglist<-lapply(filenames, extract_surface, directory=paste0(dropbox_dir, "/Data
 bigdf<-ldply(biglist, data.frame)
 bigdf$Date<-ymd(strftime(bigdf$DateTime.PT, format='%Y-%m-%d'))
 
-write.csv(bigdf, file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSISurface.csv'), row.names=F)
+output<-bigdf[which(!is.na(bigdf$Date)),]
+
+write.csv(output, file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSISurface.csv'), row.names=F)
 
           
