@@ -38,9 +38,18 @@ MIMScalc<-function(MIMSdata){
   if ('X34' %in% names(MIMSdata)){
   O18ar<- (MIMSdata$`O2-18.Ar`) #Measured O18:Ar ratio
   MIMSdata$O18ar<- O18ar
-  
+
   # ######################Need to figure out the fractionation stuff
   e <- 0.85 - 0.010*MIMSdata$Temp #fractionation (per mill) (from Kroopnick and Craig (1972), used in Ferron (2016)
+  
+  O18O16<- MIMSdata$X34/MIMSdata$X32
+  MIMSdata$O18O16 <- O18O16
+  
+  deltaO18del<- ((O18O16/.002005)-1)*1000
+  MIMSdata$deltaO18del<-deltaO18del
+  O18O16satVSMOV<-rep(.002005 - 24.2/1000, nrow(MIMSdata))
+  MIMSdata$O18O16satVSMOV<-O18O16satVSMOV
+  
   # #############################
   
   O18satv<-osat1(MIMSdata$Temp, MIMSdata$Pressure)* 0.00204 #Calculated saturation of oxygen multiplied by the atmospheric ratio of O34:O32 (cite)
