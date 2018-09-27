@@ -46,7 +46,7 @@ if (ncol(time_df) %% 2 == 0){
 } else { extra=0}
 
 #Remove NAs from Jar vector and generate a vector of the Jar reads
-JarSampleOrder<-JarData$Jar__1[is.finite(JarData$Jar__1)]
+JarSampleOrder<-JarData$Jar__1[!is.na(JarData$Jar__1)]
 Jar<-rep(JarSampleOrder, each=nrow(DO_df)/length(JarSampleOrder))
 
 
