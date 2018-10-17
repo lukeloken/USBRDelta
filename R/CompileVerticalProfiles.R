@@ -29,6 +29,8 @@ YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 21 2014 report
 YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 23 2014 report', YSIfilenames)]
 YSIfilenames<-YSIfilenames[-grep('Sac Ship Channel Surface Summary', YSIfilenames)]
 
+#or enter a single file
+YSIfilenames<-c('Channel Data depth Profiles September 18 2018.xlsx')
 
 #If there is an open excel sheet exclude it from the loop of filenames
 if (length(grep('~', YSIfilenames))>0){
