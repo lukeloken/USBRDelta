@@ -22,12 +22,14 @@ outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 
 
 # Google background map 
-map<-GetMap(center=c(38.28988, -121.66548), size=c(320,640), zoom=min(MaxZoom(range(geo$Latitude), range(geo$Longitude))), maptype=c("satellite"), GRAYSCALE=F)
+map<-GetMap(center=c(38.28988, -121.66548), size=c(320,640), zoom=10, maptype=c("satellite"), GRAYSCALE=F)
 
 #List of moped files in google drive folder
 mopedfiles<-list.files(paste0(google_dir, "/Data/LongitudinalProfiles"))
 mopedfiles<-mopedfiles[grep('.mdb', mopedfiles)]
 
+# Or you can indicate a single file
+mopedfiles<-c("moped_9_19_2018.mdb")
 
 #Plotting parameters
 B<-100 #Number of color breaks
@@ -49,7 +51,7 @@ for (file_nu in 1:length(mopedfiles)){
   coordinates(geo) <- ~Longitude + Latitude
   proj4string(geo) <- proj4string(outline)
   
-  writeOGR(geo, dsn=paste0(dropbox_dir, "/Data/LongitudinalProfiles"), layer=paste0("LongitudinalProfile", Date), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  writeOGR(geo, dsn=paste0(dropbox_dir, "/Data/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", Date), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
   
   plotvars<-intersect(vars, names(geo))
   
