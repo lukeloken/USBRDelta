@@ -29,7 +29,7 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 # Date<-'081618'
 # Date<-'071218'
-Date<-'091918'
+Date<-'101618'
 
 # ##############################################################################################
 # Code looks into the dropbox directory/incubation data and loads the correct file using 'Date'
@@ -46,8 +46,69 @@ mysheets <- read_excel_allsheets(paste0(dropbox_dir, '/Data/Incubations/', Date,
 #Calculate metabolims
 results<-CalculateIncubationMetabolism(mysheets)
 
+
 DOrate_mean_long_table<-results[[1]]
 DOsd<-results[[2]]
+
+if ('Dark' %in% unique(DOrate_mean_long_table$Treatment)){
+  DOrate_mean_long_table<-DOrate_mean_long_table[which(DOrate_mean_long_table$Treatment=='Light'),]
+
+  
+  stations<-c("NL70", "EC2", "EC3", "EC4", "EC5", "EC6", "EC7", "EC8", "NL76")
+  if (length(DOrate_mean_long_table$Site %in% stations)>1){
+  DOrate_mean_long_table$Site<-factor(DOrate_mean_long_table$Site, stations)
+  }
+
+# vector of metrics. This is what the loop will run through
+uniquemetrics<-unique(DOrate_mean_long_table[c('Metric')])
+uniquemetrics<-factor(uniquemetrics[,1], c('GPP', 'ER', 'NEP'))
+uniquemetrics<-uniquemetrics[order(uniquemetrics)]
+
+
+#Common theme for all boxplots
+commonTheme_boxplot<-list(
+  scale_fill_manual(values = colors),
+  scale_colour_manual(values = colors),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none"),
+  geom_boxplot(outlier.size=0.5)
+)
+
+# Loop through metrics and make a gg object
+box_list<-list()
+plot_nu<-1
+for (plot_nu in 1:length(uniquemetrics)){
+  # Pick data
+  metric<-uniquemetrics[plot_nu]
+  box_table<-DOrate_mean_long_table[DOrate_mean_long_table$Metric==metric,]
+  #Plot
+  box_list[[plot_nu]] <- ggplot(aes(y = Value, x = Site, fill = Treatment), data = box_table) + 
+    labs(x='Site', y=metric) +
+    commonTheme_boxplot
+}
+
+
+#Add and extract legend from first plot
+box_withlegend <- box_list[[1]] + 
+  theme(legend.position='bottom') 
+
+mylegend_box<-g_legend(box_withlegend)
+
+
+# arrange plots without legend
+p2_box<-grid.arrange(grobs=box_list, ncol=3, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/Incubations/', Date, 'Metabolism_Boxplot.png'), width=8, height=3, units='in', res=200)
+
+grid.arrange(p2_box)
+
+dev.off()
+
+
+} else {
+
 
 # Save to directory listed at the start
 # Metabolism estimates are in mg O2 per liter per hour
@@ -212,3 +273,4 @@ grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 1))
 
 dev.off()
 
+}
