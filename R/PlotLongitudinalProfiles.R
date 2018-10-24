@@ -1,4 +1,5 @@
 
+#Warning this script uses your API key. Do not use this a lot as you can get charged if you go over your monthly allotment. 
 
 #Where spatial data are
 Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
@@ -8,6 +9,9 @@ dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 
 #Where data come from
 google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+
+#GoogleKey
+GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
 
 library(rgdal)
 # library(gtools)
@@ -20,16 +24,19 @@ source('R/ImageScale.R')
 #shapefile outline of north delta major water bodies
 outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 
+# # Google background map 
+map<-GetMap(center=c(38.28988, -121.66548), size=c(320,640), zoom=10, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
 
-# Google background map 
-map<-GetMap(center=c(38.28988, -121.66548), size=c(320,640), zoom=10, maptype=c("satellite"), GRAYSCALE=F)
+# Google background map using ggmap
+# register_google(key = "AbCdEfGhIjKlMnOpQrStUvWxYz")
+# map<-get_map(location=c(lon= -121.66548, lat=38.28988), zoom=10, maptype=c("satellite"))
 
 #List of moped files in google drive folder
 mopedfiles<-list.files(paste0(google_dir, "/Data/LongitudinalProfiles"))
 mopedfiles<-mopedfiles[grep('.mdb', mopedfiles)]
 
 # Or you can indicate a single file
-mopedfiles<-c("moped_9_19_2018.mdb")
+mopedfiles<-c("moped_10_18_2018.mdb")
 
 #Plotting parameters
 B<-100 #Number of color breaks
