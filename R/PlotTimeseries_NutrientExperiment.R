@@ -2,6 +2,10 @@
 
 library(lubridate)
 library(viridis)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+library(dplyr)
 
 # Project folder where outputs are stored
 dropbox_dir<-'C:/Dropbox/USBR Delta Project'
@@ -22,6 +26,8 @@ merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceC
 merge_df$Date<-as.Date(merge_df$Date)
 merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
+
+metrics<-c('SpCond.uS', 'Temp.C', 'pH', 'Chl.ug.L', 'ODO.mg.L', 'Turbid..NTU', 'HachTurbidity', 'SecchiDepth', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'NEP', 'ER')
 
 
 
@@ -44,6 +50,7 @@ commonTheme<-list(
   # geom_smooth(method='loess',  se=F),
   # geom_smooth(method='auto', se=T, alpha=.2),
   # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  geom_vline(xintercept=as.Date('2018-10-02'), linetype="solid", color = "black", size=1),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank())
 )
@@ -51,7 +58,6 @@ commonTheme<-list(
 # Make a table to determine how many panels are needed
 # Each panel is a site and a metric
 
-metrics<-c('NEP', 'ER', 'Temp.C', 'pH', 'Chl.ug.L', 'ODO.mg.L', 'Turbid..NTU')
 
 uniquesites<-unique(merge_df[c('Site')])
 
@@ -88,11 +94,68 @@ plot_list2[[length(plot_list)+1]]<-mylegend
 p2<-grid.arrange(grobs=plot_list2, nrow=ceiling(length(plot_list2)/2), as.table=F)
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Allmetrics.png'), width=10, height=12, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Allmetrics.png'), width=10, height=16, units='in', res=200)
 
 grid.arrange(p2)
 
 dev.off()
 
 
+#End
 
+
+# 
+# #Testing new grid alignment
+# 
+# plot_list<-list()
+# plot_nu<-1
+# for (plot_nu in 1:length(metrics)){
+#   
+#   metric<-metrics[plot_nu]
+#   
+#   table<-merge_df[,c('Site', 'Date', metric)]
+#   
+#   plot_list[[plot_nu]]<-ggplot(table, aes_string('Date', metric, group='Site')) + 
+#     ggtitle(metric) +
+#     geom_line(size=1, aes(colour=Site,  group=Site)) +    
+#     geom_point(size=2, aes(fill=Site, shape=Site)) + 
+#     commonTheme
+#   
+#   if (plot_nu==1){
+#     gtable1<-ggplotGrob(plot_list[[plot_nu]])
+#   } else if (plot_nu>1){
+#     gtable1 <-rbind(gtable1, ggplotGrob(plot_list[[plot_nu]]), size='last')
+#   }
+# }
+# 
+# # grob_list<-lapply(plot_list, function (l) ggplotGrob(l))
+# # 
+# # 
+# # 
+# # gtable_test<-gtable_rbind(grob_list[[1]],grob_list[[2]], grob_list[[3]], grob_list[[4]], size = "last")
+# 
+# grid.newpage()
+# grid.draw(gtable1)
+# 
+# 
+# gtable_test2<-gtable_rbind(expression(paste("grob_list[[", 1:2, "]],")), size='last')
+# 
+# 
+# grid.newpage()
+# grid.draw(gtable_test2)
+# 
+# 
+# gtable_test2<-rbindlist(grob_list)
+# , size = "last")
+# 
+# 
+# 
+# # rbind(plot_list[[1]], plot_list[[2]])
+# 
+# grid.draw
+# 
+# grob_list<-lapply(plot_list, function (l) ggplotGrob(l))
+# 
+# grid.newpage()
+# grid.draw(rbind(grob_list, size='last'))
+# 
