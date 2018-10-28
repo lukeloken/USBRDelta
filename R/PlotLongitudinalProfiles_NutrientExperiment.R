@@ -31,6 +31,14 @@ outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 # # Google background map 
 map<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
 
+# # Google background map 
+# map2<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+
+
+# # Google background map 
+map2<-GetMap(center=c(38.5, -121.57), size=c(256,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+
+
 # Google background map using ggmap
 # register_google(key = "AbCdEfGhIjKlMnOpQrStUvWxYz")
 # map<-get_map(location=c(lon= -121.66548, lat=38.28988), zoom=10, maptype=c("satellite"))
@@ -171,8 +179,47 @@ for (event_i in 1:length(unique(field_df$Date))){
   time_am<-min(field_df$DateTime_start[field_df$Date==date], na.rm=T)
   time_pm<-max(field_df$DateTime_end[field_df$Date==date], na.rm=T)
   
+  
+  #Identify north bound and south bound transects, omit other data
   geo_am<-geo_i[geo_i$TIMESTAMP<time_am,]
+  
+  am_lat_rolldiff<-roll_mean(diff(geo_am$Latitude), n=181, fill=NA)
+  am_long_rolldiff<-roll_mean(diff(geo_am$Longitude), n=181, fill=NA)
+  
+  # plot(am_lat_rolldiff)
+  # abline(h=0, col='red')
+  # abline(h=(-0.000005), col='blue')
+  # 
+  # plot(am_long_rolldiff)
+  # abline(h=0, col='red')
+  # abline(h=(-0.000005), col='blue')
+
+  bad_am<-which(am_lat_rolldiff>=(-0.000002) & am_long_rolldiff>=(-0.000002))
+  if (length(bad_am)>0){
+    geo_am_clip<-geo_am[1:bad_am[1],]
+  } else {
+    geo_am_clip<-geo_am
+  }
+  
   geo_pm<-geo_i[geo_i$TIMESTAMP>time_pm,]
+  
+  pm_lat_rolldiff<-roll_mean(diff(geo_pm$Latitude), n=181, fill=NA)
+  pm_long_rolldiff<-roll_mean(diff(geo_pm$Longitude), n=181, fill=NA)
+
+  # plot(pm_lat_rolldiff)
+  # abline(h=0, col='red')
+  # abline(h=(0.000005), col='blue')
+  # 
+  # plot(pm_long_rolldiff)
+  # abline(h=0, col='red')
+  # abline(h=(0.000005), col='blue')
+
+  bad_pm<-which(pm_lat_rolldiff<=(0.000002) & pm_long_rolldiff<=(0.000002))
+  if (length(bad_pm)>0){
+    geo_pm_clip<-geo_pm[bad_pm[length(bad_pm)]:nrow(geo_pm@data),]
+  } else {
+    geo_pm_clip<-geo_pm
+  }
   
   
   #Save shapefile
@@ -187,10 +234,23 @@ for (event_i in 1:length(unique(field_df$Date))){
     name<-plotvars_i[var_i]
     if (is.numeric(geo_i@data[,name])==TRUE){
       a<-geo_i[!is.na(geo_i@data[,name]),]
+      
+      am<-geo_am_clip[!is.na(geo_am_clip@data[,name]),]
+      pm<-geo_pm_clip[!is.na(geo_pm_clip@data[,name]),]
+      
+      
       if (nrow(a)>0){
         a$Col <- as.numeric(cut(a@data[,name],breaks = B))
         a$Color<-colors[a$Col]
         
+        col_values<-as.numeric(cut(c(am@data[,name], pm@data[,name]), breaks =B))
+        col_colors<-colors[col_values]
+        
+        am$Color<-col_colors[1:nrow(am)]
+        pm$Color<-col_colors[(nrow(am)+1):length(col_colors)]
+        
+        
+        #Plot single image of all data
         png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfiles/", date, '_', name, ".png", sep=""), res=300, width=4,height=9, units="in")
         
         layout(matrix(c(1,2), nrow=2, ncol=1), widths=c(4), heights=c(8,1))
@@ -210,6 +270,40 @@ for (event_i in 1:length(unique(field_df$Date))){
         box()
         
         dev.off()
+        
+        #Side by Side plots for AM and PM longitudinal profiles
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels/", date, '_', name, ".png", sep=""), res=300, width=8,height=9.25, units="in")
+        
+        layout(matrix(c(1,2,3,3), nrow=2, ncol=2, byrow=TRUE), widths=c(4,4), heights=c(10,1))
+        
+        layout(matrix(c(1,2,3,3), 2, 2, byrow=T), widths=c(4,4), heights=c(10,1.25))
+        
+        breaks <- seq(min(a@data[name], na.rm = TRUE), max(a@data[name], na.rm = TRUE),length.out=100)
+        par(mar=c(1,1,1,1))
+        
+        PlotOnStaticMap(map2, lat=am$Latitude, lon=am$Longitude, col=am$Color, pch=16, FUN=points, cex=3)
+        
+        legend('topleft', inset=0.01, legend=c('AM'), box.lty= 0, bty='n', bg='white', text.col='white', cex=2)
+        
+        box(which='plot', lwd=2)
+        
+        PlotOnStaticMap(map2, lat=pm$Latitude, lon=pm$Longitude, col=pm$Color, pch=16, FUN=points, cex=3)
+        box(which='plot', lwd=2)
+        
+        legend('topleft', inset=0.01, legend=c('PM'), box.lty= 0, bty='n', bg='white', text.col='white', cex=2)
+        
+        #Add scale
+        par(mar=c(4.5,3,0,3), bg='white')
+        image.scale((a@data), col=colors[1:(B-1)], breaks=breaks-1e-8,axis.pos=1, las=1, cex.axis=2)
+        mtext((paste(name)), 1, 3, cex=2)
+        #abline(v=levs)
+        box()
+        
+
+        
+        dev.off()
+        
+        
       }
     }
   }
