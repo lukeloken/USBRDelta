@@ -27,6 +27,9 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 #Field data
 source('R/CleanFieldData_NutrientExperiment.R')
 
+#Nutrient data
+source('R/CleanNutrientData_NutrientExperiment.R')
+
 #Incubation data
 source('R/IncubationMetabolismLightDark_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries.R')
