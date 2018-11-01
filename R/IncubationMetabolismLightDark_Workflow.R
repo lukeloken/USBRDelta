@@ -72,12 +72,12 @@ for (goodfile in files){
   write.csv(results, file=paste0(results_dir, '/JarMetabolism_', Date, '.csv'), row.names=F)
   
   summarytable <- results %>%
-    select(Total, Site, Metric) %>%
+    dplyr::select(Total, Site, Metric) %>%
     group_by(Site, Metric) %>%
-    summarize(mean=mean(Total), sd=sd(Total)) 
+    dplyr::summarize(mean=mean(Total), sd=sd(Total)) 
   
   meantable <- summarytable %>%
-    select (Site, Metric, mean) %>%
+    dplyr::select (Site, Metric, mean) %>%
     spread(key=Metric, value=mean)
   
   meantable$GPP <- meantable$NEP-meantable$ER
