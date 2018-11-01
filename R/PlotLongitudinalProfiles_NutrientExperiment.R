@@ -19,8 +19,15 @@ library(rgdal)
 library(sp)
 library(RODBC)
 library(RgoogleMaps)
+library(ggmap)
 library(plyr)
 library(dplyr)
+
+library(ggplot2)
+library(gridExtra)
+library(RColorBrewer)
+library(viridis)
+library(stringr)
 
 
 source('R/ImageScale.R')
@@ -32,20 +39,21 @@ outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 map<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
 
 # # Google background map 
-# map2<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+map2<-GetMap(center=c(38.51, -121.57), size=c(240,480), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
 
 
-# # Google background map 
-map2<-GetMap(center=c(38.5, -121.57), size=c(256,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+#Experiment with ggmap
+map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, maptype = "satellite")
+color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, begin=.25, end=.98))), bias=1)
+# colours = color.palette(12)
 
-
-# Google background map using ggmap
-# register_google(key = "AbCdEfGhIjKlMnOpQrStUvWxYz")
-# map<-get_map(location=c(lon= -121.66548, lat=38.28988), zoom=10, maptype=c("satellite"))
 
 #Field notes
 field_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/FieldData.csv'), sep=',', header=T, stringsAsFactors = F)
 field_df$Date<-as.Date(field_df$Date)
+
+sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
+
 field_df$Site<-sitetable$site1[match(field_df$Location, sitetable$site4)]
 field_df$DateTime_start<-as.POSIXct(field_df$DateTime_start, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
 field_df$DateTime_end<-as.POSIXct(field_df$DateTime_end, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
@@ -96,7 +104,7 @@ RTMC_df<-RTMC_df[,c(1,4,5, 19:28)]
 
 RTMC_df$TIMESTAMP<-as.POSIXct(RTMC_df$TIMESTAMP, "America/Los_Angeles", format="%Y-%m-%d %H:%M:%S")
 
-badtimes<-which(RTMC_df$TIMESTAMP<=as.POSIXct("2018-09-29 00:00:01", tz='America/Los_Angeles') & RTMC_df$TIMESTAMP>=as.POSIXct("2018-09-28 13:38:28", tz='America/Los_Angeles'))
+badtimes<-which(RTMC_df$TIMESTAMP<=as.POSIXct("2018-09-29 00:00:01", tz='America/Los_Angeles') & RTMC_df$TIMESTAMP>=as.POSIXct("2018-09-28 13:48:28", tz='America/Los_Angeles'))
 
 timedifference<-as.POSIXct(c("2018-10-01 11:39:45", "2018-09-28 17:48:16"), tz='America/Los_Angeles')
 
@@ -183,16 +191,16 @@ for (event_i in 1:length(unique(field_df$Date))){
   #Identify north bound and south bound transects, omit other data
   geo_am<-geo_i[geo_i$TIMESTAMP<time_am,]
   
-  am_lat_rolldiff<-roll_mean(diff(geo_am$Latitude), n=181, fill=NA)
-  am_long_rolldiff<-roll_mean(diff(geo_am$Longitude), n=181, fill=NA)
+  am_lat_rolldiff<-roll_mean(diff(geo_am$Latitude), n=241, fill=NA)
+  am_long_rolldiff<-roll_mean(diff(geo_am$Longitude), n=241, fill=NA)
   
   # plot(am_lat_rolldiff)
   # abline(h=0, col='red')
-  # abline(h=(-0.000005), col='blue')
+  # abline(h=(-0.000002), col='blue')
   # 
   # plot(am_long_rolldiff)
   # abline(h=0, col='red')
-  # abline(h=(-0.000005), col='blue')
+  # abline(h=(-0.000002), col='blue')
 
   bad_am<-which(am_lat_rolldiff>=(-0.000002) & am_long_rolldiff>=(-0.000002))
   if (length(bad_am)>0){
@@ -274,9 +282,9 @@ for (event_i in 1:length(unique(field_df$Date))){
         #Side by Side plots for AM and PM longitudinal profiles
         png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels/", date, '_', name, ".png", sep=""), res=300, width=8,height=9.25, units="in")
         
-        layout(matrix(c(1,2,3,3), nrow=2, ncol=2, byrow=TRUE), widths=c(4,4), heights=c(10,1))
+        # layout(matrix(c(1,2,3,3), nrow=2, ncol=2, byrow=TRUE), widths=c(4,4), heights=c(10,1))
         
-        layout(matrix(c(1,2,3,3), 2, 2, byrow=T), widths=c(4,4), heights=c(10,1.25))
+        layout(matrix(c(1,2,3,3), 2, 2, byrow=T), widths=c(4,4), heights=c(8,1.25))
         
         breaks <- seq(min(a@data[name], na.rm = TRUE), max(a@data[name], na.rm = TRUE),length.out=100)
         par(mar=c(1,1,1,1))
@@ -299,9 +307,36 @@ for (event_i in 1:length(unique(field_df$Date))){
         #abline(v=levs)
         box()
         
-
-        
         dev.off()
+        
+        #GGMAP side by side, better quality
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels_ggmap/", date, '_', name, ".png", sep=""), res=300, width=8,height=8, units="in")
+        
+        commonTheme_map<-list(
+          theme(axis.text.x=element_blank(), axis.text.y=element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0, 0, 0, 0), "cm")), 
+          scale_colour_gradientn(colours = color.palette(n=B), limits=range(c(am@data[,name], pm@data[,name]), na.rm=T)),
+          theme(legend.position = c(.98, .04), legend.justification = c(1,0), legend.background = element_rect(fill = 'white', colour='black'),
+                legend.text=element_text(size=10),legend.title=element_text(size=12), legend.key.height = unit(.5, "cm"), 
+                legend.key.width = unit(1, "cm"), panel.border=element_rect(fill=NA, colour='black'), legend.direction="horizontal"),
+          guides(colour=guide_colorbar(title.position = 'bottom', title.hjust=0.5, title=name, ticks.colour = "black", ticks.linewidth = 1)) 
+        )
+        
+        
+        map_am<-  ggmap(map_test) + 
+          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'AM'), size = 10, color='white') +
+          geom_point(aes_string(x = am$Longitude, y = am$Latitude, colour = as.character(name)), data = am@data, alpha = .2, size=4) + 
+          commonTheme_map + 
+          theme(legend.position = 'none') 
+        
+        
+        map_pm<-ggmap(map_test) + 
+          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'PM'), size = 10, color='white') +
+          geom_point(aes_string(x = pm$Longitude, y = pm$Latitude, colour = as.character(name)), data = pm@data, alpha = .2, size=4) + 
+          commonTheme_map
+        
+        grid.arrange(map_am, map_pm, top=textGrob(as.character(date), gp=gpar(fontsize=18)), ncol=2)
+        
+        dev.off()  
         
         
       }
@@ -309,3 +344,8 @@ for (event_i in 1:length(unique(field_df$Date))){
   }
   print(date)
 }
+
+
+
+
+
