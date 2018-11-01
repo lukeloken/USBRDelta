@@ -31,5 +31,5 @@ image.scale <- function(z, zlim, col = heat.colors(12),
     }
   }
   box()
-  if(add.axis) {axis(axis.pos)}
+  if(add.axis) {axis(axis.pos, ...)}
 }
