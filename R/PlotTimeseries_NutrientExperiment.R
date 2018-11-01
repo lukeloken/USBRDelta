@@ -27,7 +27,7 @@ merge_df$Date<-as.Date(merge_df$Date)
 merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
 
-metrics<-c('SpCond.uS', 'Temp.C', 'pH', 'Chl.ug.L', 'ODO.mg.L', 'Turbid..NTU', 'HachTurbidity', 'SecchiDepth', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'NEP', 'ER')
+metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'SecchiDepth',  'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'TN.ppm', 'TDN.ppm', 'TP.ppm')
 
 
 
@@ -79,11 +79,9 @@ for (plot_nu in 1:length(metrics)){
     commonTheme
 }
   
-  
-
 plot_withlegend <- plot_list[[1]] + 
-  theme(plot.title = element_text(hjust=0.5), legend.position="bottom")
-
+  theme(legend.position="bottom") +
+  guides(color = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
 
 mylegend<-g_legend(plot_withlegend)
 
@@ -91,10 +89,12 @@ mylegend<-g_legend(plot_withlegend)
 plot_list2<-plot_list
 plot_list2[[length(plot_list)+1]]<-mylegend
 # arrange plots with legend
-p2<-grid.arrange(grobs=plot_list2, nrow=ceiling(length(plot_list2)/2), as.table=F)
+# p2<-grid.arrange(grobs=plot_list2, nrow=ceiling(length(plot_list2)/2), as.table=F)
+p2<-grid.arrange(grobs=plot_list2, ncol=3, as.table=F)
+
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Allmetrics.png'), width=10, height=16, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Allmetrics.png'), width=12, height=16, units='in', res=200)
 
 grid.arrange(p2)
 
