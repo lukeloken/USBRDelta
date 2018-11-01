@@ -29,7 +29,7 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 # Date<-'081618'
 # Date<-'071218'
-Date<-'101918'
+Date<-'102218'
 
 # ##############################################################################################
 # Code looks into the dropbox directory/incubation data and loads the correct file using 'Date'
