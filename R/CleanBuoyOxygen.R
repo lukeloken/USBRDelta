@@ -3,6 +3,9 @@ library(lubridate)
 library(plyr)
 library(viridis)
 library(ggplot2)
+library(gridExtra)
+
+source('R/DownloadUSGSBuoy.R')
 
 # box folder where oxygen data comes from
 box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/DeltaBuoy'
@@ -28,7 +31,7 @@ for (i in 1:length(folders)){
   df_i$DateTime_UTC<-as.POSIXct(df_i$UTC_Date_._Time, format='%Y-%m-%d %H:%M:%S', tz='UTC')
   df_i$DateTime_PST<-df_i$DateTime_UTC
   attributes(df_i$DateTime_PST)$tzone<-'America/Los_Angeles'
-  df_i$Date<-as.Date(df_i$DateTime_PST)
+  df_i$Date<-ymd(strptime(df_i$DateTime_PST, format="%Y-%m-%d", tz='America/Los_Angeles'))
   df_list[[i]]<-df_i
   names(df_list)[[i]]<-SN
 }
@@ -53,16 +56,21 @@ str(df_deploy)
 df_deploy$Sensor<-factor(df_deploy$Sensor, SensorIDs$SensorSN)
 df_deploy$BuoyNu<-factor(SensorIDs$Buoy[match(df_deploy$Sensor, SensorIDs$SensorSN)], 1:15)
 
+df_deploy$Dissolved.Oxygen[which(df_deploy$BuoyNu=="15" & df_deploy$DateTime_PST>(shipdate[2]-3600))]<-NA
+
+
 write.csv(df_deploy, file=paste0(dropbox_dir, '/Data/NutrientExperiment/Buoys/MiniDot_Oct2018.csv'), row.names=F)
 
 
 #colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(unique(df_deploy$Sensor)))
+xlim<-range(df_deploy$DateTime_PST, na.rm=T)
 
+plot_list<-list()
 
-plot_list <- ggplot(df_deploy, aes(DateTime_PST, Dissolved.Oxygen, group=BuoyNu)) + 
-  labs(x='Date (PST)', y='Dissolved Oxygen (mg per L)') +
+plot_list[[1]] <- ggplot(df_deploy, aes(DateTime_PST, Dissolved.Oxygen, group=BuoyNu)) + 
+  labs(x='Date (PDT)', y='Dissolved Oxygen (mg per L)') +
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = colors) + 
   scale_colour_manual(values = colors) + 
@@ -73,15 +81,34 @@ plot_list <- ggplot(df_deploy, aes(DateTime_PST, Dissolved.Oxygen, group=BuoyNu)
   theme_bw() +
   theme(plot.title = element_text(hjust=0.5))  + 
   theme(legend.position='bottom') + 
-  scale_y_continuous(limits=c(5.5, 11)) + 
+  scale_y_continuous(limits=c(6.5, 11)) + 
+  scale_x_datetime(limits=xlim, date_minor_breaks= "1 days", date_breaks = "2 days", date_labels="%b %d") +
   annotate(geom="text", x=(fertdate+70000), y=5.75, label="Fertilization", color="#2ca25f") + 
-annotate(geom="text", x=(shipdate[3]+45000), y=5.75, label="Ships", color="#636363")
+annotate(geom="text", x=(shipdate[3]+45000), y=5.75, label="Ships", color="#636363") + 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
 
-# print(plot_list)
+plot_list[[2]] <- ggplot(RawData, aes(dateTime, DO_Inst, group=site_no)) + 
+  labs(x='Date (PDT)', y='Dissolved Oxygen (mg per L)') +
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  scale_colour_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1.5) + 
+  geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1.5) + 
+  geom_path(aes(color=site_no), size=1) + 
+  # geom_point(size=3, aes(fill=Sensor, shape=Sensor)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  + 
+  theme(legend.position='bottom') + 
+  scale_y_continuous(limits=c(6.5, 11)) + 
+  scale_x_datetime(limits=xlim, date_minor_breaks= "1 days", date_breaks = "2 days", date_labels="%b %d") +
+  annotate(geom="text", x=(fertdate+70000), y=6.75, label="Fertilization", color="#2ca25f") + 
+  annotate(geom="text", x=(shipdate[3]+45000), y=6.75, label="Ships", color="#636363") + 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
 
+plot_list
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/DissolvedOxygen_TS.png'), width=8, height=4, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/DissolvedOxygen_TS.png'), width=8, height=8, units='in', res=200)
 
-print(plot_list)
+grid.arrange(grobs=plot_list, nrow=2)
 
 dev.off()
