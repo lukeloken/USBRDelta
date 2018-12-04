@@ -112,3 +112,40 @@ png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/DissolvedOxygen_TS.pn
 grid.arrange(grobs=plot_list, nrow=2)
 
 dev.off()
+
+
+gauge_list<-ggplot(RawData, aes(dateTime, GH_Inst, group=site_no)) + 
+  labs(x='Date (PDT)', y='Gauge height (ft)') +
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  scale_colour_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  # geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1.5) + 
+  # geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1.5) + 
+  geom_path(aes(color=site_no), size=1) + 
+  # geom_point(size=3, aes(fill=Sensor, shape=Sensor)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  + 
+  theme(legend.position='bottom') + 
+  # scale_y_continuous(limits=c(6.5, 11)) + 
+  scale_x_datetime(limits=xlim, date_minor_breaks= "1 days", date_breaks = "2 days", date_labels="%b %d") +
+  # annotate(geom="text", x=(fertdate+70000), y=6.75, label="Fertilization", color="#2ca25f") + 
+  # annotate(geom="text", x=(shipdate[3]+45000), y=6.75, label="Ships", color="#636363") + 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
+
+SPC_list<-ggplot(RawData, aes(dateTime, SpecCond_Inst, group=site_no)) + 
+  labs(x='Date (PDT)', y='SPC (uS/cm)') +
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  scale_colour_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
+  # geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1.5) + 
+  # geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1.5) + 
+  geom_path(aes(color=site_no), size=1) + 
+  # geom_point(size=3, aes(fill=Sensor, shape=Sensor)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  + 
+  theme(legend.position='bottom') + 
+  # scale_y_continuous(limits=c(6.5, 11)) + 
+  scale_x_datetime(limits=xlim, date_minor_breaks= "1 days", date_breaks = "2 days", date_labels="%b %d") +
+  # annotate(geom="text", x=(fertdate+70000), y=6.75, label="Fertilization", color="#2ca25f") + 
+  # annotate(geom="text", x=(shipdate[3]+45000), y=6.75, label="Ships", color="#636363") + 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
