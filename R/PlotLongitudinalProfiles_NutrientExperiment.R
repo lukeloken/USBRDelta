@@ -121,6 +121,10 @@ RTMC_df[,2:ncol(RTMC_df)]<-sapply(RTMC_df[,2:ncol(RTMC_df)], as.numeric)
 #Get rid of entire rows when any data are NA
 RTMC_df_good<-RTMC_df[is.finite(rowMeans(RTMC_df[,2:ncol(RTMC_df)])),]
 
+#Delete oxygen data from first day (cap was over sensor)
+RTMC_df_good$EXODOmgL[which(RTMC_df_good$TIMESTAMP<=as.POSIXct("2018-09-27 00:00:01", tz='America/Los_Angeles'))]<-NA
+
+
 #Data limits
 datalimits=data.frame(var=names(RTMC_df_good)[2:ncol(RTMC_df_good)], min=NA, max=NA)
 datalimits$min=c(38.342,-121.645,15,400,6,-180, 6,40,-1, -1, -2)
