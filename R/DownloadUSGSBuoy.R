@@ -22,4 +22,6 @@ RawData$site_no <- factor(RawData$site_no, siteNumbers)
 #For one station use the Hydro dataset
 RawData$DO_Inst[which(RawData$site_no=="11455142")]<-RawData$DWS.BOR...HYDRO.PROJECT._DO_Inst[which(RawData$site_no=="11455142")]
 
+RawData$SpecCond_Inst[which(RawData$site_no=="11455142")]<-RawData$DWS.BOR...HYDRO.PROJECT._SpecCond_Inst[which(RawData$site_no=="11455142")]
+
 # plot(RawData$dateTime, RawData$DO_Inst, type='l')
