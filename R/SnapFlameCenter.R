@@ -13,41 +13,50 @@ library(gstat)
 
 source('R/VariogramFunctions.R')
 
-#Code to calcualte semivariance for CH4 in Wingra Creek
+dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 
-flame_dir<-"C:/Dropbox/FLAME_WisconsinRivers/Data/2017-10-06_WingraCreek"
-flame_data<-readOGR("C:/Dropbox/FLAME_WisconsinRivers/Data/2017-10-06_WingraCreek/ProcessedData", "2017-10-06_WingraCreek_07_ShapefileCleaned" )
+#Where spatial data are
+Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
 
-flame_data$DateTime<-as.POSIXct(flame_data$dt_tm, format='%Y-%m-%d %H:%M:%S', tz='UTC')
-WingraCreekLine<-readOGR("C:/Dropbox/ArcGIS", "WingraCreekFlowLine")
+#Code to create a route feature of the ship channel
+
+SSCLine<-readOGR(Arc_dir, "ShipChannelLine")
+projection = "+init=epsg:26910"
+
+# Transform line into UTM's (zone 10, for California). This way distance is in meters (m)
+SSCLine_UTM<-spTransform(SSCLine, CRS(projection))
+
+SSCNetwork<-line2network(Arc_dir, "ShipChannelLine", reproject=projection)
+SSCNetwork_clean<-cleanup(SSCNetwork)
+
+plot(SSCNetwork_clean)
+str(SSCNetwork_clean)
+
+saveRDS(SSCNetwork_clean, file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.RDS'))
+
+#End
+
+
+flame_dir<-"C:/Dropbox/USBR Delta Project/Data/NutrientExperiment/LongitudinalProfiles"
+list.files(flame_dir)
+flame_data<-readOGR(flame_dir, "LongitudinalProfile_2018-10-03" )
+
+flame_data$TIMESTAMP<-as.POSIXct(flame_data$TIMESTAMP, format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
+
 
 # plot(WingraCreekLine)
 # 
 # plot(flame_data, add=T)
 
-projection = "+init=epsg:3071"
 
 # projection = "+proj=utm +zone=15 ellps=WGS84"
 
-# Transform lakebase and outline into UTM's. This way distance is in meters (m)
-WingraCreekLine_UTM<-spTransform(WingraCreekLine, CRS(projection))
+
 flame_data_UTM<-spTransform(flame_data, CRS(projection))
-# 
-# flame_snapped<-snapPointsToLines(flame_data_UTM, WingraCreekLine_UTM, maxDist = 100, withAttrs=T)
-# 
-# plot(flame_snapped)
-# plot(WingraCreekLine_UTM, add=T, col='blue', lwd=3)
-# plot(flame_data_UTM, col='red', pch=5, add=T, cex=0.5)
 
+flame_snapped<-xy2segvert(x=coordinates(flame_data_UTM)[,1], y=coordinates(flame_data_UTM)[,2], rivers=SSCNetwork_clean)
 
-
-WingraNetwork<-line2network("C:/Dropbox/ArcGIS", "WingraCreekFlowLine", reproject=projection)
-WingraNetwork_clean<-cleanup(WingraNetwork)
-
-plot(WingraNetwork_clean)
-str(WingraNetwork_clean)
-
-flame_snapped<-xy2segvert(x=coordinates(flame_data_UTM)[,1], y=coordinates(flame_data_UTM)[,2], rivers=WingraNetwork_clean)
+Dist<-unlist(SSCNetwork_clean$cumuldist)[flame_snapped$vert]
 
 str(flame_snapped)
 
@@ -55,7 +64,8 @@ hist(flame_snapped$snapdist)
 
 flame_data_UTM$Dist<-flame_snapped$vert
 
-plot(flame_data_UTM$Dist, flame_data_UTM$CH4)
+plot(flame_data_UTM$Dist, flame_data_UTM$EXOSpCn)
+plot(flame_data_UTM$Dist, flame_data_UTM$NO3_uM, pch=16)
 
 
 
