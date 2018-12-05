@@ -29,11 +29,22 @@ library(RColorBrewer)
 library(viridis)
 library(stringr)
 
+library(RcppRoll)
+library(ggpubr)
+
 
 source('R/ImageScale.R')
 
 #shapefile outline of north delta major water bodies
 outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
+
+SSCNetwork_clean <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.rds'))
+
+SSCSites <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/SSCSites.rds'))
+CloseSites<-SSCSites[SSCSites$Station %in% c('NL 70', 'NL 74', 'NL 76'),]
+
+#UTM zone 10 for linear reference
+projection = "+init=epsg:26910"
 
 # # Google background map 
 map<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
@@ -43,7 +54,7 @@ map2<-GetMap(center=c(38.51, -121.57), size=c(240,480), zoom=12, maptype=c("sate
 
 
 #Experiment with ggmap
-map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, maptype = "satellite")
+map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, maptype = "satellite", key=GoogleAPIkey )
 color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, begin=.25, end=.98))), bias=1)
 # colours = color.palette(12)
 
@@ -123,6 +134,7 @@ RTMC_df_good<-RTMC_df[is.finite(rowMeans(RTMC_df[,2:ncol(RTMC_df)])),]
 
 #Delete oxygen data from first day (cap was over sensor)
 RTMC_df_good$EXODOmgL[which(RTMC_df_good$TIMESTAMP<=as.POSIXct("2018-09-27 00:00:01", tz='America/Los_Angeles'))]<-NA
+RTMC_df_good$EXOODO[which(RTMC_df_good$TIMESTAMP<=as.POSIXct("2018-09-27 00:00:01", tz='America/Los_Angeles'))]<-NA
 
 
 #Data limits
@@ -169,6 +181,19 @@ proj4string(geo) <- proj4string(outline)
 
 geo$Date<-as.Date(geo$TIMESTAMP_round)
 
+#Linear Reference
+geo_UTM<-spTransform(geo, CRS(projection))
+
+geo_snapped<-xy2segvert(x=coordinates(geo_UTM)[,1], y=coordinates(geo_UTM)[,2], rivers=SSCNetwork_clean)
+
+geo$LinearDist<-unlist(SSCNetwork_clean$cumuldist)[geo_snapped$vert]
+geo$LinearDist_km<-geo$LinearDist/1000
+
+
+# plot(geo$LinearDist, geo$EXOSpCn)
+# plot(geo$LinearDist, geo$NO3_uM, pch=16)
+
+
 geo_list<-apply(field_df[c('DateTime_start', 'DateTime_end')], 1, function (x) geo@data[geo$TIMESTAMP_round>x[1] & geo$TIMESTAMP_round<x[2],])
 
 site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T) 
@@ -176,6 +201,7 @@ site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T)
 site_medians_df<-ldply(site_medians, data.frame)
 
 field_df_withFlame<-cbind(field_df, site_medians_df)   
+
 
 write.table(field_df_withFlame, file=paste0(dropbox_dir, '/Data/NutrientExperiment/FlameSiteData.csv'), row.names=F, sep=',')
 
@@ -233,7 +259,7 @@ for (event_i in 1:length(unique(field_df$Date))){
     geo_pm_clip<-geo_pm
   }
   
-  
+
   #Save shapefile
   writeOGR(geo_i, dsn=paste0(dropbox_dir, "/Data/NutrientExperiment/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
   
@@ -261,88 +287,139 @@ for (event_i in 1:length(unique(field_df$Date))){
         am$Color<-col_colors[1:nrow(am)]
         pm$Color<-col_colors[(nrow(am)+1):length(col_colors)]
         
-        
+        am$col_values<-col_values[1:nrow(am)]
+        am$color2<-color.palette(n=B)[am$col_values]
+
+
+
         #Plot single image of all data
         png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfiles/", date, '_', name, ".png", sep=""), res=300, width=4,height=9, units="in")
-        
+
         layout(matrix(c(1,2), nrow=2, ncol=1), widths=c(4), heights=c(8,1))
-        
+
         breaks <- seq(min(a@data[name], na.rm = TRUE), max(a@data[name], na.rm = TRUE),length.out=100)
         par(mar=c(1,1,1,1))
-        
+
         PlotOnStaticMap(map, lat=a$Latitude, lon=a$Longitude, col=a$Color, pch=16, FUN=points)
-        
+
         legend('topleft', inset=0.01, date, box.lty= 0, bty='n', bg='white', date, text.col='white')
-        
+
         #Add scale
         par(mar=c(4,1,0,1), bg=NA)
         image.scale((a@data), col=colors[1:(B-1)], breaks=breaks-1e-8,axis.pos=1)
         mtext((paste(name)), 1, 2.5, cex=2)
         #abline(v=levs)
         box()
-        
+
         dev.off()
-        
+
         #Side by Side plots for AM and PM longitudinal profiles
         png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels/", date, '_', name, ".png", sep=""), res=300, width=8,height=9.25, units="in")
-        
+
         # layout(matrix(c(1,2,3,3), nrow=2, ncol=2, byrow=TRUE), widths=c(4,4), heights=c(10,1))
-        
+
         layout(matrix(c(1,2,3,3), 2, 2, byrow=T), widths=c(4,4), heights=c(8,1.25))
-        
+
         breaks <- seq(min(a@data[name], na.rm = TRUE), max(a@data[name], na.rm = TRUE),length.out=100)
         par(mar=c(1,1,1,1))
-        
+
         PlotOnStaticMap(map2, lat=am$Latitude, lon=am$Longitude, col=am$Color, pch=16, FUN=points, cex=3)
-        
+
         legend('topleft', inset=0.01, legend=c('AM'), box.lty= 0, bty='n', bg='white', text.col='white', cex=2)
-        
+
         box(which='plot', lwd=2)
-        
+
         PlotOnStaticMap(map2, lat=pm$Latitude, lon=pm$Longitude, col=pm$Color, pch=16, FUN=points, cex=3)
         box(which='plot', lwd=2)
-        
+
         legend('topleft', inset=0.01, legend=c('PM'), box.lty= 0, bty='n', bg='white', text.col='white', cex=2)
-        
+
         #Add scale
         par(mar=c(4.5,3,0,3), bg='white')
         image.scale((a@data), col=colors[1:(B-1)], breaks=breaks-1e-8,axis.pos=1, las=1, cex.axis=2)
         mtext((paste(name)), 1, 3, cex=2)
         #abline(v=levs)
         box()
+
+        dev.off()
+
+        #GGMAP side by side, better quality
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels_ggmap/", date, '_', name, ".png", sep=""), res=300, width=8,height=8, units="in")
+
+        commonTheme_map<-list(
+          theme(axis.text.x=element_blank(), axis.text.y=element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0, 0, 0, 0), "cm")),
+          scale_colour_gradientn(colours = color.palette(n=B), limits=range(c(am@data[,name], pm@data[,name]), na.rm=T)),
+          theme(legend.position = c(.98, .04), legend.justification = c(1,0), legend.background = element_rect(fill = 'white', colour='black'),
+                legend.text=element_text(size=10),legend.title=element_text(size=12), legend.key.height = unit(.5, "cm"),
+                legend.key.width = unit(1, "cm"), panel.border=element_rect(fill=NA, colour='black'), legend.direction="horizontal"),
+          guides(colour=guide_colorbar(title.position = 'bottom', title.hjust=0.5, title=name, ticks.colour = "black", ticks.linewidth = 1))
+        )
+
+
+        map_am<-  ggmap(map_test) +
+          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'AM'), size = 10, color='white') +
+          geom_point(aes_string(x = am$Longitude, y = am$Latitude, colour = as.character(name)), data = am@data, alpha = .2, size=4) +
+          commonTheme_map +
+          theme(legend.position = 'none')
+
+
+        map_pm<-ggmap(map_test) +
+          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'PM'), size = 10, color='white') +
+          geom_point(aes_string(x = pm$Longitude, y = pm$Latitude, colour = as.character(name)), data = pm@data, alpha = .2, size=4) +
+          commonTheme_map
+
+        grid.arrange(map_am, map_pm, top=textGrob(as.character(date), gp=gpar(fontsize=18)), ncol=2)
+
+        dev.off()
+
+        #Linear Distance
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LinearDistance/", date, '_', name, ".png", sep=""), res=300, width=6,height=4, units="in")
+        
+        layout(matrix(c(1), 1, 1, byrow=T))
+        par(mar=c(4,4,1,1))
+        par(mgp=c(2,0.5,0), las=0,tck=-0.02, pch=16)
+        color_lines<-c("#4daf4a", "#984ea3")
+        ylim=c(min(geo_i@data[,name], na.rm=T), extendrange(geo_i@data[,name], f=0.07)[2])
+        xlim=range(geo_i$LinearDist)/1000
+        plot((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], xlab='Linear distance (km)', ylab='', ylim=ylim, xlim=xlim, las=1, type='n')
+        
+        abline(v=CloseSites$Dist/1000, lty=3, col='darkgrey')
+        text(CloseSites$Dist/1000, par('usr')[4], CloseSites$Station, pos=1, cex=0.8, col='darkgrey')
+        
+        points((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], col=color_lines[1], cex=0.5)
+        points(geo_pm_clip$LinearDist/1000, geo_pm_clip@data[,name], col=color_lines[2], cex=0.5)
+        mtext(name, 2, 2.5)
+        legend('topleft', inset=0.0, c('AM', 'PM'), lty=0, pch=NA, text.col=color_lines, bty='n', cex=.8, ncol=2)
+        
+        box(which='plot')
         
         dev.off()
         
+        #Stadler style figure
         #GGMAP side by side, better quality
-        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesTwoPanels_ggmap/", date, '_', name, ".png", sep=""), res=300, width=8,height=8, units="in")
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment/LongitudinalProfilesStadlerStyle/", date, '_', name, ".png", sep=""), res=300, width=6,height=8, units="in")
         
-        commonTheme_map<-list(
-          theme(axis.text.x=element_blank(), axis.text.y=element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0, 0, 0, 0), "cm")), 
-          scale_colour_gradientn(colours = color.palette(n=B), limits=range(c(am@data[,name], pm@data[,name]), na.rm=T)),
-          theme(legend.position = c(.98, .04), legend.justification = c(1,0), legend.background = element_rect(fill = 'white', colour='black'),
-                legend.text=element_text(size=10),legend.title=element_text(size=12), legend.key.height = unit(.5, "cm"), 
-                legend.key.width = unit(1, "cm"), panel.border=element_rect(fill=NA, colour='black'), legend.direction="horizontal"),
-          guides(colour=guide_colorbar(title.position = 'bottom', title.hjust=0.5, title=name, ticks.colour = "black", ticks.linewidth = 1)) 
-        )
-        
-        
-        map_am<-  ggmap(map_test) + 
-          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'AM'), size = 10, color='white') +
-          geom_point(aes_string(x = am$Longitude, y = am$Latitude, colour = as.character(name)), data = am@data, alpha = .2, size=4) + 
-          commonTheme_map + 
-          theme(legend.position = 'none') 
-        
-        
-        map_pm<-ggmap(map_test) + 
-          geom_text(aes(x = (-121.61), y = (38.575), vjust=1, hjust=0, label = 'PM'), size = 10, color='white') +
-          geom_point(aes_string(x = pm$Longitude, y = pm$Latitude, colour = as.character(name)), data = pm@data, alpha = .2, size=4) + 
+        image1<-ggmap(map_test) +
+          geom_point(aes_string(x = am$Longitude, y = am$Latitude, colour = as.character(name)), data = am@data, alpha = .2, size=4) +
           commonTheme_map
+      
+        image2<-ggplot(aes_string(y = "LinearDist_km", x = name, fill = "col_values"), data =am@data ) + 
+          labs(x=name, y="Distance (km)") + 
+          theme_classic2() + 
+          theme(plot.margin=unit(c(0,.1,.1,.05), "in")) +
+          theme(panel.border=element_rect(fill=NA, colour='black')) + 
+          # theme(panel.background = element_rect(fill = "white", colour = "grey50")) + 
+          scale_y_reverse(position = 'right', limits=c(16,2.8)) +
+          theme(legend.position='none') + 
+          geom_point(color=am@data$color2, size=2)
+          # scale_colour_manual(values = color.palette(n=B))
+        # scale_colour_gradientn(colours = color.palette(n=B), limits=range(c(am@data[,name], pm@data[,name]), na.rm=T))
+          
+        grid.arrange(image1, image2, ncol=2, widths=c(2,1))
         
-        grid.arrange(map_am, map_pm, top=textGrob(as.character(date), gp=gpar(fontsize=18)), ncol=2)
-        
-        dev.off()  
-        
-        
+        dev.off()
+
+          
       }
     }
   }
