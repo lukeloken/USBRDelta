@@ -23,6 +23,8 @@ Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
 SSCLine<-readOGR(Arc_dir, "ShipChannelLine")
 projection = "+init=epsg:26910"
 
+SSCSites<-readOGR(Arc_dir, "DeltaSites")
+
 # Transform line into UTM's (zone 10, for California). This way distance is in meters (m)
 SSCLine_UTM<-spTransform(SSCLine, CRS(projection))
 
@@ -32,40 +34,25 @@ SSCNetwork_clean<-cleanup(SSCNetwork)
 plot(SSCNetwork_clean)
 str(SSCNetwork_clean)
 
-saveRDS(SSCNetwork_clean, file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.RDS'))
+saveRDS(SSCNetwork_clean, file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.rds'))
 
 #End
 
 
-flame_dir<-"C:/Dropbox/USBR Delta Project/Data/NutrientExperiment/LongitudinalProfiles"
-list.files(flame_dir)
-flame_data<-readOGR(flame_dir, "LongitudinalProfile_2018-10-03" )
-
-flame_data$TIMESTAMP<-as.POSIXct(flame_data$TIMESTAMP, format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
-
-
-# plot(WingraCreekLine)
-# 
-# plot(flame_data, add=T)
-
-
 # projection = "+proj=utm +zone=15 ellps=WGS84"
 
+SSCSites<-readOGR(Arc_dir, "DeltaSites")
 
-flame_data_UTM<-spTransform(flame_data, CRS(projection))
+SSCSites_UTM<-spTransform(SSCSites, CRS(projection))
 
-flame_snapped<-xy2segvert(x=coordinates(flame_data_UTM)[,1], y=coordinates(flame_data_UTM)[,2], rivers=SSCNetwork_clean)
+SSCSites_snapped<-xy2segvert(x=coordinates(SSCSites_UTM)[,1], y=coordinates(SSCSites_UTM)[,2], rivers=SSCNetwork_clean)
 
-Dist<-unlist(SSCNetwork_clean$cumuldist)[flame_snapped$vert]
+SSCSites$Dist<-unlist(SSCNetwork_clean$cumuldist)[SSCSites_snapped$vert]
 
-str(flame_snapped)
+saveRDS(SSCSites, file=paste0(dropbox_dir, '/Data/SpatialData/SSCSites.rds'))
 
-hist(flame_snapped$snapdist)
+#End
 
-flame_data_UTM$Dist<-flame_snapped$vert
-
-plot(flame_data_UTM$Dist, flame_data_UTM$EXOSpCn)
-plot(flame_data_UTM$Dist, flame_data_UTM$NO3_uM, pch=16)
 
 
 
