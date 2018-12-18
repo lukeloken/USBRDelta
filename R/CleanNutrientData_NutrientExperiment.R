@@ -29,16 +29,29 @@ names(nutrient_df)<-nutrient_df_names
 rm(nutrient_df_names)
 
 
+#TSS data
+tss_df<-read_excel(paste0(google_dir, "/Data/NutrientExperiment/WaterChemistry/SSCN_TSSData.xlsx"), skip=1)
+
+tss_df_names<-names(read_excel(paste0(google_dir, "/Data/NutrientExperiment/WaterChemistry/SSCN_TSSData.xlsx")))
+
+names(tss_df)[1:7]<-tss_df_names[1:7]
+rm(tss_df_names)
+
+tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SampleLabel', 'TSS', 'VSS')]
+
 #Clean Times
 nutrient_df$Date<-as.Date(nutrient_df$Date)
+tss_df$Date<-as.Date(tss_df_sub$Date)
+
+nut_tss_df<-full_join(nutrient_df, tss_df_sub)
 
 #Add site names
 sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
 
-nutrient_df$Site<-sitetable$site1[match(nutrient_df$Site, sitetable$site3)]
+nut_tss_df$Site<-sitetable$site1[match(nut_tss_df$Site, sitetable$site3)]
 
-head(as.data.frame(nutrient_df))
+nut_tss_df<-  nut_tss_df[,-grep('X__', names(nut_tss_df))]
 
-nutrient_df<-  nutrient_df[,-grep('X__', names(nutrient_df))]
+head(as.data.frame(nut_tss_df))
 
-write.table(nutrient_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), row.names=F, sep=',')
+write.table(nut_tss_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), row.names=F, sep=',')
