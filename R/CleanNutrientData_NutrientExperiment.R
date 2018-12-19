@@ -4,6 +4,7 @@
 #Code to download meta and field sheet data
 
 library(readxl)
+library(dplyr)
 library(plyr)
 library(viridis)
 library(lubridate)
@@ -39,19 +40,31 @@ rm(tss_df_names)
 
 tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SampleLabel', 'TSS', 'VSS')]
 
+#Oxygen18data
+O18<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenSadro_ExetData_decomposed.txt"), sep='\t', skip=71, header=T)
+
+O18$SampleLabel<-sub('_[ab]', '', O18$Group.1 )
+
+O18avg<- O18 %>%
+  select(-Group.1, -flag.smallArea32) %>%
+  group_by(SampleLabel) %>%
+  summarize_all(mean)
+
 #Clean Times
 nutrient_df$Date<-as.Date(nutrient_df$Date)
-tss_df$Date<-as.Date(tss_df_sub$Date)
+tss_df_sub$Date<-as.Date(tss_df_sub$Date)
 
 nut_tss_df<-full_join(nutrient_df, tss_df_sub)
+
+nut_tss_O18_df<-left_join(nut_tss_df, O18avg, by='SampleLabel')
 
 #Add site names
 sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
 
-nut_tss_df$Site<-sitetable$site1[match(nut_tss_df$Site, sitetable$site3)]
+nut_tss_O18_df$Site<-sitetable$site1[match(nut_tss_O18_df$Site, sitetable$site3)]
 
-nut_tss_df<-  nut_tss_df[,-grep('X__', names(nut_tss_df))]
+nut_tss_O18_df<-  nut_tss_O18_df[,-grep('X__', names(nut_tss_O18_df))]
 
-head(as.data.frame(nut_tss_df))
+head(as.data.frame(nut_tss_O18_df))
 
-write.table(nut_tss_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), row.names=F, sep=',')
+write.table(nut_tss_O18_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), row.names=F, sep=',')
