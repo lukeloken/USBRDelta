@@ -27,7 +27,7 @@ merge_df$Date<-as.Date(merge_df$Date)
 merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
 
-metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'SecchiDepth',  'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'TN.ppm', 'TDN.ppm', 'TP.ppm')
+metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'TSS', 'VSS', 'SecchiDepth',  'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'TN.ppm', 'TDN.ppm', 'TP.ppm', "d180_02.vs.VSMOW")
 
 
 
@@ -100,6 +100,40 @@ grid.arrange(p2)
 
 dev.off()
 
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vDO.png'), width=4, height=5, units='in', res=200)
+
+ggplot(merge_df, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
+  labs(x='Dissolved oxygen (% sat)', y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
+  geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
+  geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  scale_shape_manual(values=rep(21:25, 5)) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
+  guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vTurb.png'), width=4, height=5, units='in', res=200)
+
+ggplot(merge_df, aes(x=log10(EXOTurbFNU), y=d180_02.vs.VSMOW, group=Site))+
+  labs(x=expression(paste(log[10], ' of Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
+  # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
+  geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  scale_shape_manual(values=rep(21:25, 5)) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
+  guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
+
+dev.off()
 
 #End
 
