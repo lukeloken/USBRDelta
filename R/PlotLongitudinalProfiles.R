@@ -20,6 +20,8 @@ library(RODBC)
 library(RgoogleMaps)
 
 source('R/ImageScale.R')
+source('R/SensorCleanLongitudinal.R')
+ruletable<-read.csv('SensorQCRulesLongitudinal.csv', header=T, stringsAsFactors = F)
 
 #shapefile outline of north delta major water bodies
 outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
@@ -36,7 +38,7 @@ mopedfiles<-list.files(paste0(google_dir, "/Data/LongitudinalProfiles"))
 mopedfiles<-mopedfiles[grep('.mdb', mopedfiles)]
 
 # Or you can indicate a single file
-mopedfiles<-c("moped_10_18_2018.mdb")
+mopedfiles<-c("moped_12_20_2018.mdb")
 
 #Plotting parameters
 B<-100 #Number of color breaks
@@ -50,13 +52,48 @@ for (file_nu in 1:length(mopedfiles)){
   allvars <- sqlFetch(conn, "Constituent") 
   vars<-as.character(allvars$column_name[allvars$Parent_table == 'Horizontal'])
   vars<-vars[!is.na(vars)]
+  
+  gps<-sqlFetch(conn, "GPS")
+  gps<-gps[c('Current_Date', 'GPS_Time', 'Depth', 'Cvt_Lat',  'Cvt_Long')]
+  
   close(conn) 
   
-  head(df)
-  geo<-df[!is.na(df$Latitude) & !is.na(df$Longitude),]
-  Date<-as.Date(median(df$Current_Date, na.rm=T))
+  summary(df)
+  summary(gps)
+  
+
+  df$DateTime<-as.POSIXct(paste(df$Current_Date, strftime(df$Current_Time, format="%H:%M:%S")))
+  
+  df2<-subset(df, select=-c(Data_ID, Extension, Cruise_ID, Cruise_Instance_ID, Current_Time, Current_Date, RTM_Number))
+  
+  df3<-df2[order(df2$DateTime),]
+  
+  Date<-as.Date(median(df3$DateTime, na.rm=T))
+  
+  gps$DateTime<-as.POSIXct(paste(as.Date(gps$Current_Date), strftime(gps$GPS_Time, format="%H:%M:%S")))
+  
+  gps2<-gps[which(as.Date(gps$DateTime) == Date),]
+  gps2$Depth[which(gps2$Depth==0)]<-NA
+  
+  gps3<-subset(gps2, select=c(DateTime, Cvt_Lat, Cvt_Long))
+  
+  join_df<-left_join(gps3, df3, by='DateTime')
+  
+  geo<-join_df[!is.na(join_df$Latitude) & !is.na(join_df$Longitude),]
+  
+  geo2<-subset(geo, select=-c(Cvt_Lat, Cvt_Long))
+  
+  
+  #move this to earlier once sensor clean rules are determined
+  ruletable<-read.csv('SensorQCRulesLongitudinal.csv', header=T, stringsAsFactors = F)
+  
+  dfclean<-sensorclean(geo2, ruletable)
+
+
   coordinates(geo) <- ~Longitude + Latitude
   proj4string(geo) <- proj4string(outline)
+  
+  
   
   writeOGR(geo, dsn=paste0(dropbox_dir, "/Data/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", Date), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
   
