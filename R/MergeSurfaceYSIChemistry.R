@@ -28,8 +28,8 @@ bigdf <- read.csv(file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSISurface.cs
 bigdf$Date<-as.Date(bigdf$Date, format='%Y-%m-%d')
 
 #Data file as two rows as a header with mixed units/labels
-df1<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients August 2018 Update.xlsx'), skip=1)
-df2<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients August 2018 Update.xlsx'), skip=0)
+df1<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019.xlsx'), skip=1)
+df2<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019.xlsx'), skip=0)
 
 names1A<-gsub("\\_.*","",names(df1))
 names1B<-gsub("X", '', names1A)
@@ -51,7 +51,7 @@ df_sub_noNA<-df_sub[!is.na(df_sub$Date),]
 
 unique(df_sub_noNA$Station)
 
-goodstations<-c('NL 16', 'NL 34', 'NL 44', 'NL 56', 'NL 62', 'NL 66', 'NL 70', 'NL 74', 'NL 76', 'NL 84', 'WSP', 'PS', 'RB 34')
+goodstations<-c('NL 16', 'NL 34', 'NL 44', 'NL 56', 'NL 62', 'NL 64', 'NL 66', 'NL 70', 'NL 74', 'NL 76', 'NL 84', 'WSP', 'PS', 'RB 34')
 
 df_stations<-df_sub_noNA[df_sub_noNA$Station %in% goodstations,]
 df_stations$Station<-gsub('PS', 'Pro', df_stations$Station)
@@ -65,3 +65,4 @@ merge_df<-full_join(df_stations, bigdf)
 head(merge_df)
 
 write.csv(merge_df, file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSIChemSurface.csv'), row.names=F)
+
