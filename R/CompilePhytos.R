@@ -63,8 +63,8 @@ names74<-c(74, AllStations[grep('74', AllStations)])
 names76<-c(76, AllStations[grep('76', AllStations)])
 names84<-c(84, AllStations[grep('84', AllStations)])
 
-namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",  "Prospect AM")
-namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P." )
+namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM")
+namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port")
 
 names_list<-list(names16, names34, names44, names56, names62, names64, names66, names70, names74, names76, names84, namesPro, namesWSP)
 
@@ -116,3 +116,6 @@ Zoo_df<-ldply(Zoo_list, data.frame)
 Zoo_df$species.biomass..µg.d.w..L.<-as.numeric(Zoo_df$species.biomass..µg.d.w..L.)
 
 Zoo_df$biomass.factor <-as.numeric(Zoo_df$biomass.factor)
+
+
+unique(Zoo_df$bottle.ID)
