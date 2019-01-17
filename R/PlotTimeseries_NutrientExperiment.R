@@ -100,6 +100,9 @@ grid.arrange(p2)
 
 dev.off()
 
+ # #############
+#Scatterplots
+# ##############
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vDO.png'), width=4, height=5, units='in', res=200)
 
 ggplot(merge_df, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
@@ -117,6 +120,22 @@ ggplot(merge_df, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
 
 dev.off()
 
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vO2Ar.png'), width=4, height=5, units='in', res=200)
+
+ggplot(merge_df, aes(x=O2.Ar, y=d180_02.vs.VSMOW, group=Site))+
+  labs(x=expression(paste(O[2], ":Ar (ratio)")), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
+  # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
+  geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  scale_shape_manual(values=rep(21:25, 5)) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
+  guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
+
+dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vTurb.png'), width=4, height=5, units='in', res=200)
 
@@ -134,6 +153,21 @@ ggplot(merge_df, aes(x=log10(EXOTurbFNU), y=d180_02.vs.VSMOW, group=Site))+
 
 
 dev.off()
+
+
+
+ggplot(merge_df, aes(x=O2.Ar, y=d180_02.vs.air, group=Site))+
+  labs(x=expression(paste(O[2], ":Ar (ratio)")), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
+  # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
+  geom_hline(yintercept=0, linetype="dashed", color = "grey", size=1) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  scale_shape_manual(values=rep(21:25, 5)) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
+  guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
 
 #End
 
