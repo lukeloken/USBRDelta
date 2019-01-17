@@ -221,11 +221,65 @@ p2_box<-grid.arrange(grobs=box_list, ncol=2, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByZoneByMonth.png'), width=8, height=5, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationAllMonths.png'), width=8, height=5, units='in', res=200)
 
-grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 1))
+grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 2),  top='All months')
 
 dev.off()
+
+
+#Summer only
+#Boxplots by station
+colors<-color.palette(length(unique(merge_df$Station)))
+
+
+#Common theme for all boxplots
+commonTheme_boxplot<-list(
+  scale_fill_manual(values = colors),
+  scale_colour_manual(values = colors),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none"),
+  geom_boxplot(outlier.size=0.5, na.rm=T)
+)
+
+# Loop through metrics and make a gg object
+box_list<-list()
+plot_nu<-1
+for (plot_nu in 1:length(variables)){
+  # Pick data
+  metric<-variables[plot_nu]
+  #Plot
+  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Station', fill = 'Station'), data = merge_df[merge_df$Month %in% month.abb[6:9],]) + 
+    labs(x='Station', y=metric) +
+    commonTheme_boxplot
+  
+  if (variables[plot_nu ]=="Chloro.appb"){
+    box_list[[plot_nu]]<-   box_list[[plot_nu]] + 
+      scale_y_log10()
+  }
+}
+
+
+
+#Add and extract legend from first plot
+box_withlegend <- box_list[[1]] + 
+  theme(legend.position='bottom') 
+
+mylegend_box<-g_legend(box_withlegend)
+
+
+# arrange plots without legend
+p2_box<-grid.arrange(grobs=box_list, ncol=2, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationSummerMonths.png'), width=8, height=5, units='in', res=200)
+
+grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 2), top='June through Sept')
+
+dev.off()
+
+
 
 
 
