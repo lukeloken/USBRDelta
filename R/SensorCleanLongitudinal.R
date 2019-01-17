@@ -5,9 +5,8 @@
 
 library(devtools)
 library(dplyr)
-# install.packages("sensorQC",
-#                  repos = c("http://owi.usgs.gov/R","http://cran.rstudio.com/"),
-#                  dependencies = TRUE)
+# install.packages("sensorQC", repos = c("http://owi.usgs.gov/R","http://cran.rstudio.com/"), dependencies = TRUE)
+
 library(sensorQC)
 
 # ==========================================================
