@@ -36,6 +36,7 @@ for (File_i in 1:length(PhytoFiles)){
 
 Phyto_df<-ldply(Phyto_list, data.frame)
 
+
 head(Phyto_df)
 head(Phyto_list[[1]])
 (Phyto_list)
@@ -78,3 +79,40 @@ head(Phyto_df)
 unique(Phyto_df$STATION[is.na(Phyto_df$STATIONclean)])
 
 write.csv(Phyto_df, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoCountsAll.csv', sep='/'))
+
+
+
+
+#Zooplankton
+
+ZooFiles<-list.files(paste(google_dir, 'Data', 'Zoops', sep='/'))
+ZooFiles<-ZooFiles[grep('.xls', ZooFiles)]
+ZooFiles<-ZooFiles[-grep('SSC Zoops Date comparison', ZooFiles)]
+
+ZooKeepNames<-c('bottle ID', 'date', 'genus', 'species', 'division', 'notes', "tow length (m)", "net radius (cm)", "tow volume filtered (L)", "total sample volume (ml)", "aliquot (ml)", "count factor", "#individuals counted", "# / L" , "biomass factor", "species biomass (µg d.w./L)")
+
+File_i=1
+Zoo_list<-list()
+for (File_i in 1:length(ZooFiles)){
+  col1<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=0)[,1]
+  
+  headerrow<-which(col1=='bottle ID')
+  if(length(headerrow)==0){
+    zoo_i<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'))
+  } else if (length(headerrow)>0){
+    zoo_i<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=(headerrow))
+  }
+  
+  zoo_i<-zoo_i[,intersect(ZooKeepNames, names(zoo_i))]
+  
+  zoo_i<-zoo_i[which(!is.na(zoo_i$`bottle ID`) | !is.na(zoo_i$date)),]
+  zoo_i$date<-as.Date(zoo_i$date, tryFormats=c('%m/%d/%Y'))
+  
+  Zoo_list[[File_i]]<-zoo_i
+
+}
+
+Zoo_df<-ldply(Zoo_list, data.frame)
+Zoo_df$species.biomass..µg.d.w..L.<-as.numeric(Zoo_df$species.biomass..µg.d.w..L.)
+
+Zoo_df$biomass.factor <-as.numeric(Zoo_df$biomass.factor)
