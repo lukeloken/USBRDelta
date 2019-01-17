@@ -41,3 +41,5 @@ head(Phyto_list[[1]])
 (Phyto_list)
 
 Phyto_df$DATE<-as.Date(Phyto_df$SAMPLE)
+
+Phyto_df<-Phyto_df[which(!is.na(Phyto_df$STATION) | !is.na(Phyto_df$DATE)),]
