@@ -46,42 +46,6 @@ Phyto_df$DATE<-as.Date(Phyto_df$SAMPLE)
 Phyto_df<-Phyto_df[which(!is.na(Phyto_df$STATION) | !is.na(Phyto_df$DATE)),]
 
 
-#Rename stations
-AllStations<-unique(Phyto_df$STATION)
-
-greps<-c(16,34,44,56,62,64,66,70,74,76,84,'Pro', 'WSP')
-
-names16<-c(16, AllStations[grep('16', AllStations)])
-names34<-c(34, AllStations[grep('34', AllStations)])
-names44<-c(44, AllStations[grep('44', AllStations)])
-names56<-c(56, AllStations[grep('56', AllStations)])
-names62<-c(62, AllStations[grep('62', AllStations)])
-names64<-c(64, AllStations[grep('64', AllStations)])
-names66<-c(66, AllStations[grep('66', AllStations)])
-names70<-c(70, AllStations[grep('70', AllStations)])
-names74<-c(74, AllStations[grep('74', AllStations)])
-names76<-c(76, AllStations[grep('76', AllStations)])
-names84<-c(84, AllStations[grep('84', AllStations)])
-
-namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM")
-namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port")
-
-names_list<-list(names16, names34, names44, names56, names62, names64, names66, names70, names74, names76, names84, namesPro, namesWSP)
-
-Phyto_df$STATIONclean<-NA
-
-station<-1
-for (station in 1:length(names_list)){
-  Phyto_df$STATIONclean[which(Phyto_df$STATION %in% names_list[[station]])]<-names_list[[station]][1]
-}
-head(Phyto_df)
-
-unique(Phyto_df$STATION[is.na(Phyto_df$STATIONclean)])
-
-write.csv(Phyto_df, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoCountsAll.csv', sep='/'))
-
-
-
 
 #Zooplankton
 
@@ -118,4 +82,47 @@ Zoo_df$species.biomass..µg.d.w..L.<-as.numeric(Zoo_df$species.biomass..µg.d.w.
 Zoo_df$biomass.factor <-as.numeric(Zoo_df$biomass.factor)
 
 
-unique(Zoo_df$bottle.ID)
+
+#Rename phyto and zooplankton stations
+AllStations<-unique(c(Phyto_df$STATION, Zoo_df$bottle.ID))
+
+greps<-c(16,34,44,56,62,64,66,70,74,76,84,'Pro', 'WSP')
+
+names16<-c(16, AllStations[grep('16', AllStations)])
+names34<-c(34, AllStations[grep('34', AllStations)])
+names44<-c(44, AllStations[grep('44', AllStations)])
+names56<-c(56, AllStations[grep('56', AllStations)])
+names62<-c(62, AllStations[grep('62', AllStations)])
+names64<-c(64, AllStations[grep('64', AllStations)])
+names66<-c(66, AllStations[grep('66', AllStations)])
+names70<-c(70, AllStations[grep('70', AllStations)])
+names74<-c(74, AllStations[grep('74', AllStations)])
+names76<-c(76, AllStations[grep('76', AllStations)])
+names84<-c(84, AllStations[grep('84', AllStations)])
+
+namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM")
+namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port")
+
+names_list<-list(names16, names34, names44, names56, names62, names64, names66, names70, names74, names76, names84, namesPro, namesWSP)
+
+
+Phyto_df$STATIONclean<-NA
+Zoo_df$STATIONclean<-NA
+
+station<-1
+for (station in 1:length(names_list)){
+  Phyto_df$STATIONclean[which(Phyto_df$STATION %in% names_list[[station]])]<-names_list[[station]][1]
+  Zoo_df$STATIONclean[which(Zoo_df$bottle.ID %in% names_list[[station]])]<-names_list[[station]][1]
+}
+head(Phyto_df)
+head(Zoo_df)
+
+unique(Phyto_df$STATION[is.na(Phyto_df$STATIONclean)])
+unique(Zoo_df$bottle.ID[is.na(Zoo_df$STATIONclean)])
+
+
+write.csv(Phyto_df, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoCountsAll.csv', sep='/'), row.names=F)
+write.csv(Zoo_df, file=paste(dropbox_dir, 'Data', 'Zoops', 'ZoopsCountsAll.csv', sep='/'), row.names=F)
+
+
+
