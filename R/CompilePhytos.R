@@ -2,10 +2,7 @@
 
 library(readxl)
 library(plyr)
-library(viridis)
 library(lubridate)
-library(ggplot2)
-library(gridExtra)
 
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
@@ -71,6 +68,7 @@ for (File_i in 1:length(ZooFiles)){
   
   zoo_i<-zoo_i[which(!is.na(zoo_i$`bottle ID`) | !is.na(zoo_i$date)),]
   zoo_i$date<-as.Date(zoo_i$date, tryFormats=c('%m/%d/%Y'))
+  # zoo_i$date<-as.Date(zoo_i$date)
   
   Zoo_list[[File_i]]<-zoo_i
 
