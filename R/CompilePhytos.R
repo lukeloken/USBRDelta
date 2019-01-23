@@ -36,7 +36,6 @@ Phyto_df<-ldply(Phyto_list, data.frame)
 
 head(Phyto_df)
 head(Phyto_list[[1]])
-(Phyto_list)
 
 Phyto_df$DATE<-as.Date(Phyto_df$SAMPLE)
 
