@@ -157,6 +157,17 @@ ggplot(Phyto_summary_select, aes(x=STATIONclean, y=Total_BioVolume, fill=DIVISIO
 
 dev.off()
 
+png(paste0(dropbox_dir, "/Figures/Phytos/DensityBoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
+
+ggplot(Phyto_summary_select, aes(x=STATIONclean, y=Density, fill=DIVISION)) + 
+  labs(x='Station', y='Density') +
+  commonTheme_boxplot + 
+  scale_y_log10(limits=c(1, 100000000000)) +
+  # scale_y_continuous(limits=c(0, 100000000)) +
+  guides(fill=guide_legend(title="")) + 
+  geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
+
+dev.off()
 
 # Boxplots by month
 
