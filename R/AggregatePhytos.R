@@ -17,25 +17,22 @@ dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 
-
-Zoo_df <- read.csv(file=paste(dropbox_dir, 'Data', 'Zoops', 'ZoopsCountsAll.csv', sep='/'), stringsAsFactors = F)
-Zoo_df$Month<-month(Zoo_df$date)
-Zoo_df$date<-as.Date(Zoo_df$date)
-
-
-
 Phyto_df<-read.csv(file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoCountsAll.csv', sep='/'), stringsAsFactors = F)
-
 Phyto_df$DATE<-as.Date(Phyto_df$DATE)
 
+# ############################
+# Since data are 'count' data, need to populate dataset with zeros for any genus not counted in a given sample
+# ############################
+
+#All phyto species recorded
 GenusList<-unique(Phyto_df[c('GENUS', 'DIVISION')])
 
-
+#Unique combinations of Date and Site
 StationDates<-expand(Phyto_df, nesting(STATIONclean, DATE))
 
+#Create empty data.frame with every sample site/date with every phyto genus
 StationDatesGenus<-data.frame(matrix(ncol=4, nrow=nrow(StationDates)*nrow(GenusList)))
 names(StationDatesGenus)<-c("STATIONclean", "DATE", "GENUS", "DIVISION")
-
 StationDatesGenus$STATIONclean<-rep(StationDates$STATIONclean, each=nrow(GenusList))
 StationDatesGenus$DATE<-rep(StationDates$DATE, each=nrow(GenusList))
 
@@ -45,43 +42,26 @@ for (StationDate in 1:nrow(StationDates)){
   StationDatesGenus[((StationDate-1)*nrow(GenusList)+1):(StationDate*nrow(GenusList)),]$DIVISION<-GenusList$DIVISION
 }
 
+#Join empty data.frame with observations
 Phyto_CompleteList<-full_join(StationDatesGenus, Phyto_df)
+
+#Replace NAs with zeros (not observed)
 Phyto_CompleteList$TALLY[which(is.na(Phyto_CompleteList$SAMPLE))]<-0
 Phyto_CompleteList$DENSITY[which(is.na(Phyto_CompleteList$SAMPLE))]<-0
 Phyto_CompleteList$TOTAL.BV[which(is.na(Phyto_CompleteList$SAMPLE))]<-0
 
+
+# ##################################################
+# Summarize data by division then by calendar month
+# ##################################################
+
+# Modify columns structure to summarize and improve plotting
 Phyto_CompleteList$Month<-month(Phyto_CompleteList$DATE)
 
 Phyto_CompleteList$STATIONclean=factor(Phyto_CompleteList$STATIONclean, c('16', '34','44', 'Pro', '56','62', '64','66', '70','74', '76','84', 'WSP'))
 
-# 
-# 
-# Phyto_CompleteList<-complete(expand(Phyto_df, nesting(STATIONclean, DATE)), GENUS, fill=list(TALLY=0, DENSITY=0, TOTAL.BV=0))
-# 
-# Phyto_CompleteList<-complete(Phyto_df, STATIONclean, DATE, GENUS, fill=list(TALLY=0, DENSITY=0, TOTAL.BV=0))
-# 
-# 
-# Phyto_CompleteList$DIVISION<-GenusList$DIVISION[match(Phyto_CompleteList$GENUS, GenusList$GENUS)]
-# 
-# head(data.frame(Phyto_CompleteList), 30)
-
-
-# names(Phyto_CompleteList)
-# FullFactors<-expand.grid(DATE=unique(Phyto_df$DATE), GENUS=unique(Phyto_df$GENUS), STATIONclean=unique(Phyto_df$STATIONclean))
-# FullFactors$DIVISION
-# 
-# 
-# Expand_Phyto_df<-full_join(FullFactors, Phyto_df)
-# 
-# GenusList<-complete(Phyto_df, STATIONclean, DATE, GENUS)
-# 
-# Divisions<-data.frame(GENUS=unique(Phyto_df$GENUS))
-# Divisions$DIVISION<-Phyto_df$DIVISION[match(Divisions$GENUS, Phyto_df$GENUS) ]
-# 
-# Expand_Phyto_df$DIVISION<-Divisions$DIVISION[match(Expand_Phyto_df$GENUS, Divisions$GENUS)]
-# 
-# Expand_Phyto_df<-complete(Expand_Phyto_df, DATE, GENUS, STATIONclean, fill=list(TALLY=0, DENSITY=0, TOTAL.BV=0))
-
+#Save complete phyto record
+write.table(Phyto_CompleteList, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoAllGenus.csv', sep='/'), row.names=F, sep=',')
 
 Phyto_summary<- Phyto_CompleteList %>%
   select(STATIONclean,DATE, DIVISION, TOTAL.BV, DENSITY, Month) %>%
@@ -92,6 +72,14 @@ Phyto_summary<- Phyto_CompleteList %>%
 Phyto_summary_select<- Phyto_summary %>%
   filter(DIVISION %in% c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria") & STATIONclean != '64')
 
+Phyto_summary_spread <- Phyto_summary_select %>%
+  select(STATIONclean, DATE, DIVISION, Total_BioVolume) %>% 
+  spread(key = DIVISION, value= Total_BioVolume)
+
+#Export summary by division table to be merged with other datasets (Nutrients, Zoops, etc.)
+write.table(Phyto_summary_spread, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoSummaryDivision.csv', sep='/'), row.names=F, sep=',')
+
+#Summarize by month to look at seasonal patterns
 Phyto_monthly <- Phyto_summary_select %>% 
   group_by(STATIONclean, DIVISION, Month) %>%
   summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Density, na.rm=T))
@@ -102,6 +90,7 @@ Phyto_monthly$Mean_BioVolume_log[which(Phyto_monthly$Mean_BioVolume_log==0)]<-1
 Phyto_monthly$Median_BioVolume_log<-Phyto_monthly$Median_BioVolume
 Phyto_monthly$Median_BioVolume_log[which(Phyto_monthly$Median_BioVolume_log==0)]<-1000
 
+#Calculate total phyto biomass and summarize
 Phyto_total <- Phyto_summary %>% 
   group_by(STATIONclean, DATE) %>%
   summarize(Total_BioVolume=sum(Total_BioVolume, na.rm=T), Total_Density=sum(Density, na.rm=T), Month=median(Month)) %>%
@@ -111,18 +100,6 @@ Phyto_total_monthly <-Phyto_total  %>%
   group_by(STATIONclean, Month) %>%
   summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Total_Density, na.rm=T))
 
-
-# test<- complete(Phyto_monthly, STATIONclean, DIVISION, Month, fill = list(Total_BioVolume = 0, Density = 0))
-# 
-# complete(Phyto_monthly, Month, DIVISION, STATIONclean, fill=list(Density=9999))
-# 
-# 
-# Phyto_monthly_DT<-data.table(Phyto_monthly)
-# setkey(Phyto_monthly_DT,Month,STATIONclean, DIVISION)
-# Phyto_monthly_DT[setkey(Phyto_monthly_DT[, .(min(period):max(period)), by = project], project, V1)]
-# 
-# EmptyFrame<-expand.grid(unique(Phyto_monthly$Month, weight = seq(100, 300, 50),
-#             sex = c("Male","Female"))
 
 # ##############################
 # Phyto plots
