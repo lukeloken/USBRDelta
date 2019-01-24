@@ -13,7 +13,7 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 # setwd("C:/Users/Luke/Dropbox/USBR Delta Project")
 # 
 # source("R/ReadInMasterData.R")
-
+source('R/g_legend.R')
 
 merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSIChemSurface.csv'), stringsAsFactors = F)
 merge_df$Date<-as.Date(merge_df$Date)
