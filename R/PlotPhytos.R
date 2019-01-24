@@ -279,3 +279,55 @@ grid.arrange(plot2, mylegend2, nrow=2, heights=c(10, 1))
 dev.off()
 
 
+
+
+
+#select only the dominant phytoplankton division
+
+dom_phyto<- merge_phyto %>%
+  dplyr::select("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria", "Total_BioVolume", "Chloro.appb", 'Station', 'Zone', 'Date') %>%
+  drop_na(Total_BioVolume)
+
+dom_phyto$max<-apply(dom_phyto[,1:5], 1, max) 
+dom_phyto$species<-apply(dom_phyto, 1, function(x) names(x)[which(as.numeric(x[1:5]) == as.numeric(x[c('max')]))])
+
+#Chla (lab extraction) vs phyto divisions
+plot_list2<-list()
+plot_list2_zone<-list()
+# variables<-c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria") 
+
+colorset<-'Accent'
+colors_divisions<-brewer.pal(length(unique(dom_phyto$species)), colorset)
+colors_divisions<-colors_divisions[c(2,1,3,4,5)]
+
+  dominantspeciesplot<-ggplot(dom_phyto[which(is.finite(dom_phyto$Chloro.appb)),], aes_string('Chloro.appb', 'max', shape='species', fill='species', group='species')) + 
+    labs(x='Total Chl a (lab extraction)', y='Volume of dominant phytoplankton division') +
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors_divisions) + 
+    scale_colour_manual(values = colors_divisions) +
+    # geom_line(size=.5, aes(colour=Station,  group=Station)) +    
+    geom_smooth(method='lm', se=T,  size=1, aes(colour=species), color='black', fill='black') + 
+    geom_point(size=2) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    scale_y_log10() + 
+    scale_x_log10() +
+    theme(legend.title = element_blank()) + 
+    facet_wrap(~species)
+  
+png(paste0(dropbox_dir, '/Figures/Phytos/DominantGenus_ChlA_Scatterplots.png'), units='in', width=6, height=5, res=400, bg='white')
+
+print(dominantspeciesplot)
+
+dev.off()
+
+#Zone
+# png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlA_Scatterplots_byZone.png'), units='in', width=6, height=9, res=400, bg='white')
+
+grid.arrange(plot2_zone, mylegend2_zone, nrow=2, heights=c(10, 1))
+
+dev.off()
+
+
+
