@@ -28,8 +28,8 @@ bigdf <- read.csv(file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSISurface.cs
 bigdf$Date<-as.Date(bigdf$Date, format='%Y-%m-%d')
 
 #Data file as two rows as a header with mixed units/labels
-df1<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019.xlsx'), skip=1)
-df2<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019.xlsx'), skip=0)
+df1<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019_withChla.xlsx'), skip=1)
+df2<-read_excel(paste0(google_dir, '/Data/WaterQuality/SSC Nutrients Jan 2019_withChla.xlsx'), skip=0)
 
 names1A<-gsub("\\_.*","",names(df1))
 names1B<-gsub("X", '', names1A)
