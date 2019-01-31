@@ -50,7 +50,7 @@ mopedfiles<-mopedfiles[grep('.mdb', mopedfiles)]
 mopedfiles<-mopedfiles[-which(mopedfiles %in% c("moped_10_27_2016.mdb", "moped_10_9_2012.mdb", "moped_6_30_2016.mdb", "moped_6_7_2016.mdb"))]
 
 # Or you can indicate a single file
-# mopedfiles<-c("moped_9_19_2018.mdb")
+mopedfiles<-c("moped_1_30_2019.mdb")
 # mopedfiles<-mopedfiles[47]
 
 #Plotting parameters
@@ -94,6 +94,11 @@ for (file_nu in 1:length(mopedfiles)){
   geo2<-subset(geo, select=-c(Cvt_Lat, Cvt_Long))
   
   geo3<-geo2[order(geo2$DateTime),]
+  
+  #If gps data look weird you can also use the lat/long data on the horizontal table
+  # df3<-df2[which(as.Date(df2$DateTime) == Date),]
+  # geo<-df2[!is.na(df2$Latitude) & !is.na(df2$Longitude),]
+  # geo3<-geo[order(geo$DateTime),]
   
   
   # Use sensorclean script to identify outliers and convert to NA
