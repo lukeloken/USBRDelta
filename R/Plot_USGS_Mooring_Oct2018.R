@@ -22,6 +22,8 @@ BuoyData$Date.PST<-strftime(force_tz(BuoyData$Timestamp, "Etc/GMT+8"), format="%
 
 BuoyData$DateTime.PST<-as.POSIXct(paste(BuoyData$Date.PST, BuoyData$Time.PST), tz="Etc/GMT+8")
 
+RangeDates<-as.POSIXct(c('2018-09-25 00:00:00', '2018-11-20  00:00:00'), tz="Etc/GMT+8")
+
 FertDates<-as.POSIXct(c('2018-09-30 00:00:00', '2018-10-07  00:00:00'), tz="Etc/GMT+8")
 ferttime<-as.POSIXct("2018-10-01 12:30:00", format='%Y-%m-%d %H:%M:%S', tz="Etc/GMT+8") #13:30 PDT
 
@@ -82,8 +84,8 @@ dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_Timeseries_FullRecord.png'), width=8, height=12, units='in', res=200)
 
-par(mar=c(1.5,3.5,0.5,0.5), oma=c(1.5,0,0,0), mgp=c(3,.5, 0), tck=-.02)
-par(mfrow=c(8,1))
+par(mar=c(1.25,3.5,0.25,0.25), oma=c(1.75,0,0,0), mgp=c(3,.3, 0), tck=-.04)
+par(mfrow=c(10,1), ps=10)
 
 plot(BuoyData$DateTime.PST, BuoyData$`SUNA NO3 (uM)`, type='n', ylab='', xlab='', yaxt='n', xaxs='i')
 # abline(v=BuoyData_fert$DateTime.PST, col='lightgreen', lwd=2)
@@ -91,13 +93,22 @@ abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
 
 # abline(h=prefertNO3)
 # abline(h=postfertNO3)
-# axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 points(BuoyData$DateTime.PST, BuoyData$`SUNA NO3 (uM)`, type='o', pch=16, cex=.6)
 axis(2)
+
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
 
 mtext(expression(paste(NO[3], ' (', mu, 'M)')), 2, 2)
+
+
+plot(BuoyData$DateTime.PST, BuoyData$`Temp (°C)`, type='l', col='darkorange', yaxt='n', ylab='', xlab='', xaxs='i')
+# axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+axis(2, col.ticks='darkorange', col.axis='darkorange')
+mtext(expression(paste('Temp (', degree, 'C)')), 2, 2, col='darkorange')
+abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 # par(new=T)
 
@@ -106,31 +117,35 @@ plot(BuoyData$DateTime.PST, BuoyData$`SpCond (µS/cm)`, type='l', col='blue', ya
 axis(2, col.ticks='blue', col.axis='blue')
 mtext(expression(paste('SPC (', mu, 'S cm'^'-1', ')')), 2, 2, col='blue')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
-
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 plot(BuoyData$DateTime.PST, BuoyData$`Depth (m)`, type='l', col='grey10', yaxt='n', ylab='', xlab='', xaxs='i')
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 axis(2, col.ticks='grey10', col.axis='grey10')
 mtext(expression(paste('Water level (m)')), 2, 2, col='darkgrey')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 plot(BuoyData$DateTime.PST, BuoyData$`ODO (% sat)`, type='l', col='red', yaxt='n', ylab='', xlab='', xaxs='i')
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 axis(2, col.ticks='red', col.axis='red')
 mtext(expression(paste('DO (% sat)')), 2, 2, col='red')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 plot(BuoyData$DateTime.PST, BuoyData$`Turbidity (FNU)`, type='l', col='brown', yaxt='n', ylab='', xlab='', xaxs='i')
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 axis(2, col.ticks='brown', col.axis='brown')
 mtext(expression(paste('Turbidity (FNU)')), 2, 2, col='brown')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 plot(BuoyData$DateTime.PST, BuoyData$pH, type='l', col='purple', yaxt='n', ylab='', xlab='', xaxs='i')
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 axis(2, col.ticks='purple', col.axis='purple')
 mtext(expression(paste('pH')), 2, 2, col='purple')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 
 plot(BuoyData$DateTime.PST, BuoyData$`fCHLA (µg/L)`, type='l', col='darkgreen', yaxt='n', ylab='', xlab='', xaxs='i')
@@ -138,12 +153,21 @@ plot(BuoyData$DateTime.PST, BuoyData$`fCHLA (µg/L)`, type='l', col='darkgreen',
 axis(2, col.ticks='darkgreen', col.axis='darkgreen')
 mtext(expression(paste('ChlA (', mu, 'g L'^'-1', ')')), 2, 2, col='darkgreen')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 plot(BuoyData$DateTime.PST, BuoyData$`BGA-PC (µg/L)`, type='l', col='cyan', yaxt='n', ylab='', xlab='', xaxs='i')
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 axis(2, col.ticks='cyan', col.axis='cyan')
 mtext(expression(paste('BGA-PC (', mu, 'g L'^'-1', ')')), 2, 2, col='cyan')
 abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
+
+plot(BuoyData$DateTime.PST, BuoyData$`fDOM (QSE)`, type='l', col='grey10', yaxt='n', ylab='', xlab='', xaxs='i')
+# axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+axis(2, col.ticks='grey10', col.axis='grey10')
+mtext(expression(paste('fDOM (QSE)')), 2, 2, col='grey10')
+abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.02)
 
 
 mtext('Date', 1, 2)
