@@ -1,0 +1,154 @@
+
+source('R/g_legend.R')
+
+#Plot O18 metabolism data
+met.final<-read.csv(file = "Data/SSCN_MET_O18_R_EXPORT.csv", stringsAsFactors = F)
+
+met.final$Date<-as.Date(met.final$Date)
+met.final$Site<-factor(met.final$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
+
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+colors<-color.palette(length(unique(met.final$Site)))
+
+shipdate<-as.Date(c("2018-10-07", "2018-10-06", "2018-10-05"), format='%Y-%m-%d')
+fertdate<-as.Date("2018-10-02", format='%Y-%m-%d')
+
+
+plot_list<-list()
+plot_list[[1]]<-ggplot(met.final, aes(x=Date, y=gppv, fill=Site)) + 
+  labs(x='Date', y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1) + 
+  geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1) +
+  geom_line(size=.5, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='none') + 
+  theme(axis.title.x=element_blank())
+
+plot_list[[2]]<-ggplot(met.final, aes(x=Date, y=rv, fill=Site)) + 
+  labs(x='Date', y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1) + 
+  geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1) +
+  geom_line(size=.5, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='none') + 
+  theme(axis.title.x=element_blank())
+
+plot_list[[3]]<-ggplot(met.final, aes(x=Date, y=nepv, fill=Site)) + 
+  labs(x='Date', y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_vline(xintercept=shipdate, color='#636363', linetype=2, size=1) + 
+  geom_vline(xintercept=fertdate, color='#2ca25f', linetype=2, size=1) +
+  geom_line(size=.5, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='none') + 
+  theme(axis.title.x=element_blank())
+
+
+plot_withlegend <- plot_list[[1]] + 
+  theme(legend.position="bottom") +
+  guides(shape = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+mylegend<-g_legend(plot_withlegend)
+
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
+
+# arrange multi plot with legend below and save to project folder
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_ER_SacAirportWindData.png'), width=5, height=7, units='in', res=200)
+
+grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1))
+
+dev.off()
+
+
+met.final$GPP<-met.final$NEP-met.final$ER
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_ER_NEP_IncubationVersusO18.png'), width=12, height=4, units='in', res=200)
+
+GPPplot<-ggplot(met.final, aes(x=GPP*24, y=gppv, fill=Site)) + 
+  labs(x=expression(paste('Incubation GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+ERplot<-ggplot(met.final, aes(x=ER*(-24), y=rv, fill=Site)) + 
+  labs(x=expression(paste('Incubation ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+NEPplot<-ggplot(met.final, aes(x=NEP*24, y=nepv, fill=Site)) + 
+  labs(x=expression(paste('Incubation NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  scale_shape_manual(values=rep(21:25, 5))  + 
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+grid.arrange(GPPplot, ERplot, NEPplot, nrow=1)
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusTurb.png'), width=4, height=4, units='in', res=200)
+
+ggplot(met.final, aes(x=EXOTurbFNU, y=gppv, fill=Site)) +
+  labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  # scale_x_log10() +
+  scale_shape_manual(values=rep(21:25, 5))  +
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+dev.off()
+
+# ggplot(met.final, aes(x=EXOTurbFNU, y=rv, fill=Site)) + 
+#   labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+#   # scale_x_log10() + 
+#   scale_shape_manual(values=rep(21:25, 5))  + 
+#   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+#   scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+#   geom_point(size=2, aes(fill=Site, shape=Site)) + 
+#   theme_bw() +
+#   theme(plot.title = element_text(hjust=0.5))  +
+#   theme(legend.position='bottom')
+# 
+# ggplot(met.final, aes(x=EXOTurbFNU, y=nepv, fill=Site)) + 
+#   labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+#   # scale_x_log10() + 
+#   scale_shape_manual(values=rep(21:25, 5))  + 
+#   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
+#   scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+#   geom_point(size=2, aes(fill=Site, shape=Site)) + 
+#   theme_bw() +
+#   theme(plot.title = element_text(hjust=0.5))  +
+#   theme(legend.position='bottom')
