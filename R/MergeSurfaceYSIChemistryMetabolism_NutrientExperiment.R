@@ -43,7 +43,7 @@ bigdf$Date<-as.Date(bigdf$Date, format='%Y-%m-%d')
 
 bigdf$Site<-sitetable$site1[match(bigdf$Station, sitetable$site2)]
 
-#metabolism results
+# incubation metabolism results
 summary_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/IncubationMetabolism/', 'LightDarkMetabolism.csv'), header=T, stringsAsFactors = F)
 str(summary_df)
 summary_df$Date<-as.Date(summary_df$Date)
@@ -51,7 +51,6 @@ summary_df$Date<-as.Date(summary_df$Date)
 incubation_df<-summary_df %>%
   select(Date, Site, Metric, mean) %>%
   spread(key=Metric, value=mean)
-
 
 
 #Merge everything together
