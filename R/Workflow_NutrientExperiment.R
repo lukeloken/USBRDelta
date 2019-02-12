@@ -34,12 +34,14 @@ source('R/CleanNutrientData_NutrientExperiment.R')
 source('R/IncubationMetabolismLightDark_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries.R')
 
+#O18 metabolism (still need to add these)
+
 #Vertical profiles
 source('R/CompileVerticalProfiles_NutrientExperiment.R')
 source('R/CompileVerticalProfiles_NutrientExperiment_EXO.R')
 
 source('R/ExtractSurfaceYSI_NutrientExperiment.R')
-source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R')
+source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R') #need to add O18
 
 source('R/PlotTimeseries_NutrientExperiment.R')
 # source('R/.R')
