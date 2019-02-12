@@ -29,6 +29,10 @@ nutrient_df_names<-names(read_excel(paste0(google_dir, "/Data/NutrientExperiment
 names(nutrient_df)<-nutrient_df_names
 rm(nutrient_df_names)
 
+nutrient_df$`DIN-ppm`<-nutrient_df$`NH4-ppm` + nutrient_df$`NO3-ppm` 
+nutrient_df$`DON-ppm`<-nutrient_df$`TDN-ppm` - nutrient_df$`DIN-ppm`
+nutrient_df$`TPN-ppm`<-nutrient_df$`TN-ppm` - nutrient_df$`TDN-ppm`
+
 
 #TSS data
 tss_df<-read_excel(paste0(google_dir, "/Data/NutrientExperiment/WaterChemistry/SSCN_TSSData.xlsx"), skip=1)
