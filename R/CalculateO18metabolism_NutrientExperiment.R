@@ -119,3 +119,6 @@ met.final <- cbind(met, met.result)
 #exporting metabolism data as csv file#####
 write.csv(met.final, file = "Data/SSCN_MET_O18_R_EXPORT.csv", row.names=F)
 
+met.narrow<- cbind(met[,c('Date', 'Site', 'SampleCode')], met.result[,c( "gppv", "gppa", "rv", "ra", "nepv", "nepa", "gpptor")])
+
+write.csv(met.narrow, file= paste(dropbox_dir, "Data", "NutrientExperiment", "Oxygen18", "O18MetabolismEstimates.csv", sep='/'), row.names = F)
