@@ -91,7 +91,7 @@ merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceC
 merge_df$Date<-as.Date(merge_df$Date)
 merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
-merge_df_O18<-full_join(merge_df, wind_avg[c('Date', 'wind.ms', 'sd.wind.ms', 'wind.height.ms')])
+merge_df_O18<-left_join(merge_df, wind_avg[c('Date', 'wind.ms', 'sd.wind.ms', 'wind.height.ms')])
 
 waterdepths<- merge_df %>%
   group_by(Site) %>%
@@ -99,7 +99,7 @@ waterdepths<- merge_df %>%
 
 waterO18table<-data.frame(Site = c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), delo18.h2o=(-1)*c(6.73, 6.1, 6.01, 6.01, 6.01, 6.01, 6.01, 5.95, 5.83))
 
-merge_df_O18<-drop_na(merge_df_O18, d180_02.vs.VSMOW)
+# merge_df_O18<-drop_na(merge_df_O18, d180_02.vs.VSMOW)
 
 merge_df_O18$zmix.m<- waterdepths$TotalDepth[match(merge_df_O18$Site, waterdepths$Site)]/3.28
 merge_df_O18$delo18.h2o<-waterO18table$delo18.h2o[match(merge_df_O18$Site, waterO18table$Site)]
