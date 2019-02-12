@@ -7,6 +7,12 @@ met.final<-read.csv(file = "Data/SSCN_MET_O18_R_EXPORT.csv", stringsAsFactors = 
 met.final$Date<-as.Date(met.final$Date)
 met.final$Site<-factor(met.final$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
+met.final$GPP<-met.final$NEP-met.final$ER
+
+
+met.final<-drop_na(met.final, d180_02.vs.VSMOW)
+
+
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(unique(met.final$Site)))
 
@@ -76,7 +82,6 @@ grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1))
 dev.off()
 
 
-met.final$GPP<-met.final$NEP-met.final$ER
 
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_ER_NEP_IncubationVersusO18.png'), width=12, height=4, units='in', res=200)
