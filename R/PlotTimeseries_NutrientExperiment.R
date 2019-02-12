@@ -27,7 +27,7 @@ merge_df$Date<-as.Date(merge_df$Date)
 merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
 
-metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'TSS', 'VSS', 'SecchiDepth',  'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "PO4",  "DOC.ppm", 'TN.ppm', 'TDN.ppm', 'TP.ppm', "d180_02.vs.VSMOW")
+metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'TSS', 'VSS', 'SecchiDepth', "d180_02.vs.VSMOW",  'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "DIN.ppm", 'TN.ppm', 'TDN.ppm', "DON.ppm", "TPN.ppm", "PO4",   'TP.ppm', "DOC.ppm")
 
 
 
