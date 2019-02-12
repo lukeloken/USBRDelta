@@ -2,7 +2,7 @@
 
 
 #Wrapper code to perform data processing associated with nutrient experiment
-
+rm(list = ls())
 
 #Code to extract surface water measurements from profile data at fixed sites
 
@@ -35,6 +35,9 @@ source('R/IncubationMetabolismLightDark_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries.R')
 
 #O18 metabolism (still need to add these)
+source('R/CreateO18InputTable.R')
+source('R/CalculateO18metabolism_NutrientExperiment.R')
+source('R/Plot_O18Metabolism.R')
 
 #Vertical profiles
 source('R/CompileVerticalProfiles_NutrientExperiment.R')
