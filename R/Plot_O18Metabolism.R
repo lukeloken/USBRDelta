@@ -1,8 +1,14 @@
 
 source('R/g_legend.R')
 
+# Project folder where outputs are stored
+dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+
+#Where data come from
+google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+
 #Plot O18 metabolism data
-met.final<-read.csv(file = "Data/SSCN_MET_O18_R_EXPORT.csv", stringsAsFactors = F)
+met.final<-read.csv(file = paste(dropbox_dir, "Data", "NutrientExperiment", "Oxygen18", "O18MetabolismEstimates.csv", sep='/'), stringsAsFactors = F)
 
 met.final$Date<-as.Date(met.final$Date)
 met.final$Site<-factor(met.final$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
