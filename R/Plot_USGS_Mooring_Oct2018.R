@@ -82,6 +82,39 @@ dev.off()
 
 
 
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_WL_Timeseries.png'), width=8, height=4, units='in', res=200)
+
+par(mar=c(3,3,1,3), mgp=c(3,.5, 0), tck=-.02)
+
+plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`, type='n', ylab='', xlab='', axes=F, ylim=c(4,24), xaxs='i')
+abline(v=BuoyData_fert$DateTime.PST, col='lightgreen', lwd=2)
+abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+
+# abline(h=prefertNO3)
+# abline(h=postfertNO3)
+# axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+
+points(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`, type='o', pch=16, cex=.6)
+axis(2)
+
+par(new=T)
+
+plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`Depth (m)`, ylim=c(-4,5), type='l', col='blue', axes=F, ylab='', xlab='', xaxs='i')
+
+axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+axis(4, col.ticks='blue', col.axis='blue', at=seq(2,5,1))
+
+mtext(expression(paste('                                           Water level (m)')), 4, 2, col='blue')
+mtext(expression(paste(NO[3], ' (', mu, 'M)')), 2, 2)
+mtext('Date', 1, 2)
+
+box(which='plot')
+
+dev.off()
+
+
+
+
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_Timeseries_FullRecord.png'), width=8, height=12, units='in', res=200)
 
 par(mar=c(1.25,3.5,0.25,0.25), oma=c(1.75,0,0,0), mgp=c(3,.3, 0), tck=-.04)
