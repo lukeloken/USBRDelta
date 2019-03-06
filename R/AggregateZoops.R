@@ -106,6 +106,7 @@ Zoo_total_monthly <-Zoo_total  %>%
   group_by(STATIONclean, Month) %>%
   dplyr::summarize(Mean_Biomass=mean(Total_BiomassPerLiter, na.rm=T), Median_Biomass=median(Total_BiomassPerLiter, na.rm=T), Mean_NumberPerLiter=mean(Total_NumberPerLiter, na.rm=T))
 
+write.table(Zoo_total, file=paste(dropbox_dir, 'Data', 'Zoops', 'ZooTotals.csv', sep='/'), row.names=F, sep=',')
 
 # ##############################
 # Zoo plots
