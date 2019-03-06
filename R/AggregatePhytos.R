@@ -101,6 +101,9 @@ Phyto_total_monthly <-Phyto_total  %>%
   summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Total_Density, na.rm=T))
 
 
+write.table(Phyto_total, file=paste(dropbox_dir, 'Data', 'Phyto', 'PhytoTotals.csv', sep='/'), row.names=F, sep=',')
+
+
 # ##############################
 # Phyto plots
 # ##############################
