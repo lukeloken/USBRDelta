@@ -163,3 +163,37 @@ dev.off()
 #   theme_bw() +
 #   theme(plot.title = element_text(hjust=0.5))  +
 #   theme(legend.position='bottom')
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
+
+ggplot(met.final, aes(x=EXOChlugL, y=gppv, fill=Site)) +
+  labs(x=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  # scale_x_log10() +
+  scale_shape_manual(values=rep(21:25, 5))  +
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
+
+ggplot(met.final, aes(x=NO3.ppm, y=gppv, fill=Site)) +
+  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  # scale_x_log10() +
+  scale_shape_manual(values=rep(21:25, 5))  +
+  scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
+  scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
+  geom_point(size=2, aes(fill=Site, shape=Site)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))  +
+  theme(legend.position='bottom')
+
+dev.off()
+
