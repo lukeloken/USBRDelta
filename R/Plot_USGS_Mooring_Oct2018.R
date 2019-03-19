@@ -44,6 +44,16 @@ Liters<-uMapplied/diffNO3
 cubicmeters<-Liters/1000
 lengthmeters<-cubicmeters/8/153
 
+
+#Determine how deep the fertilizer sank
+
+meanNO3<-72.4 #uM
+meanNO3_mg<-meanNO3*14/1000 #mg/L
+width<-153 #m
+length<-900 #m
+
+depth<-uMapplied/width/length/14/1000
+
 BuoyData_sub<-BuoyData[which(BuoyData$DateTime.PST<=FertDates[2] & BuoyData$DateTime.PST>=FertDates[1]), ]
 BuoyData_fert<-BuoyData[which(BuoyData$'SpCond (µS/cm)'<=875 & BuoyData$'SpCond (µS/cm)'>=865 & BuoyData$DateTime.PST>=ferttime), ]
 
@@ -208,6 +218,5 @@ mtext('Date', 1, 2)
 box(which='plot')
 
 dev.off()
-
 
 
