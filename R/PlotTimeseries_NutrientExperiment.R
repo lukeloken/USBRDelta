@@ -85,6 +85,16 @@ for (plot_nu in 1:length(metrics)){
     geom_line(size=1, aes(colour=Site,  group=Site)) +    
     geom_point(size=2, aes(fill=Site, shape=Site)) + 
     commonTheme
+  
+  plot_print<-plot_list[[plot_nu]] + 
+    theme(legend.position="bottom", legend.title= element_blank()) +
+    guides(color = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
+  
+  png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/', metric, '.png'), width=5, height=3, units='in', res=200)
+  
+  print(plot_print)
+  
+  dev.off()
 }
   
 plot_withlegend <- plot_list[[1]] + 
@@ -107,6 +117,14 @@ png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries
 grid.arrange(p2)
 
 dev.off()
+
+
+for (plot_nu in 1:length(plot_list)){
+  plot_withlegend <- plot_list[[plot_nu]] + 
+    theme(legend.position="bottom") +
+    guides(color = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+  
+}
 
  # #############
 #Scatterplots
@@ -180,58 +198,85 @@ ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.air, group=Site))+
 #End
 
 
+
+# ###########################
+# Plots for Paper
+# ###########################
+
+
+
+#Nitrate and Turbdity timeseries
+
+
+
+#Common theme for all metabolism timeseries panels
+commonThemePrint<-list(
+  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors),
+  scale_shape_manual(values=c(23, 22,22,21,21,21,22,22,23)),
+  # geom_smooth(method='loess',  se=F),
+  # geom_smooth(method='auto', se=T, alpha=.2),
+  # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  geom_vline(xintercept=(as.Date('2018-10-02')-0.7), linetype="solid", color = "black", size=1),
+  geom_vline(xintercept=as.Date('2018-10-07'), linetype='dashed', color='grey', size=1),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank())
+)
+
+NO3TS<-ggplot(met.final, aes_string('Date', 'NO3.ppm', group='Site')) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
+
+TurbTS<-ggplot(met.final, aes_string('Date', 'EXOTurbFNU', group='Site')) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('Turbidity (FNU)')))
+
+
+TurbTS_withLegened <- TurbTS + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+# NO3legend<-g_legend(NO3TS_withLegened)
 # 
-# #Testing new grid alignment
-# 
-# plot_list<-list()
-# plot_nu<-1
-# for (plot_nu in 1:length(metrics)){
-#   
-#   metric<-metrics[plot_nu]
-#   
-#   table<-met.final[,c('Site', 'Date', metric)]
-#   
-#   plot_list[[plot_nu]]<-ggplot(table, aes_string('Date', metric, group='Site')) + 
-#     ggtitle(metric) +
-#     geom_line(size=1, aes(colour=Site,  group=Site)) +    
-#     geom_point(size=2, aes(fill=Site, shape=Site)) + 
-#     commonTheme
-#   
-#   if (plot_nu==1){
-#     gtable1<-ggplotGrob(plot_list[[plot_nu]])
-#   } else if (plot_nu>1){
-#     gtable1 <-rbind(gtable1, ggplotGrob(plot_list[[plot_nu]]), size='last')
-#   }
-# }
-# 
-# # grob_list<-lapply(plot_list, function (l) ggplotGrob(l))
-# # 
-# # 
-# # 
-# # gtable_test<-gtable_rbind(grob_list[[1]],grob_list[[2]], grob_list[[3]], grob_list[[4]], size = "last")
-# 
-# grid.newpage()
-# grid.draw(gtable1)
-# 
-# 
-# gtable_test2<-gtable_rbind(expression(paste("grob_list[[", 1:2, "]],")), size='last')
-# 
-# 
-# grid.newpage()
-# grid.draw(gtable_test2)
-# 
-# 
-# gtable_test2<-rbindlist(grob_list)
-# , size = "last")
-# 
-# 
-# 
-# # rbind(plot_list[[1]], plot_list[[2]])
-# 
-# grid.draw
-# 
-# grob_list<-lapply(plot_list, function (l) ggplotGrob(l))
-# 
-# grid.newpage()
-# grid.draw(rbind(grob_list, size='last'))
-# 
+# grid.arrange(grobs=list(NO3TS, TurbTS), ncol=1)
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/NO3Turb.png'), width=5, height=5, units='in', res=200)
+
+grid.newpage()
+
+plots<-grid.draw(rbind(ggplotGrob(NO3TS), ggplotGrob(TurbTS_withLegened), size = "first"))
+
+dev.off()
+
+
+
+NH4TS<-ggplot(met.final, aes_string('Date', 'NH4.ppm', group='Site')) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste(NH[4], ' (mg N L'^'-1', ')')))
+
+SRPTS<-ggplot(met.final, aes_string('Date', 'PO4', group='Site')) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('SRP (mg P L'^'-1', ')')))
+
+
+SRPTS_withLegened <- SRPTS + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/NH4SRP.png'), width=5, height=5, units='in', res=200)
+
+grid.newpage()
+
+plots<-grid.draw(rbind(ggplotGrob(NH4TS), ggplotGrob(SRPTS_withLegened), size = "first"))
+
+dev.off()
