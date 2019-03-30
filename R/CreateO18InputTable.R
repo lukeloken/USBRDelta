@@ -27,24 +27,24 @@ summary(weather_df)
 weather_df$Date<-as.Date(weather_df$DATE, format='%m/%d/%Y')
 
 wind_df<- weather_df %>% 
-  select(Date, LATITUDE, LONGITUDE, STATION, ELEVATION, AWND, WDF2, WDF5) %>% 
+  dplyr::select(Date, LATITUDE, LONGITUDE, STATION, ELEVATION, AWND, WDF2, WDF5) %>% 
   tidyr::drop_na(AWND) 
   # dplyr::filter(STATION == 'USW00093225')
 
 wind_speed <- wind_df %>%
-  select(Date, STATION, AWND) %>%
+  dplyr::select(Date, STATION, AWND) %>%
   spread(key=STATION, value=AWND)
 
 wind_direction5 <- wind_df %>%
-  select(Date, STATION, WDF5) %>%
+  dplyr::select(Date, STATION, WDF5) %>%
   spread(key=STATION, value=WDF5)
 
 wind_direction2 <- wind_df %>%
-  select(Date, STATION, WDF2) %>%
+  dplyr::select(Date, STATION, WDF2) %>%
   spread(key=STATION, value=WDF2)
 
 wind_avg<- wind_df %>%
-  select(-LATITUDE, -LONGITUDE, -ELEVATION, -STATION) %>%
+  dplyr::select(-LATITUDE, -LONGITUDE, -ELEVATION, -STATION) %>%
   group_by(Date) %>% 
   summarize_all(mean)
 
@@ -86,6 +86,9 @@ wind_avg$sd.wind.ms<-roll_sd(wind_avg$AWND, n=3, fill=NA, align='right')
 wind_avg$wind.height.ms=10
 
 wind_avg
+
+write.csv(wind_avg, file=paste0(dropbox_dir, '/Data/NutrientExperiment/Oxygen18/WindDataAvg.csv'), row.names=F)
+
 
 merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceChemistry/YSIMetabolismSurface.csv'), stringsAsFactors = F)
 merge_df$Date<-as.Date(merge_df$Date)
