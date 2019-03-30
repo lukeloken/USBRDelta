@@ -206,7 +206,12 @@ ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.air, group=Site))+
 
 
 #Nitrate and Turbdity timeseries
+# "2018-10-07 14:00:00 PDT" shipdate based on water level at mooring
+# shipdate<-as.POSIXct(c("2018-10-07 14:00:00", "2018-10-06 11:20:00"), format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
 
+#colors
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+colors<-color.palette(length(unique(met.final$Site)))
 
 
 #Common theme for all metabolism timeseries panels
@@ -218,7 +223,7 @@ commonThemePrint<-list(
   # geom_smooth(method='auto', se=T, alpha=.2),
   # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
   geom_vline(xintercept=(as.Date('2018-10-02')-0.7), linetype="solid", color = "black", size=1),
-  geom_vline(xintercept=as.Date('2018-10-07'), linetype='dashed', color='grey', size=1),
+  geom_vline(xintercept=c(as.Date('2018-10-07')+.58, as.Date('2018-10-06')+.47), linetype='dashed', color='grey', size=1),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank())
 )
@@ -236,14 +241,10 @@ TurbTS<-ggplot(met.final, aes_string('Date', 'EXOTurbFNU', group='Site')) +
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
   labs(y=expression(paste('Turbidity (FNU)')))
 
-
 TurbTS_withLegened <- TurbTS + 
   theme(legend.position="bottom",  legend.title=element_blank()) +
   guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
 
-# NO3legend<-g_legend(NO3TS_withLegened)
-# 
-# grid.arrange(grobs=list(NO3TS, TurbTS), ncol=1)
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/NO3Turb.png'), width=5, height=5, units='in', res=200)
 
@@ -254,7 +255,7 @@ plots<-grid.draw(rbind(ggplotGrob(NO3TS), ggplotGrob(TurbTS_withLegened), size =
 dev.off()
 
 
-
+# ammonium and srp
 NH4TS<-ggplot(met.final, aes_string('Date', 'NH4.ppm', group='Site')) + 
   commonThemePrint + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
@@ -280,3 +281,42 @@ grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(NH4TS), ggplotGrob(SRPTS_withLegened), size = "first"))
 
 dev.off()
+
+
+
+
+# incubation metabolism and srp
+NEPTS<-ggplot(met.final, aes(Date, NEP*24, group=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  theme(plot.margin = unit(c(0.5, .5, 0.5, 1.5), "lines")) + 
+  ggtitle('Incubation Metabolism')
+
+GPPTS<-ggplot(met.final, aes(Date, GPP*24, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS<-ggplot(met.final, aes(Date, ER*24, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS_withLegened <- ERTS + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/IncubationMetabolism/GPPERNEP_print.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+
+plots<-grid.draw(rbind(ggplotGrob(NEPTS), ggplotGrob(GPPTS), ggplotGrob(ERTS_withLegened), size = "last"))
+
+dev.off()
+
