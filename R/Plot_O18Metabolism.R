@@ -19,11 +19,60 @@ met.final$GPP<-met.final$NEP-met.final$ER
 met.final<-drop_na(met.final, d180_02.vs.VSMOW)
 
 
+#colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(unique(met.final$Site)))
 
-shipdate<-as.Date(c("2018-10-07", "2018-10-06", "2018-10-05"), format='%Y-%m-%d')
+shipdate<-as.Date(c("2018-10-07", "2018-10-06"), format='%Y-%m-%d')
 fertdate<-as.Date("2018-10-02", format='%Y-%m-%d')
+
+
+#Common theme for all metabolism timeseries panels
+commonThemePrint<-list(
+  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors),
+  scale_shape_manual(values=c(23, 22,21,22,23)),
+  # geom_smooth(method='loess',  se=F),
+  # geom_smooth(method='auto', se=T, alpha=.2),
+  # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  geom_vline(xintercept=(as.Date('2018-10-02')-0.7), linetype="solid", color = "black", size=1),
+  geom_vline(xintercept=c(as.Date('2018-10-07')+.58, as.Date('2018-10-06')+.47), linetype='dashed', color='grey', size=1),
+  geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank())
+)
+
+NEP_O18<-ggplot(met.final, aes(x=Date, y=nepv, fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+  ggtitle(expression(paste(delta^'18', "O-", O[2], ' Metabolism')))
+
+GPP_O18<-ggplot(met.final, aes(x=Date, y=gppv, fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ER_O18<-ggplot(met.final, aes(x=Date, y=(rv*-1), fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+
+ER_O18_withLegened <- ER_O18 + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/NEPGPPER_TS.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEP_O18), ggplotGrob(GPP_O18), ggplotGrob(ER_O18_withLegened), size = "first"))
+
+dev.off()
 
 
 plot_list<-list()
