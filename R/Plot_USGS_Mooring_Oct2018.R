@@ -24,6 +24,10 @@ BuoyData$DateTime.PST<-as.POSIXct(paste(BuoyData$Date.PST, BuoyData$Time.PST), t
 
 RangeDates<-as.POSIXct(c('2018-09-25 00:00:00', '2018-11-20  00:00:00'), tz="Etc/GMT+8")
 
+deploydates<-as.POSIXct(c("2018-09-26 20:00:00", "2018-10-10 17:00:00"), format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
+
+# shipdate<-as.POSIXct(c("2018-10-07 14:00:00", "2018-10-06 11:20:00", "2018-10-05 02:00:00"), format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
+shipdate<-as.POSIXct(c("2018-10-07 14:00:00", "2018-10-06 11:20:00"), format='%Y-%m-%d %H:%M:%S', tz='America/Los_Angeles')
 FertDates<-as.POSIXct(c('2018-09-30 00:00:00', '2018-10-07  00:00:00'), tz="Etc/GMT+8")
 ferttime<-as.POSIXct("2018-10-01 12:30:00", format='%Y-%m-%d %H:%M:%S', tz="Etc/GMT+8") #13:30 PDT
 
@@ -54,19 +58,28 @@ length<-600 #m
 
 depth<-uMapplied/width/length/1000/meanNO3
 
+#Old way
 BuoyData_sub<-BuoyData[which(BuoyData$DateTime.PST<=FertDates[2] & BuoyData$DateTime.PST>=FertDates[1]), ]
+
+#Match timeseries with oxygen data
+BuoyData_sub<-BuoyData[which(BuoyData$DateTime.PST<=deploydates[2] & BuoyData$DateTime.PST>=deploydates[1]), ]
+
+
 BuoyData_fert<-BuoyData[which(BuoyData$'SpCond (µS/cm)'<=875 & BuoyData$'SpCond (µS/cm)'>=865 & BuoyData$DateTime.PST>=ferttime), ]
 
 str(BuoyData)       
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_Timeseries.png'), width=8, height=4, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_Timeseries_2weeks.png'), width=8, height=4, units='in', res=200)
 
 par(mar=c(3,3,1,3), mgp=c(3,.5, 0), tck=-.02)
 
 plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`, type='n', ylab='', xlab='', axes=F, ylim=c(4,24), xaxs='i')
-abline(v=BuoyData_fert$DateTime.PST, col='lightgreen', lwd=2)
-abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
+# abline(v=BuoyData_fert$DateTime.PST, col='lightpink', lwd=2)
+# abline(v=ferttime, lty=1, col='hotpink4', lwd=3)
+abline(v=BuoyData_fert$DateTime.PST, col='grey85', lwd=2)
+abline(v=ferttime, lty=1, col='grey35', lwd=3)
+# abline(v=shipdate[2], lty=2, col='darkgrey', lwd=2)
 
 # abline(h=prefertNO3)
 # abline(h=postfertNO3)
@@ -79,7 +92,7 @@ par(new=T)
 
 plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`SpCond (µS/cm)`, ylim=c(600,920), type='l', col='blue', axes=F, ylab='', xlab='', xaxs='i')
 
-axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+axis.POSIXct(1, at=seq.POSIXt(deploydates[1]+3600*4, deploydates[2], by='day'), format='%b %d')
 axis(4, col.ticks='blue', col.axis='blue')
 
 mtext(expression(paste('SPC (', mu, 'S cm'^'-1', ')')), 4, 2, col='blue')
@@ -92,31 +105,32 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_WL_Timeseries.png'), width=8, height=4, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_WL_Timeseries_2weeks.png'), width=6, height=3, units='in', res=200)
 
-par(mar=c(3,3,1,3), mgp=c(3,.5, 0), tck=-.02)
+par(mar=c(1.5,2.5,0.5,2), mgp=c(3,.4, 0), tck=-.02, ps=8)
+par(mfrow=c(1,1))
 
-plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`, type='n', ylab='', xlab='', axes=F, ylim=c(4,24), xaxs='i')
-abline(v=BuoyData_fert$DateTime.PST, col='lightgreen', lwd=2)
-abline(v=ferttime, lty=2, col='darkgreen', lwd=3)
-
+plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`*14.0064/1000, type='n', ylab='', xlab='', axes=F, ylim=c(0.05,0.34), xaxs='i')
+abline(v=BuoyData_fert$DateTime.PST, col='grey85', lwd=2)
+abline(v=ferttime, lty=1, col='grey35', lwd=3)
+abline(v=shipdate[1:2], lty=2, col='grey35', lwd=2)
 # abline(h=prefertNO3)
 # abline(h=postfertNO3)
 # axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
 
-points(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`, type='o', pch=16, cex=.6)
-axis(2)
+points(BuoyData_sub$DateTime.PST, BuoyData_sub$`SUNA NO3 (uM)`*14.0064/1000, type='o', pch=16, cex=.4)
+axis(2, las=1)
 
 par(new=T)
 
 plot(BuoyData_sub$DateTime.PST, BuoyData_sub$`Depth (m)`, ylim=c(-4,5), type='l', col='blue', axes=F, ylab='', xlab='', xaxs='i')
 
-axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
-axis(4, col.ticks='blue', col.axis='blue', at=seq(2,5,1))
+axis.POSIXct(1, at=seq.POSIXt(deploydates[1]+3600*4, deploydates[2], by='day'), format='%b %d', mgp=c(3,.1,0))
+axis(4, col.ticks='blue', col.axis='blue', at=seq(2,5,1), las=1)
 
-mtext(expression(paste('                                           Water level (m)')), 4, 2, col='blue')
-mtext(expression(paste(NO[3], ' (', mu, 'M)')), 2, 2)
-mtext('Date', 1, 2)
+mtext(expression(paste('                                                 Water level (m)')), 4, 0.75, col='blue')
+mtext(expression(paste(NO[3], ' (mg N L'^'-1', ')')), 2, 1.5)
+# mtext('Date', 1, 2)
 
 box(which='plot')
 
