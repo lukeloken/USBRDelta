@@ -88,6 +88,8 @@ Phyto_summary_spread <- Phyto_summary_select %>%
   dplyr::select(Station, Date, DIVISION, Total_BioVolume) %>% 
   spread(key = DIVISION, value= Total_BioVolume)
 
+Phyto_summary_spread$Phyto_total <- rowSums(Phyto_summary_spread[,c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria")])
+
 #Export summary by division table to be merged with other datasets (Nutrients, Zoops, etc.)
 write.csv(Phyto_summary_spread, file=paste(google_dir, 'DataOutputs', 'PhytoSummaryDivision.csv', sep='/'), row.names=F)
 saveRDS(Phyto_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_spread.rds'))
