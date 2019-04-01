@@ -67,28 +67,23 @@ source('R/CompileVerticalProfiles.R')
 
 
 # Phytoplankton and zooplankton samples profiles
-# Loop through longitudinal profiles and plot all
-# Might want to change this to only run the most recent date?
-# Be careful because this downloads google images and may cost Luke Loken money. 
-# source('R/PlotLongitudinalProfiles.R')
-
-#Create a subroutine to exectue the following
 source('R/CompilePhytosZoops.R') #Load all phytoplankton and zooplankton counts
-source('R/AggregatePhytos.R') # Summarize phyto records
-source('R/PlotPhytos.R') # Plot phyto records
-source('R/PlotPhytosChlA.R') # Plot phyto records
 
+source('R/AggregatePhytos.R') # Summarize phyto records
 source('R/AggregateZoops.R') # Summarize Zoops records
+
+source('R/PlotPhytos.R') # Plot phyto records
 source('R/PlotZoops.R') # Plot Zoops records
 
+#Extra script for Phytos to merge with ChlA data. This should likely get merged into a later script for plotting all timeseries
+source('R/PlotPhytosChlA.R') # Plot phyto records
 
 
-# AggregateZoops.R # Summarize zoo record
-# PlotPhytos.R # Plot phytoplankton data
-# PlotZoops.R # Plot Zooplankton data
+#Merge Data
 
+#Timeseries plots
 
-
+#Other figures (scatterplots)
 
 # Do not run!!!!!
 
