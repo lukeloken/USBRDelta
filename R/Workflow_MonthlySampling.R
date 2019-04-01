@@ -100,14 +100,14 @@ source('R/MergeChemistryYSIPhytosZoops.R')
 
 #colors and plotting factors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors_stations<-color.palette(length(unique(SSC_joined_data$Station)))
-colors_zone<-color.palette(length(unique(SSC_joined_data$Zone)))
+colors_stations<-color.palette(13)
+colors_zone<-color.palette(5)
 stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
 
 
 #script for each variables
 source('R/PlotPhytosChlA.R') # Plot phyto timeseries records with chlA
-source('R/PlotPTimeseriesNutrients.R') # Plot phyto timeseries records with chlA
+source('R/PlotTimeseriesNutrients.R') # Plot phyto timeseries records with chlA
 
 #Other figures (scatterplots)
 
