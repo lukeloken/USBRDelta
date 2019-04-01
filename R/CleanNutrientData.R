@@ -71,7 +71,8 @@ WQ_AllSamples<-df_sub %>%
     mutate(DINppm = NH4Nppm + NO3Nppm, 
          DONppm = TDNppm - DINppm,
          TPNppm = TNppm - TDNppm,
-         TPPppm = TPppm - TDPppm
+         TPPppm = TPppm - TDPppm, 
+         Date = as.Date(Date)
   )
   
 
