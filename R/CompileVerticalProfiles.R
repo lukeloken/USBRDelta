@@ -6,11 +6,12 @@
 
 library(readxl)
 library(plyr)
+library(dplyr)
+library(tidyr)
 library(viridis)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
-
 library(gtools)
 
 # source('R/read_excel_allsheets.R')
@@ -86,9 +87,12 @@ YSI_ThreeDepths<-bind_rows(YSI_surf, YSI_mid, YSI_deep) %>%
 write.csv(YSI_AllDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_AllDepths.csv'), row.names=F)
 saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_AllDepths.rds'))
 
-
 write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_ThreeDepths.csv'), row.names=F)
 saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_ThreeDepths.rds'))
+
+
+rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory)
+
 
 #View data to see if it makes sense
 # ggplot(YSI_ThreeDepths, aes(Date, Depth.feet, group=DepthStrata, colour=DepthStrata)) +
