@@ -12,9 +12,6 @@ library(RColorBrewer)
 library(MASS)
 
 
-# source('R/g_legend.R')
-# # source('R/CompilePhytos.R')
-# 
 # # Project folder where outputs are stored
 # dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 # 
@@ -24,7 +21,7 @@ library(MASS)
 # stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
 
 Phyto_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_select.rds'))
-
+#Also need Phyto_total_monthly and Phyto_monthly
 
 # ##############################
 # Phyto plots
@@ -54,8 +51,8 @@ commonTheme_boxplot<-list(
 
 #Common theme for monthly boxplots
 commonTheme_boxplot_monthly<-list(
-  scale_fill_manual(values = colors),
-  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors_month),
+  scale_colour_manual(values = colors_month),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="bottom")
 )
