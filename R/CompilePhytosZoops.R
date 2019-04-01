@@ -125,7 +125,7 @@ names76<-c(76, AllStations[grep('76', AllStations)])
 names84<-c(84, AllStations[grep('84', AllStations)])
 
 namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM", "PS")
-namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port")
+namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port", "Port", "Port-gate", "COE Gate", "COE Gates", "West Steps", "West Steps/W. Sac", "West Steps/W. Sac.")
 
 names_list<-list(names16, names34, names44, namesPro, names56, names62, names64, names66, names70, names74, names76, names84, namesWSP)
 
