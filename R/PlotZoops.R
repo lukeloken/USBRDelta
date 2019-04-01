@@ -20,6 +20,8 @@ library(MASS)
 
 
 Zoo_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_select.rds'))
+Zoo_summary_no64<-filter(Zoo_summary_select, Station!='64')
+
 # Also need Zoo_monthly and Zoo_total_monthly
 
 # ##############################
@@ -46,7 +48,7 @@ commonTheme_boxplot<-list(
 
 # colors for boxplots by month/sites
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors_month<-color.palette(length(unique(Zoo_summary_select$Month)))
+colors_month<-color.palette(length(unique(Zoo_summary_no64$Month)))
 shapes_month<-rep(21:25, 5)
 
 
@@ -63,7 +65,7 @@ commonTheme_boxplot_monthly<-list(
 png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
   labs(x='Station', y=BiomassExp) +
   commonTheme_boxplot + 
   # scale_y_log10() +
@@ -77,7 +79,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStation_log.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
   labs(x='Station', y=BiomassExp) +
   commonTheme_boxplot + 
   scale_y_log10() +
@@ -91,7 +93,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Zoops/DensityBoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x=Station, y=Total_NumberPerLiter, fill=division)) + 
+ggplot(Zoo_summary_no64, aes(x=Station, y=Total_NumberPerLiter, fill=division)) + 
   labs(x='Station', y='Density') +
   commonTheme_boxplot + 
   scale_y_log10() +
@@ -107,7 +109,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyMonth.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x=as.factor(Month), y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+ggplot(Zoo_summary_no64, aes(x=as.factor(Month), y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
   labs(x='Month', y=BiomassExp) +
   commonTheme_boxplot + 
   # scale_y_log10() + 
@@ -123,7 +125,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyMonthbyStation.png", sep=""), res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x= Station, y=Total_SpeciesBiomass_ugdwL, color=as.factor(Month))) + 
+ggplot(Zoo_summary_no64, aes(x= Station, y=Total_SpeciesBiomass_ugdwL, color=as.factor(Month))) + 
   labs(x='Station', y=BiomassExp) +
   commonTheme_boxplot_monthly + 
   # scale_y_continuous(limits=c(0, 50)) +
@@ -144,7 +146,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStationbyMonth.png", sep=""), res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x= as.factor(Month) , y=Total_SpeciesBiomass_ugdwL, color=Station)) + 
+ggplot(Zoo_summary_no64, aes(x= as.factor(Month) , y=Total_SpeciesBiomass_ugdwL, color=Station)) + 
   labs(x='Month', y=BiomassExp) +
   commonTheme_boxplot_monthly + 
   scale_y_log10() + 
@@ -158,13 +160,11 @@ ggplot(Zoo_summary_select, aes(x= as.factor(Month) , y=Total_SpeciesBiomass_ugdw
 dev.off()
 
 
-
-
 #Boxplots by month by station by species geom_area
 png(paste0(dropbox_dir, "/Figures/Zoops/StatckedPlotdivisionbyStationbyDate.png", sep=""), res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_select, aes(x= Date , y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+ggplot(Zoo_summary_no64, aes(x= Date , y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
   labs(x='Month', y=BiomassExp) +
   commonTheme_boxplot + 
   # scale_y_log10(limits=c(10000, 10000000000)) + 
