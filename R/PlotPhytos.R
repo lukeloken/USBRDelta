@@ -21,6 +21,8 @@ library(MASS)
 # stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
 
 Phyto_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_select.rds'))
+Phyto_summary_no64<-filter(Phyto_summary_select, Station!='64')
+
 #Also need Phyto_total_monthly and Phyto_monthly
 
 # ##############################
@@ -33,11 +35,11 @@ Median_BioVolExp<-expression(paste("Median phytoplankton biovolume (1 x 10"^"9",
 
 #Colors for phytoplankton divisions
 colorset<-'Accent'
-colors_phyto<-brewer.pal(length(unique(Phyto_summary_select$DIVISION)), colorset)[c(2,1,3,4,5)]
+colors_phyto<-brewer.pal(length(unique(Phyto_summary_no64$DIVISION)), colorset)[c(2,1,3,4,5)]
 
 #colors for months
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors_month<-color.palette(length(unique(Phyto_summary_select$Month)))
+colors_month<-color.palette(length(unique(Phyto_summary_no64$Month)))
 shapes_month<-rep(21:25, 5)
 
 
@@ -63,7 +65,7 @@ commonTheme_boxplot_monthly<-list(
 png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-  ggplot(Phyto_summary_select, aes(x=Station, y=Total_BioVolume, fill=DIVISION)) + 
+  ggplot(Phyto_summary_no64, aes(x=Station, y=Total_BioVolume, fill=DIVISION)) + 
   labs(x='Station', y=BioVolExp) +
   commonTheme_boxplot + 
   # scale_y_log10(limits=c(1000, 100000000000)) +
@@ -78,7 +80,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Phytos/DensityBoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Phyto_summary_select, aes(x=Station, y=Density, fill=DIVISION)) + 
+ggplot(Phyto_summary_no64, aes(x=Station, y=Density, fill=DIVISION)) + 
   labs(x='Station', y='Density') +
   commonTheme_boxplot + 
   scale_y_log10(limits=c(1, 100000000000)) +
@@ -94,7 +96,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyMonth.png", sep=""), res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Phyto_summary_select, aes(x=as.factor(Month), y=Total_BioVolume, fill=DIVISION)) + 
+ggplot(Phyto_summary_no64, aes(x=as.factor(Month), y=Total_BioVolume, fill=DIVISION)) + 
   labs(x='Month', y=BioVolExp) +
   commonTheme_boxplot + 
   # scale_y_log10() + 
@@ -110,7 +112,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyMonthbyStation.png", sep=""), res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Phyto_summary_select, aes(x= Station, y=Total_BioVolume, color=as.factor(Month))) + 
+ggplot(Phyto_summary_no64, aes(x= Station, y=Total_BioVolume, color=as.factor(Month))) + 
   labs(x='Station', y=BioVolExp) +
   commonTheme_boxplot_monthly + 
   # scale_y_continuous(limits=c(0, 50)) +
@@ -129,7 +131,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyStationbyMonth.png", sep=""), res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Phyto_summary_select, aes(x= as.factor(Month) , y=Total_BioVolume, color=Station)) + 
+ggplot(Phyto_summary_no64, aes(x= as.factor(Month) , y=Total_BioVolume, color=Station)) + 
   labs(x='Month', y=BioVolExp) +
   commonTheme_boxplot_monthly + 
   scale_y_log10(limits=c(.00001, 50)) + 
@@ -149,7 +151,7 @@ dev.off()
 png(paste0(dropbox_dir, "/Figures/Phytos/StatckedPlotDivisionbyStationbyDate.png", sep=""), res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Phyto_summary_select, aes(x= Date , y=Total_BioVolume, fill=DIVISION)) + 
+ggplot(Phyto_summary_no64, aes(x= Date , y=Total_BioVolume, fill=DIVISION)) + 
   labs(x='Month', y=BioVolExp) +
   commonTheme_boxplot + 
   # scale_y_log10(limits=c(10000, 10000000000)) + 
