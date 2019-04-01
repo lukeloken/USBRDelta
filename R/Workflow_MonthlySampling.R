@@ -94,30 +94,3 @@ source('R/PlotPhytosChlA.R') # Plot phyto records
 # ############################################
 # ##############################################
 
-
-
-#Field data
-source('R/CleanFieldData_NutrientExperiment.R')
-
-#Nutrient data
-source('R/CleanNutrientData_NutrientExperiment.R')
-
-#Incubation data
-source('R/IncubationMetabolismLightDark_Workflow.R')
-source('R/Plot_IncubationMetabolism_Timeseries.R')
-
-#Vertical profiles
-source('R/CompileVerticalProfiles_NutrientExperiment.R')
-source('R/CompileVerticalProfiles_NutrientExperiment_EXO.R')
-
-source('R/ExtractSurfaceYSI_NutrientExperiment.R')
-source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R')
-
-#O18 metabolism (still need to add these)
-source('R/CreateO18InputTable.R')
-source('R/CalculateO18metabolism_NutrientExperiment.R')
-source('R/Plot_O18Metabolism.R')
-
-
-source('R/PlotTimeseries_NutrientExperiment.R')
-# source('R/.R')
