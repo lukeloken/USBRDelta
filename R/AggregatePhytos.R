@@ -76,11 +76,18 @@ Phyto_summary<- Phyto_CompleteList %>%
   summarize(Total_BioVolume=sum(TOTAL.BV)/(10^9), Density=sum(DENSITY)) %>%
   drop_na(Station)
 
+#Export long summary table for ggplotting
+write.csv(Phyto_summary, file=paste(google_dir, 'DataOutputs', 'PhytoSummaryAllDivisionLongTable.csv', sep='/'), row.names=F)
+saveRDS(Phyto_summary , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary.rds'))
+
+# Phyto_summary_select<- Phyto_summary %>%
+  # filter(DIVISION %in% c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria") & Station != '64')
+
 Phyto_summary_select<- Phyto_summary %>%
-  filter(DIVISION %in% c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria") & Station != '64')
+  filter(DIVISION %in% c("Bacillariophyta", "Chlorophyta", "Cryptophyta", "Chrysophyta", "Cyanobacteria"))
 
 #Export long summary table for ggplotting
-write.csv(Phyto_summary_select, file=paste(google_dir, 'DataOutputs', 'PhytoSummaryDivisionLongTable.csv', sep='/'), row.names=F)
+write.csv(Phyto_summary_select, file=paste(google_dir, 'DataOutputs', 'PhytoSummaryMainDivisionsLongTable.csv', sep='/'), row.names=F)
 saveRDS(Phyto_summary_select , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_select.rds'))
 
 # Make a wide table for merging with other datasets
@@ -97,6 +104,7 @@ saveRDS(Phyto_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summa
 
 #Summarize by month to look at seasonal patterns
 Phyto_monthly <- Phyto_summary_select %>% 
+  filter(Station !='64') %>%
   group_by(Station, DIVISION, Month) %>%
   summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Density, na.rm=T))
 
@@ -107,10 +115,10 @@ Phyto_monthly$Median_BioVolume_log<-Phyto_monthly$Median_BioVolume
 Phyto_monthly$Median_BioVolume_log[which(Phyto_monthly$Median_BioVolume_log==0)]<-1000
 
 #Calculate total phyto biomass and summarize
-Phyto_total <- Phyto_summary %>% 
+Phyto_total <- Phyto_summary_select %>% 
+  filter(Station !='64') %>%
   group_by(Station, Date) %>%
-  summarize(Total_BioVolume=sum(Total_BioVolume, na.rm=T), Total_Density=sum(Density, na.rm=T), Month=median(Month)) %>%
-  filter(Station != '64')
+  summarize(Total_BioVolume=sum(Total_BioVolume, na.rm=T), Total_Density=sum(Density, na.rm=T), Month=median(Month))
 
 Phyto_total_monthly <-Phyto_total  %>% 
   group_by(Station, Month) %>%
