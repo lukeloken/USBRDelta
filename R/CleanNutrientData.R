@@ -53,7 +53,7 @@ names(WQ_df1)<-names
 
 #Change weird header names
 df_sub<-WQ_df1[,-which(names(WQ_df1) %in% c("", "Chlo+Pheoppb",  "Pre-HClPost-HCl"))]
-names(df_sub)[which(names(df_sub)=="Chlo+Pheo__1ppb")]<-"Chlo+Pheoppb"
+names(df_sub)[which(names(df_sub)=="Chlo+Pheo__1ppb")]<-"ChloPheoppb"
 names(df_sub)[which(names(df_sub)=="location")]<-'Station'
 names(df_sub)[which(names(df_sub)=="pH")]<-'pH_WQ'
 names(df_sub)[grep('Lab #', names(df_sub))]<-'Lab_nu'
