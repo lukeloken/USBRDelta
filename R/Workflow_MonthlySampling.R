@@ -31,42 +31,53 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 
 
-#Field data
-# input info from field data sheet and sample inventory
-# source('R/CleanFieldData.R')
 
 
-#Nutrient data
+# ##############################
+# Nutrient data
+# ##############################
+
 # Locate most recent water chemistry data from Xien
 source('R/CleanNutrientData.R')
-#saveRDS(WQ_stations , file=paste0(dropbox_dir, '/Data/Rdata/WQ_stations'))
-
 
 #Mims data
 
 #O18 data
 
-#Incubation data
+# ####################
+# Incubation data
+# ####################
+
 # Input date to link new folder
 # Date<-'102218'
 # source('R/IncubationMetabolism_Workflow.R')
 
 
-#Vertical profiles
+# ##############################
+# Vertical profiles
+# ##############################
+
 # Loop through vertical profiles and plot all
 # Might want to change this to only run the most recent date?
-# Also should save a surface, mid, and deep measurement for each time/place
+# Also saves a surface, mid, and deep measurement for each time/place
 source('R/CleanPlotVerticalProfiles.R')
 source('R/CompileVerticalProfiles.R')
 
+
+# ##############################
 # Longitudinal profiles
+# ##############################
+
 # Loop through longitudinal profiles and plot all
 # Might want to change this to only run the most recent date?
 # Be careful because this downloads google images and may cost Luke Loken money. 
 # source('R/PlotLongitudinalProfiles.R')
 
 
-# Phytoplankton and zooplankton samples profiles
+# ##############################
+# Phytoplankton and zooplankton 
+# ##############################
+
 source('R/CompilePhytosZoops.R') #Load all phytoplankton and zooplankton counts
 
 source('R/AggregatePhytos.R') # Summarize phyto records
@@ -75,22 +86,32 @@ source('R/AggregateZoops.R') # Summarize Zoops records
 source('R/PlotPhytos.R') # Plot phyto records
 source('R/PlotZoops.R') # Plot Zoops records
 
-#Extra script for Phytos to merge with ChlA data. This should likely get merged into a later script for plotting all timeseries
-source('R/PlotPhytosChlA.R') # Plot phyto records
+
+# ################
+# Merge all data
+# ################
+
+source('R/MergeChemistryYSIPhytosZoops.R')
 
 
-#Merge Data
+# ################
+# Timeseries plots
+# ################
 
-#Timeseries plots
+#colors and plotting factors
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+colors_stations<-color.palette(length(unique(SSC_joined_data$Station)))
+colors_zone<-color.palette(length(unique(SSC_joined_data$Zone)))
+stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
+
+
+#script for each variables
+source('R/PlotPhytosChlA.R') # Plot phyto timeseries records with chlA
+source('R/PlotPTimeseriesNutrients.R') # Plot phyto timeseries records with chlA
 
 #Other figures (scatterplots)
 
-# Do not run!!!!!
+# End
 
-# ##########################################
-# ###########################################
-# copy paste below from nutrient addition experiment
-# Use as a template, but do not run below
-# ############################################
-# ##############################################
+
 
