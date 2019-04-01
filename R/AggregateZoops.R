@@ -85,6 +85,8 @@ Zoo_summary_spread <- Zoo_summary_select %>%
   dplyr::select(Station, Date, division, Total_SpeciesBiomass_ugdwL) %>% 
   spread(key = division, value= Total_SpeciesBiomass_ugdwL)
 
+Zoo_summary_spread$Zoo_total <- rowSums(Zoo_summary_spread[,c("Bivalvia", "Cladocera", "Copepoda", "Gastropoda", "Ostracoda", "Rotifera")])
+
 #Export summary by division wide table to be merged with other datasets (Nutrients, Zoops, etc.)
 write.csv(Zoo_summary_spread, file=paste(google_dir, 'DataOutputs', 'ZooSummaryDivision.csv', sep='/'), row.names=F)
 saveRDS(Zoo_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_spread.rds'))
