@@ -13,6 +13,7 @@ rm(list = ls())
 library(readxl)
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(viridis)
 library(lubridate)
 library(ggplot2)
@@ -73,8 +74,15 @@ source('R/CompileVerticalProfiles.R')
 
 #Create a subroutine to exectue the following
 source('R/CompilePhytosZoops.R') #Load all phytoplankton and zooplankton counts
+source('R/AggregatePhytos.R') # Summarize phyto records
+source('R/PlotPhytos.R') # Plot phyto records
+source('R/PlotPhytosChlA.R') # Plot phyto records
 
-# AggregatePhytos.R # Summarize phyto records
+source('R/AggregateZoops.R') # Summarize Zoops records
+source('R/PlotZoops.R') # Plot Zoops records
+
+
+
 # AggregateZoops.R # Summarize zoo record
 # PlotPhytos.R # Plot phytoplankton data
 # PlotZoops.R # Plot Zooplankton data
