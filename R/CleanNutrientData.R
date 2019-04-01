@@ -93,5 +93,7 @@ write.table(WQ_stations, file=paste0(google_dir, '/DataOutputs/WaterChemistryLon
 saveRDS(WQ_stations , file=paste0(dropbox_dir, '/Data/Rdata/WQ_stations'))
 
 
+rm(df_sub, WQ_df1, WQ_df2, SSC_WQ_files, WQ_files, goodstations)
+rm(list=as.character(paste("names", c("", "1A", "1B", "1C", "2A"), sep='')))
 #End
 
