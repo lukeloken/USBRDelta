@@ -1,43 +1,41 @@
 
 
-library(lubridate)
+
+
+# plot nutrient timeseries
+
 library(viridis)
+library(ggplot2)
+library(gridExtra)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(RColorBrewer)
+library(MASS)
 
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
-# setwd("C:/Users/Luke/Dropbox/USBR Delta Project")
+# source('R/g_legend.R')
 # 
-# source("R/ReadInMasterData.R")
-source('R/g_legend.R')
+# # Project folder where outputs are stored
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# 
+# #Where data come from
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/SurfaceChemistry/YSIChemSurface.csv'), stringsAsFactors = F)
-merge_df$Date<-as.Date(merge_df$Date)
-merge_df$Month<-as.character(lubridate::month(merge_df$Date, label = TRUE))
-merge_df$Month<-factor(merge_df$Month, month.abb[1:12])
-
-merge_df$Zone<-NA
-merge_df$Zone[merge_df$Station %in% c('WSP', '84')]<-'5'
-merge_df$Zone[merge_df$Station %in% c('70', '74', '76')]<-'4'
-merge_df$Zone[merge_df$Station %in% c('62', '64', '66')]<-'3'
-merge_df$Zone[merge_df$Station %in% c('44', '56', 'Pro')]<-'2'
-merge_df$Zone[merge_df$Station %in% c('16', '34')]<-'1'
+SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
 
 
-merge_df$Station<-factor(merge_df$Station, c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP"))
 
-#loop through sites and plot NO3
-#colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(length(unique(merge_df$Station)))
 
-variables<-c('NO3.Nppm', 'NH4.Nppm', 'PO4.Pppm', 'Chloro.appb')
-# variables<-c('NO3.Nppm', 'NH4.Nppm', 'PO4.Pppm')
-stations<-c('66', '70', '74', '76', '84')
+# #loop through sites and plot NO3
+# #colors
+# color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+# colors<-color.palette(length(unique(SSC_joined_data$Station)))
+
+variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm', 'Chloroappb')
+# variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm')
+upperstations<-c('66', '70', '74', '76', '84')
 
 
 # stations<-c( '74', '70')
@@ -49,10 +47,10 @@ plot_list<-list()
 var<-1
 for (var in 1:length(variables)){
   
-plot_list[[var]]<-ggplot(merge_df, aes_string('Date', variables[var], group='Station')) + 
+plot_list[[var]]<-ggplot(SSC_joined_data, aes_string('Date', variables[var], group='Station')) + 
   scale_shape_manual(values=rep(21:25, 5))  + 
-  scale_fill_manual(values = color.palette(length(unique(merge_df$Station)))) + 
-  scale_colour_manual(values = color.palette(length(unique(merge_df$Station)))) +
+  scale_fill_manual(values = colors_stations) + 
+  scale_colour_manual(values = colors_stations) +
   geom_line(size=.5, aes(colour=Station,  group=Station)) +    
   geom_point(size=1, aes(fill=Station, shape=Station)) + 
   theme_bw() +
@@ -60,7 +58,7 @@ plot_list[[var]]<-ggplot(merge_df, aes_string('Date', variables[var], group='Sta
   theme(legend.position='none') + 
   theme(axis.title.x=element_blank())
 
-if (variables[var]=="Chloro.appb"){
+if (variables[var]=="Chloroappb"){
   plot_list[[var]] <- plot_list[[var]] + 
     scale_y_log10()
 }
@@ -90,10 +88,10 @@ plot_list<-list()
 var<-1
 for (var in 1:length(variables)){
   
-  plot_list[[var]]<-ggplot(merge_df[merge_df$Station %in% stations,], aes_string('Date', variables[var], group='Station')) + 
+  plot_list[[var]]<-ggplot(SSC_joined_data[SSC_joined_data$Station %in% upperstations,], aes_string('Date', variables[var], group='Station')) + 
     scale_shape_manual(values=rep(21:25, 5))  + 
-    scale_fill_manual(values = color.palette(length(stations))) + 
-    scale_colour_manual(values = color.palette(length(stations))) +
+    scale_fill_manual(values = colors_stations[7:11]) + 
+    scale_colour_manual(values = colors_stations[7:11]) +
     geom_line(size=.5, aes(colour=Station,  group=Station)) +    
     geom_point(size=2, aes(fill=Station, shape=Station)) + 
     theme_bw() +
@@ -101,7 +99,7 @@ for (var in 1:length(variables)){
     theme(legend.position='none') + 
     theme(axis.title.x=element_blank())
   
-  if (variables[var]=="Chloro.appb"){
+  if (variables[var]=="Chloroappb"){
     plot_list[[var]] <- plot_list[[var]] + 
       scale_y_log10()
   }
@@ -126,13 +124,12 @@ dev.off()
 
 
 #Boxplots by zone
-colors<-color.palette(length(unique(merge_df$Zone)))
 
 
 #Common theme for all boxplots
 commonTheme_boxplot<-list(
-  scale_fill_manual(values = colors),
-  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors_zone),
+  scale_colour_manual(values = colors_zone),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank()),
   geom_boxplot(outlier.size=0.5)
@@ -145,11 +142,11 @@ for (plot_nu in 1:length(variables)){
   # Pick data
   metric<-variables[plot_nu]
   #Plot
-  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Month', fill = 'Zone'), data = merge_df) + 
+  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Month', fill = 'Zone'), data = SSC_joined_data) + 
     labs(x='Month', y=metric) +
     commonTheme_boxplot
   
-  if (variables[plot_nu ]=="Chloro.appb"){
+  if (variables[plot_nu ]=="Chloroappb"){
     box_list[[plot_nu]]<-   box_list[[plot_nu]] + 
       scale_y_log10()
   }
@@ -177,16 +174,10 @@ dev.off()
 
 
 
-
-
-#Boxplots by station
-colors<-color.palette(length(unique(merge_df$Station)))
-
-
 #Common theme for all boxplots
 commonTheme_boxplot<-list(
-  scale_fill_manual(values = colors),
-  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors_stations),
+  scale_colour_manual(values = colors_stations),
   theme_bw(),
   theme(plot.title = element_text(hjust=0.5), legend.position="none"),
   geom_boxplot(outlier.size=0.5, na.rm=T)
@@ -199,11 +190,11 @@ for (plot_nu in 1:length(variables)){
   # Pick data
   metric<-variables[plot_nu]
   #Plot
-  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Station', fill = 'Station'), data = merge_df) + 
+  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Station', fill = 'Station'), data = SSC_joined_data) + 
     labs(x='Station', y=metric) +
     commonTheme_boxplot
   
-  if (variables[plot_nu ]=="Chloro.appb"){
+  if (variables[plot_nu ]=="Chloroappb"){
     box_list[[plot_nu]]<-   box_list[[plot_nu]] + 
       scale_y_log10()
   }
@@ -231,18 +222,6 @@ dev.off()
 
 
 #Summer only
-#Boxplots by station
-colors<-color.palette(length(unique(merge_df$Station)))
-
-
-#Common theme for all boxplots
-commonTheme_boxplot<-list(
-  scale_fill_manual(values = colors),
-  scale_colour_manual(values = colors),
-  theme_bw(),
-  theme(plot.title = element_text(hjust=0.5), legend.position="none"),
-  geom_boxplot(outlier.size=0.5, na.rm=T)
-)
 
 # Loop through metrics and make a gg object
 box_list<-list()
@@ -251,11 +230,11 @@ for (plot_nu in 1:length(variables)){
   # Pick data
   metric<-variables[plot_nu]
   #Plot
-  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Station', fill = 'Station'), data = merge_df[merge_df$Month %in% month.abb[6:9],]) + 
+  box_list[[plot_nu]] <- ggplot(aes_string(y = metric, x = 'Station', fill = 'Station'), data = SSC_joined_data[SSC_joined_data$Month %in% month.abb[6:9],]) + 
     labs(x='Station', y=metric) +
     commonTheme_boxplot
   
-  if (variables[plot_nu ]=="Chloro.appb"){
+  if (variables[plot_nu ]=="Chloroappb"){
     box_list[[plot_nu]]<-   box_list[[plot_nu]] + 
       scale_y_log10()
   }
@@ -293,16 +272,16 @@ library(ggplot2)
 
 SSCSites <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/SSCSites.rds'))
 
-SSCSites$STATIONclean<-c('16', '34', '44', '56', '62', '64', '66', '70', '74', '76', '84', 'WSP', 'Pro')
-unique(merge_df$Station)
+SSCSites$Station<-c('16', '34', '44', '56', '62', '64', '66', '70', '74', '76', '84', 'WSP', 'Pro')
+unique(SSC_joined_data$Station)
 
 
-merge_df$Dist<-SSCSites$Dist[match(merge_df$Station, SSCSites$STATIONclean)]
+SSC_joined_data$Dist<-SSCSites$Dist[match(SSC_joined_data$Station, SSCSites$Station)]
 
-heat<-merge_df[-which(merge_df$Station %in% c('Pro', '64')),]
+heat<-SSC_joined_data[-which(SSC_joined_data$Station %in% c('Pro', '64')),]
 heat$Dist<-round(heat$Dist, -1)
-plot(merge_df$Dist, merge_df$Chloro.appb)
-points(heat$Dist, heat$Chloro.appb, col='red')
+plot(SSC_joined_data$Dist, SSC_joined_data$Chloroappb)
+points(heat$Dist, heat$Chloroappb, col='red')
 
 
 
@@ -313,7 +292,7 @@ distances<-seq(range[1], range[2], by=100)
 
 dates<-seq(min(heat$Date), max(heat$Date), 5)
 
-interped <- with(heat[is.finite(heat$Chloro.appb),], interp(Date, Dist, Chloro.appb, duplicate='mean', xo=dates, yo=distances ))
+interped <- with(heat[is.finite(heat$Chloroappb),], interp(Date, Dist, Chloroappb, duplicate='mean', xo=dates, yo=distances ))
 ChlA_data_interp <- with(interped, data.frame(date=as.Date(rep(dates, length.out=length(z))), Dist=rep(y, each=length(x)), ChlA=as.vector(z))
 )
 
@@ -323,8 +302,7 @@ ChlA_data_interp$ChlA[which(ChlA_data_interp$ChlA>max_ChlA)]<-max_ChlA
 
 
 #colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(20)
+colors_heat<-color.palette(20)
 
 ChlAExp<-expression(paste("Chlorophyll a (", mu, "g L"^"-1", ")  ", sep=''))
 
@@ -343,7 +321,7 @@ heatplot<- viz + geom_tile(aes(fill = (ChlA))) +
   # geom_raster(aes(fill=Zoo), interpolate=TRUE) + 
   # aes(x = x, y = y, z = z, fill = z) + 
   # geom_tile() + 
-  scale_fill_gradientn(colours=color.palette(20), breaks=seq(0,30, 10), labels=c(0,10,20,">30"), na.value='white') +
+  scale_fill_gradientn(colours=colors_heat, breaks=seq(0,30, 10), labels=c(0,10,20,">30"), na.value='white') +
   # floor(min(Zoo_gather$Zoo)), ceiling(max(Zoo_gather$Zoo)))) +
   scale_y_reverse(expand = c(0, 0)) + 
   scale_x_date(expand=c(0,0)) + 
@@ -356,9 +334,7 @@ heatplot<- viz + geom_tile(aes(fill = (ChlA))) +
   guides(fill=guide_colourbar(title=ChlAExp, barwidth=20)) 
 # scale_colour_manual(values = colors)
 
-print(heatplot)
-
-
+# print(heatplot)
 
 png(paste0(dropbox_dir, '/Figures/Heatmaps_ChlA.png'), width=12, height=8, units='in', res=200)
 
@@ -373,14 +349,6 @@ interped <- with(heat[is.finite(heat$Temp.C),], interp(Date, Dist, Temp.C, dupli
 Temp_data_interp <- with(interped, data.frame(date=as.Date(rep(dates, length.out=length(z))), Dist=rep(y, each=length(x)), Temp=as.vector(z))
 )
 
-# max_ChlA<-30
-# ChlA_data_interp$ChlA[which(ChlA_data_interp$ChlA>max_ChlA)]<-max_ChlA
-
-
-
-#colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(20)
 
 TempExp<-expression(paste("Temperature (", degree, "C", ")  ", sep=''))
 
@@ -393,7 +361,7 @@ heatplot<- viz + geom_tile(aes(fill = (Temp))) +
   # geom_raster(aes(fill=Zoo), interpolate=TRUE) + 
   # aes(x = x, y = y, z = z, fill = z) + 
   # geom_tile() + 
-  scale_fill_gradientn(colours=color.palette(20), na.value='white') +
+  scale_fill_gradientn(colours=colors_heat, na.value='white') +
   # scale_fill_gradientn(colours=color.palette(20), breaks=seq(0,30, 10), labels=c(0,10,20,">30"), na.value='white') +
   # floor(min(Zoo_gather$Zoo)), ceiling(max(Zoo_gather$Zoo)))) +
   scale_y_reverse(expand = c(0, 0)) + 
@@ -407,7 +375,7 @@ heatplot<- viz + geom_tile(aes(fill = (Temp))) +
   guides(fill=guide_colourbar(title=TempExp, barwidth=20)) 
 # scale_colour_manual(values = colors)
 
-print(heatplot)
+# print(heatplot)
 
 png(paste0(dropbox_dir, '/Figures/Heatmaps_Temp.png'), width=12, height=8, units='in', res=200)
 
@@ -427,10 +395,6 @@ SPC_data_interp$SPC[which(SPC_data_interp$SPC>max_SPC)]<-max_SPC
 
 
 
-#colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(20)
-
 SPCExp<-expression(paste("Specific conductivity (", mu, "S cm"^"-1", ")  ", sep=''))
 
 
@@ -442,7 +406,7 @@ heatplot<- viz + geom_tile(aes(fill = (SPC))) +
   # geom_raster(aes(fill=Zoo), interpolate=TRUE) + 
   # aes(x = x, y = y, z = z, fill = z) + 
   # geom_tile() + 
-  scale_fill_gradientn(colours=color.palette(20), breaks=seq(0,max_SPC, 200), labels=c(0,200,400,600,800,1000,">1200"), na.value='white') +
+  scale_fill_gradientn(colours=colors_heat, breaks=seq(0,max_SPC, 200), labels=c(0,200,400,600,800,1000,">1200"), na.value='white') +
   # floor(min(Zoo_gather$Zoo)), ceiling(max(Zoo_gather$Zoo)))) +
   scale_y_reverse(expand = c(0, 0)) + 
   scale_x_date(expand=c(0,0)) + 
@@ -455,7 +419,7 @@ heatplot<- viz + geom_tile(aes(fill = (SPC))) +
   guides(fill=guide_colourbar(title=SPCExp, barwidth=20)) 
 # scale_colour_manual(values = colors)
 
-print(heatplot)
+# print(heatplot)
 
 png(paste0(dropbox_dir, '/Figures/Heatmaps_SPC.png'), width=12, height=8, units='in', res=200)
 
@@ -467,18 +431,12 @@ dev.off()
 
 
 #Nitrate
-interped <- with(heat[is.finite(heat$NO3.Nppm),], interp(Date, Dist, NO3.Nppm, duplicate='mean', xo=dates, yo=distances ))
+interped <- with(heat[is.finite(heat$NO3Nppm),], interp(Date, Dist, NO3Nppm, duplicate='mean', xo=dates, yo=distances ))
 NO3_data_interp <- with(interped, data.frame(date=as.Date(rep(dates, length.out=length(z))), Dist=rep(y, each=length(x)), NO3=as.vector(z))
 )
 
 max_NO3<-2
 NO3_data_interp$NO3[which(NO3_data_interp$NO3>max_NO3)]<-max_NO3
-
-
-
-#colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(20)
 
 NO3Exp<-expression(paste("Nitrate (", "mg N L"^"-1", ")  ", sep=''))
 
@@ -492,7 +450,7 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
   # aes(x = x, y = y, z = z, fill = z) + 
   # geom_tile() + 
   # scale_fill_gradientn(colours=color.palette(20), breaks=seq(0,max_NO3, 0.5), labels=c(0,0.5, 1, 1.5 ,">2"), na.value='white') +
-  scale_fill_gradientn(colours=color.palette(20), na.value='white') +
+  scale_fill_gradientn(colours=colors_heat, na.value='white') +
   # floor(min(Zoo_gather$Zoo)), ceiling(max(Zoo_gather$Zoo)))) +
   scale_y_reverse(expand = c(0, 0)) + 
   scale_x_date(expand=c(0,0)) + 
@@ -505,7 +463,7 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
   guides(fill=guide_colourbar(title=NO3Exp, barwidth=20)) 
 # scale_colour_manual(values = colors)
 
-print(heatplot)
+# print(heatplot)
 
 png(paste0(dropbox_dir, '/Figures/Heatmaps_NO3.png'), width=12, height=8, units='in', res=200)
 
@@ -522,7 +480,7 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
   # aes(x = x, y = y, z = z, fill = z) + 
   # geom_tile() + 
   # scale_fill_gradientn(colours=color.palette(20), breaks=seq(0,max_NO3, 0.5), labels=c(0,0.5, 1, 1.5 ,">2"), na.value='white') +
-  scale_fill_gradientn(colours=color.palette(20), na.value='white') +
+  scale_fill_gradientn(colours=colors_heat, na.value='white') +
   # floor(min(Zoo_gather$Zoo)), ceiling(max(Zoo_gather$Zoo)))) +
   scale_y_reverse(expand = c(0, 0)) + 
   scale_x_date(expand=c(0,0)) + 
@@ -535,7 +493,7 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
   guides(fill=guide_colourbar(title=NO3Exp, barwidth=20)) 
 # scale_colour_manual(values = colors)
 
-print(heatplot)
+# print(heatplot)
 
 png(paste0(dropbox_dir, '/Figures/Heatmaps_withContour_NO3.png'), width=12, height=8, units='in', res=200)
 
