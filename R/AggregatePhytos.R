@@ -61,7 +61,7 @@ Phyto_CompleteList <- Phyto_CompleteList %>%
 
 
 #Save complete recrod with NAs
-write.csv(Phyto_CompleteList, file=paste(google_dir, 'DataOutputs', 'Phyto_CompleteList', sep='/'), row.names=F)
+write.csv(Phyto_CompleteList, file=paste(google_dir, 'DataOutputs', 'Phyto_CompleteList.csv', sep='/'), row.names=F)
 saveRDS(Phyto_CompleteList , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_CompleteList.rds'))
 
 
