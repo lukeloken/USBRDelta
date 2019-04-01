@@ -73,11 +73,16 @@ Zoo_summary<- Zoo_CompleteList %>%
   group_by(Station, Date, division, Month) %>%
   dplyr::summarize(Total_SpeciesBiomass_ugdwL=sum(SpeciesBiomass_ugdwL), Total_NumberPerLiter=sum(NumberPerLiter))
 
+#Export long summary table for ggplotting
+write.csv(Zoo_summary, file=paste(google_dir, 'DataOutputs', 'ZooSummaryAllDivisionLongTable.csv', sep='/'), row.names=F)
+saveRDS(Zoo_summary , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary.rds'))
+
+
 Zoo_summary_select<- Zoo_summary %>%
-  filter(division %in% c("Bivalvia", "Cladocera", "Copepoda", "Gastropoda", "Ostracoda", "Rotifera") & Station != '64')
+  filter(division %in% c("Bivalvia", "Cladocera", "Copepoda", "Gastropoda", "Ostracoda", "Rotifera"))
 
 #Export summary by division table to ggplot
-write.csv(Zoo_summary_select, file=paste(google_dir, 'DataOutputs', 'ZooSummaryDivisionLongTable.csv', sep='/'), row.names=F)
+write.csv(Zoo_summary_select, file=paste(google_dir, 'DataOutputs', 'ZooSummaryMainDivisionsLongTable.csv', sep='/'), row.names=F)
 saveRDS(Zoo_summary_select , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_select.rds'))
 
 
@@ -94,6 +99,7 @@ saveRDS(Zoo_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_s
 
 #Summarize by month to look at seasonal patterns
 Zoo_monthly <- Zoo_summary_select %>% 
+  filter(Station !='64') %>%
   group_by(Station, division, Month) %>%
   dplyr::summarize(Mean_SpeciesBiomass_ugdwL=mean(Total_SpeciesBiomass_ugdwL, na.rm=T), Median_SpeciesBiomass_ugdwL=median(Total_SpeciesBiomass_ugdwL, na.rm=T), Mean_NumberPerLiter=mean(Total_NumberPerLiter, na.rm=T))
 
@@ -105,9 +111,9 @@ Zoo_monthly$Median_SpeciesBiomass_ugdwL_log[which(Zoo_monthly$Median_SpeciesBiom
 
 #Calculate total Zoo biomass and summarize
 Zoo_total <- Zoo_summary %>% 
+  filter(Station !='64') %>%
   group_by(Station, Date) %>%
-  dplyr::summarize(Total_SpeciesBiomass_ugdwL=sum(Total_SpeciesBiomass_ugdwL, na.rm=T), Total_NumberPerLiter=sum(Total_NumberPerLiter, na.rm=T), Month=median(Month)) %>%
-  filter(Station != '64')
+  dplyr::summarize(Total_SpeciesBiomass_ugdwL=sum(Total_SpeciesBiomass_ugdwL, na.rm=T), Total_NumberPerLiter=sum(Total_NumberPerLiter, na.rm=T), Month=median(Month))
 
 Zoo_total_monthly <-Zoo_total  %>% 
   group_by(Station, Month) %>%
