@@ -4,7 +4,6 @@
 # Wrapper script to execute all the tasks associated with the monthly data collection
 
 
-
 #Wrapper code to perform data processing associated with nutrient experiment
 rm(list = ls())
 
