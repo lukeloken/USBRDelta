@@ -54,7 +54,8 @@ source('R/CleanNutrientData.R')
 
 # Input date to link new folder
 # Date<-'102218'
-# source('R/IncubationMetabolism_Workflow.R')
+source('R/IncubationMetabolism_Workflow.R')
+source('R/CompileIncubationMetabolism.R')
 
 
 # ##############################
