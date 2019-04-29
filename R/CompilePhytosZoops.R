@@ -83,7 +83,7 @@ ZooKeepNames<-c('bottle.ID', 'Date', 'genus', 'species', 'division', 'notes', "T
 
 
 Zoo_FullRecord <- Zoo_df %>%
-  rename(Date = date,
+  dplyr::rename(Date = date,
          SpeciesBiomass_ugdwL = starts_with("species.biomass"),
          BiomassFactor = starts_with("biomass.factor"),
          Aliquot_mL = starts_with("aliquot"),
