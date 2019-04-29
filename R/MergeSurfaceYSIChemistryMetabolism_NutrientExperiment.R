@@ -29,13 +29,12 @@ field_df_withFlame<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/
 field_df_withFlame$Date<-as.Date(field_df_withFlame$Date)
 field_df_withFlame$Site<-sitetable$site1[match(field_df_withFlame$Location, sitetable$site4)]
 
-
 #Water chemistry
 nutrient_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), sep=',', header=T, stringsAsFactors = F)
 nutrient_df$Date<-as.Date(nutrient_df$Date)
 nutrient_df<-nutrient_df[which(nutrient_df$Site %in% sitetable$site1),]
 nutrient_surface<-nutrient_df[grep('_S', nutrient_df$SampleLabel),]
-nutrient_surface<-select(nutrient_surface, -Turbidity, -EC, -PH, -Lab..) 
+nutrient_surface<-dplyr::select(nutrient_surface, -Turbidity, -EC, -PH, -Lab..) 
 
 #YSI surface data
 bigdf <- read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceChemistry/YSISurface.csv'), stringsAsFactors = F)
@@ -49,18 +48,18 @@ str(summary_df)
 summary_df$Date<-as.Date(summary_df$Date)
 
 incubation_df<-summary_df %>%
-  select(Date, Site, Metric, mean) %>%
+  dplyr::select(Date, Site, Metric, mean) %>%
   spread(key=Metric, value=mean)
 
 
 #Merge everything together
 
 merge1<-full_join(incubation_df, bigdf)
-merge2<-select(merge1, -Station, -Depth.feet,- DateTime.PT)
+merge2<-dplyr::select(merge1, -Station, -Depth.feet,- DateTime.PT)
 
 #Field notes
 merge3<-full_join(merge2, field_df_withFlame)
-merge4<-select(merge3, -Date.1)
+merge4<-dplyr::select(merge3, -Date.1)
 
 #Nutrient data
 merge5<-full_join(merge4, nutrient_surface)
@@ -69,3 +68,4 @@ merge5<-full_join(merge4, nutrient_surface)
 #Merge water chemistry data
 merge_df<-merge5
 write.csv(merge_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceChemistry/YSIMetabolismSurface.csv'), row.names=F)
+
