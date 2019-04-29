@@ -1,4 +1,7 @@
 
+library(gridExtra)
+library(grid)
+
 source('R/g_legend.R')
 
 # Project folder where outputs are stored
