@@ -45,14 +45,18 @@ rm(tss_df_names)
 tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SampleLabel', 'TSS', 'VSS')]
 
 #Oxygen18data
-O18<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenSadro_ExetData_decomposed.txt"), sep='\t', skip=71, header=T)
+O18_batch1<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenSadro_ExetData_decomposed_Bath01.txt"), sep='\t', skip=71, header=T, stringsAsFactors = F)
+O18_batch2<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenExetainers_Clean_decomposed_Batch02.txt"), sep='\t', skip=76, header=T, stringsAsFactors = F)
+
+O18<-bind_rows(O18_batch1, O18_batch2)
 
 O18$SampleLabel<-sub('_[ab]', '', O18$Group.1 )
 
 O18avg<- O18 %>%
-  select(-Group.1, -flag.smallArea32) %>%
+  dplyr::select(-Group.1, -flag.smallArea32) %>%
   group_by(SampleLabel) %>%
-  summarize_all(mean)
+  dplyr::summarize_all(mean)
+
 
 #Clean Times
 nutrient_df$Date<-as.Date(nutrient_df$Date)
