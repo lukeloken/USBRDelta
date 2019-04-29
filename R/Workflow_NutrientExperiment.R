@@ -50,6 +50,7 @@ source('R/Plot_O18Metabolism.R')
 #Zooplankton, Phytoplankton, Picoplankton
 source('R/CompilePlankton_NutrientExperiment.R')
 
+source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
 source('R/PlotTimeseries_NutrientExperiment.R')
 # source('R/.R')
