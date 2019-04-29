@@ -10,11 +10,11 @@ library(RColorBrewer)
 
 # source('R/CompilePhytos.R')
 
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+# # Project folder where outputs are stored
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# 
+# #Where data come from
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 
 Phyto_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_FullRecord.rds'))
@@ -73,7 +73,7 @@ saveRDS(Phyto_CompleteList , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_Complet
 Phyto_summary<- Phyto_CompleteList %>%
   dplyr::select(Station,Date, DIVISION, TOTAL.BV, DENSITY, Month) %>%
   group_by(Station,Date, DIVISION, Month) %>%
-  summarize(Total_BioVolume=sum(TOTAL.BV)/(10^9), Density=sum(DENSITY)) %>%
+  dplyr::summarize(Total_BioVolume=sum(TOTAL.BV)/(10^9), Density=sum(DENSITY)) %>%
   drop_na(Station)
 
 #Export long summary table for ggplotting
@@ -106,7 +106,7 @@ saveRDS(Phyto_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summa
 Phyto_monthly <- Phyto_summary_select %>% 
   filter(Station !='64') %>%
   group_by(Station, DIVISION, Month) %>%
-  summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Density, na.rm=T))
+  dplyr::summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Density, na.rm=T))
 
 Phyto_monthly$Mean_BioVolume_log<-Phyto_monthly$Mean_BioVolume
 Phyto_monthly$Mean_BioVolume_log[which(Phyto_monthly$Mean_BioVolume_log==0)]<-1
@@ -118,11 +118,11 @@ Phyto_monthly$Median_BioVolume_log[which(Phyto_monthly$Median_BioVolume_log==0)]
 Phyto_total <- Phyto_summary_select %>% 
   filter(Station !='64') %>%
   group_by(Station, Date) %>%
-  summarize(Total_BioVolume=sum(Total_BioVolume, na.rm=T), Total_Density=sum(Density, na.rm=T), Month=median(Month))
+  dplyr::summarize(Total_BioVolume=sum(Total_BioVolume, na.rm=T), Total_Density=sum(Density, na.rm=T), Month=median(Month))
 
 Phyto_total_monthly <-Phyto_total  %>% 
   group_by(Station, Month) %>%
-  summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Total_Density, na.rm=T))
+  dplyr::summarize(Mean_BioVolume=mean(Total_BioVolume, na.rm=T), Median_BioVolume=median(Total_BioVolume, na.rm=T), Mean_Density=mean(Total_Density, na.rm=T))
 
 
 #Export summary by division table to be merged with other datasets (Nutrients, Zoops, etc.)
