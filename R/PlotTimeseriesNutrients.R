@@ -36,6 +36,7 @@ SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data')
 variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm', 'Chloroappb')
 # variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm')
 upperstations<-c('66', '70', '74', '76', '84')
+upperstations2<-c('62', '64', '66', '70', '74', '76', '84')
 
 
 # stations<-c( '74', '70')
@@ -498,6 +499,36 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
 png(paste0(dropbox_dir, '/Figures/Heatmaps_withContour_NO3.png'), width=12, height=8, units='in', res=200)
 
 print(heatplot)
+
+dev.off()
+
+
+
+
+
+
+slopes<-SSC_joined_data[which(SSC_joined_data$Station %in% upperstations2),]
+slopes$Dist_km<-round(slopes$Dist, -1)/1000
+plot(SSC_joined_data$Dist/1000, SSC_joined_data$Chloroappb)
+points(slopes$Dist_km, slopes$Chloroappb, col='red')
+
+slopes$Year<-year(slopes$Date)
+
+slopes_summer<-slopes[which(month(slopes$Date) %in% 4:9),]
+
+#Colors for boxplots by division
+colorset<-'Spectral'
+colors_slopes<-rev(brewer.pal(length(unique(slopes_summer$Month)), colorset))
+
+png(paste0(dropbox_dir, '/Figures/Timeseries/NO3_byYear.png'), width=10, height=8, units='in', res=200)
+
+ggplot(aes(x=Dist_km, y=NO3Nppm, group=Month, colour=Month), data=slopes_summer) + 
+  scale_colour_manual(values = colors_slopes) + 
+  geom_path(size=1) + 
+  geom_point(size=2) + 
+  theme_bw() + 
+  theme(legend.position='bottom') +
+  facet_wrap(~Year)
 
 dev.off()
 
