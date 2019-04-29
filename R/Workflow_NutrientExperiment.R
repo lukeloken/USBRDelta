@@ -15,6 +15,7 @@ library(ggplot2)
 library(gridExtra)
 
 
+source('R/read_excel_allsheets_skip.R')
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 
@@ -45,6 +46,9 @@ source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R')
 source('R/CreateO18InputTable.R')
 source('R/CalculateO18metabolism_NutrientExperiment.R')
 source('R/Plot_O18Metabolism.R')
+
+#Zooplankton, Phytoplankton, Picoplankton
+source('R/CompilePlankton_NutrientExperiment.R')
 
 
 source('R/PlotTimeseries_NutrientExperiment.R')
