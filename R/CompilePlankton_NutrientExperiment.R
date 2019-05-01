@@ -7,49 +7,41 @@ library(readxl)
 library(plyr)
 library(lubridate)
 
+# #############
+# Phytoplankton
+# #############
 
-#Need to update phytoplankton
 PhytoFiles<-list.files(paste(google_dir, 'Data', 'NutrientExperiment', 'Phytoplankton', sep='/'))
 PhytoFiles<-PhytoFiles[grep('.xls', PhytoFiles)]
 
 KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTAL BV', 'DENSITY (cells/L)', 'NOTES')
-# 
-# File_i=1
-# Phyto_list<-list()
-# for (File_i in 1:length(PhytoFiles)){
-#   Phyto_list[[File_i]]<-read_excel(paste(google_dir, 'Data', 'Phyto', PhytoFiles[File_i], sep='/'), skip=1)
-#   PhytoNames<-names(read_excel(paste(google_dir, 'Data', 'Phyto', PhytoFiles[File_i], sep='/'), skip=0))
-#   
-#   PhytoNames[which(PhytoNames=="DENSITY (cells/L)")]<-"DENSITY"
-#   names(Phyto_list[[File_i]])<-PhytoNames
-#   
-#   Phyto_list[[File_i]]<-Phyto_list[[File_i]][,intersect(KeepNames, PhytoNames)]
-#   
-# }
-# 
-# Phyto_df<-ldply(Phyto_list, data.frame)
-# 
-# # head(Phyto_df)
-# # head(Phyto_list[[1]])
-# 
-# Phyto_FullRecord<- Phyto_df %>%
-#   drop_na(STATION, SAMPLE) %>%
-#   dplyr::rename(bottle.ID = STATION) %>%
-#   mutate(Date=as.Date(SAMPLE), Station=NA)
-# 
-# rm(Phyto_list, Phyto_df, PhytoFiles, PhytoNames, KeepNames, File_i)
-# 
-# 
-# Phyto_FullRecord$Station<-sitetable$site1[match(Phyto_FullRecord$site, sitetable$site3)]
 
+File_i=1
+Phyto_list<-list()
+for (File_i in 1:length(PhytoFiles)){
+  Phyto_list[[File_i]]<-read_excel(paste(google_dir, 'Data', 'NutrientExperiment', 'Phytoplankton', PhytoFiles[File_i], sep='/'), skip=1)
+  PhytoNames<-names(read_excel(paste(google_dir,  'Data', 'NutrientExperiment', 'Phytoplankton', PhytoFiles[File_i], sep='/'), skip=0))
 
+  PhytoNames[which(PhytoNames=="DENSITY (cells/L)")]<-"DENSITY"
+  names(Phyto_list[[File_i]])<-PhytoNames
 
+  Phyto_list[[File_i]]<-Phyto_list[[File_i]][,intersect(KeepNames, PhytoNames)]
 
+}
 
-# Need to rename files 
-# write.csv(Phyto_FullRecord, file=paste(google_dir, 'DataOutputs', 'PhytoCountsAll.csv', sep='/'), row.names=F)
-# 
-# saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_FullRecord.rds'))
+Phyto_df<-ldply(Phyto_list, data.frame)
+
+Phyto_FullRecord<- Phyto_df %>%
+  drop_na(STATION, SAMPLE) %>%
+  dplyr::rename(bottle.ID = STATION) %>%
+  mutate(Date=as.Date(SAMPLE), 
+         Station=paste0("EC", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3]))
+
+rm(Phyto_list, Phyto_df, PhytoFiles, PhytoNames, KeepNames, File_i)
+
+#Save files
+write.csv(Phyto_FullRecord, file=paste(google_dir, 'DataOutputs', 'PhytosCountsAll_NutExp1.csv', sep='/'), row.names=F)
+saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_FullRecord_NutExp1.rds'))
 
 
 # ###########
@@ -134,7 +126,7 @@ pico_df2 <- Pico_df %>%
 shortnames <- substr(pico_df2$STATION, 1, 5)
 pico_df2$Station<- gsub(' #', '', shortnames)
 
-pico_totals<-select(pico_df2, DATE, Station, CATEGORY, TOTAL_BV_um3PerLiter, -STATION) %>%
+pico_totals <- dplyr::select(pico_df2, DATE, Station, CATEGORY, TOTAL_BV_um3PerLiter, -STATION) %>%
   spread(key=CATEGORY, value='TOTAL_BV_um3PerLiter') %>%
   mutate(
     Station = factor(Station, sitetable$site1),
@@ -144,34 +136,12 @@ pico_totals<-select(pico_df2, DATE, Station, CATEGORY, TOTAL_BV_um3PerLiter, -ST
   ) %>%
   dplyr::select(-DATE)
 
+
+rm(pico_df2, shortnames, Pico_df, pico_cyano, pico_bact, pico_list, PicoFiles)
+
+
 write.csv(pico_totals, file=paste(google_dir, 'DataOutputs', 'PicosCountsAll_NutExp1.csv', sep='/'), row.names=F)
 saveRDS(pico_totals, file=paste0(dropbox_dir, '/Data/Rdata/Picos_FullRecord_NutExp1.rds'))
 
-
-#Delete below, code from other scripts
-
-# #####################################
-# Rename phyto and zooplankton stations
-# #####################################
-
-# AllStations<-unique(Zoo_FullRecord$SampleCode)
-# AllStations<-unique(c(Phyto_FullRecord$SampleCode, Zoo_FullRecord$SampleCode))
-
-# 
-# Phyto_FullRecord$Station<-factor(Phyto_FullRecord$Station, LongTermSites)
-# 
-# Phyto_FullRecord <- Phyto_FullRecord %>% 
-#   arrange(Date, Station)
-# 
-# Phyto_badIDs <- unique(Phyto_FullRecord$bottle.ID[is.na(Phyto_FullRecord$Station)])
-# 
-# 
-# 
-# rm(list=as.character(paste("names", LongTermSites, sep='')))
-# rm(AllStations, LongTermSites, station, names_list)
-# 
-# # End
-# 
-# 
 
 
