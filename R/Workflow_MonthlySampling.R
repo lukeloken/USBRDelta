@@ -32,7 +32,6 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors_stations<-color.palette(13)
 colors_zone<-color.palette(5)
-
 colors_summermonths<-color.palette(7)
 
 stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
