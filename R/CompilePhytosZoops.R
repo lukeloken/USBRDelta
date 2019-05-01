@@ -78,7 +78,7 @@ Zoo_df<-ldply(Zoo_list, data.frame)
 
 # dplyr::select(Zoo_df, starts_with("species.biomass"))
 
-ZooKeepNames<-c('bottle.ID', 'Date', 'genus', 'species', 'division', 'notes', "TowLength", "NetRadius_cm", "TowVolume_L", "TotalSampleVolume_mL", "Aliquot_mL", "CountFactor", "NumberIndividualsCounted", "NumberPerLiter" , "BiomassFactor", "SpeciesBiomass_ugdwL")
+ZooKeepNames<-c('bottle.ID', 'Date', 'genus', 'species', 'division', 'notes', "NetRadius_cm", "TowVolume_L", "TotalSampleVolume_mL", "Aliquot_mL", "CountFactor", "NumberIndividualsCounted", "NumberPerLiter" , "BiomassFactor", "SpeciesBiomass_ugdwL")
 
 
 
@@ -92,8 +92,8 @@ Zoo_FullRecord <- Zoo_df %>%
          TotalSampleVolume_mL = starts_with("total.sample.volume"),
          CountFactor = starts_with("count.factor"),
          NumberIndividualsCounted = starts_with("X.individuals.counted"),
-         NumberPerLiter = starts_with("X....L"),
-         TowLength = starts_with("tow.leng")) %>%
+         NumberPerLiter = starts_with("X....L")) %>%
+         # TowLength = starts_with("tow.length")) %>%
   dplyr::select(one_of(ZooKeepNames)) %>%
   mutate(SpeciesBiomass_ugdwL = as.numeric(SpeciesBiomass_ugdwL),
          BiomassFactor = as.numeric(BiomassFactor), 
