@@ -22,21 +22,15 @@ source('R/g_legend.R')
 # source("R/ReadInMasterData.R")
 
 #New data input (after O18 metabolism)
-met.final<-read.csv(file = paste(dropbox_dir, "Data", "NutrientExperiment", "Oxygen18", "O18MetabolismEstimates.csv", sep='/'), stringsAsFactors = F)
+met.join<-read.csv(file = paste(dropbox_dir, "Data", "NutrientExperiment", "MergedData2.csv", sep='/'), stringsAsFactors = F)
 
-met.final$Date<-as.Date(met.final$Date)
-met.final$Site<-factor(met.final$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
-
-met.final$GPP<-met.final$NEP-met.final$ER
-
-#Old data input (before oxygen 18 metabolism)
-# merge_df <- read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceChemistry/YSIMetabolismSurface.csv'), stringsAsFactors = F)
-# merge_df$Date<-as.Date(merge_df$Date)
-# merge_df$Site<-factor(merge_df$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
+met.join$Date<-as.Date(met.join$Date)
+met.join$Site<-factor(met.join$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
 
-metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'Temp.C', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'TSS', 'VSS', 'SecchiDepth', "d180_02.vs.VSMOW", "gppv", "rv", 'nepv', 'NEP', 'ER', 'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "DIN.ppm", 'TN.ppm', 'TDN.ppm', "DON.ppm", "TPN.ppm", "PO4",   'TP.ppm', "DOC.ppm")
+metrics<-c('EXOSpCond', 'SpCond.uS', 'EXOTemp', 'EXOpH', 'pH', 'EXOChlugL', 'Chl.ug.L', 'EXOBGAPCugL', 'EXOODO', 'EXODOmgL', 'ODO.mg.L', 'EXOTurbFNU', 'Turbid..NTU', 'HachTurbidity', 'TSS', 'VSS', 'SecchiDepth', "kd_meters", "PhoticDepth_m",'SUNA_NO3_uM',"NO3.ppm", "NH4.ppm", "DIN.ppm", 'TN.ppm', 'TDN.ppm', "DON.ppm", "TPN.ppm", "PO4",   'TP.ppm', "DOC.ppm")
 
+metricsMetabolism<-c("gppv",  'nepv', "rv", 'GPP', 'NEP', 'ER', 'GPP_buoy', 'NEP_buoy', 'ER_buoy', 'GPP_inc', 'NEP_inc', 'ER_inc')
 
 
 #Plotting parameters
@@ -46,7 +40,7 @@ jitterwidth=0.15
 
 #colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(length(unique(met.final$Site)))
+colors<-color.palette(length(unique(met.join$Site)))
 shapes<-rep(21:25, 5)
 
 
@@ -66,19 +60,19 @@ commonTheme<-list(
 # Make a table to determine how many panels are needed
 # Each panel is a site and a metric
 
+uniquesites<-unique(met.join[c('Site')])
 
-uniquesites<-unique(met.final[c('Site')])
-
-ranges<-sapply(metrics, function(x) extendrange(met.final[,x], f=0.05))
 
 # Loop through metrics and sites and make a gg object
 plot_list<-list()
+ranges<-sapply(metrics, function(x) extendrange(met.join[,x], f=0.05))
+
 plot_nu<-1
 for (plot_nu in 1:length(metrics)){
   
   metric<-metrics[plot_nu]
   
-  table<-met.final[,c('Site', 'Date', metric)]
+  table<-met.join[,c('Site', 'Date', metric)]
   
   plot_list[[plot_nu]]<-ggplot(table, aes_string('Date', metric, group='Site')) + 
     ggtitle(metric) +
@@ -105,33 +99,91 @@ mylegend<-g_legend(plot_withlegend)
 
 
 plot_list2<-plot_list
-plot_list2[[length(plot_list)+1]]<-mylegend
+# plot_list2[[length(plot_list)+1]]<-mylegend
 # arrange plots with legend
 # p2<-grid.arrange(grobs=plot_list2, nrow=ceiling(length(plot_list2)/2), as.table=F)
 p2<-grid.arrange(grobs=plot_list2, ncol=3, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Allmetrics.png'), width=12, height=16, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_AllMeasurements.png'), width=12, height=16, units='in', res=200)
 
-grid.arrange(p2)
+grid.arrange(p2, mylegend, nrow=2, heights=c(12,1))
 
 dev.off()
 
 
-for (plot_nu in 1:length(plot_list)){
-  plot_withlegend <- plot_list[[plot_nu]] + 
-    theme(legend.position="bottom") +
-    guides(color = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
+
+#Metabolism only timeseries
+
+# Loop through metrics and sites and make a gg object
+plot_list<-list()
+ranges<-sapply(metricsMetabolism, function(x) extendrange(met.join[,x], f=0.05))
+
+plot_nu<-1
+for (plot_nu in 1:length(metricsMetabolism)){
   
+  metric<-metricsMetabolism[plot_nu]
+  
+  table<-met.join[,c('Site', 'Date', metric)]
+  
+  plot_list[[plot_nu]]<-ggplot(table, aes_string('Date', metric, group='Site')) + 
+    ggtitle(metric) +
+    geom_line(size=1, aes(colour=Site,  group=Site)) +    
+    geom_point(size=2, aes(fill=Site, shape=Site)) + 
+    commonTheme
+  
+  plot_print<-plot_list[[plot_nu]] + 
+    theme(legend.position="bottom", legend.title= element_blank()) +
+    guides(color = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
+  
+  png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/', metric, '.png'), width=5, height=3, units='in', res=200)
+  
+  print(plot_print)
+  
+  dev.off()
 }
+
+plot_withlegend <- plot_list[[1]] + 
+  theme(legend.position="bottom") +
+  guides(color = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+
+mylegend<-g_legend(plot_withlegend)
+
+
+plot_list2<-plot_list
+# plot_list2[[length(plot_list)+1]]<-mylegend
+# arrange plots with legend
+# p2<-grid.arrange(grobs=plot_list2, nrow=ceiling(length(plot_list2)/2), as.table=F)
+p2<-grid.arrange(grobs=plot_list2, nrow=3, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/EcosystemResponseTimeSeries_Metabolismmetrics.png'), width=12, height=8, units='in', res=200)
+
+grid.arrange(p2, mylegend, nrow=2, heights=c(8,1))
+
+dev.off()
+
+
+
+
+
+# for (plot_nu in 1:length(plot_list)){
+#   plot_withlegend <- plot_list[[plot_nu]] + 
+#     theme(legend.position="bottom") +
+#     guides(color = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
+#   
+# }
 
  # #############
 #Scatterplots
 # ##############
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vDO.png'), width=4, height=5, units='in', res=200)
 
-ggplot(met.final, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
+print(
+ggplot(met.join, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
   labs(x='Dissolved oxygen (% sat)', y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
   geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
   geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
@@ -142,13 +194,14 @@ ggplot(met.final, aes(x=EXOODO, y=d180_02.vs.VSMOW, group=Site))+
   theme_bw() + 
   theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
   guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
-
+)
 
 dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vO2Ar.png'), width=4, height=5, units='in', res=200)
 
-ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.VSMOW, group=Site))+
+print(
+ggplot(met.join, aes(x=O2.Ar, y=d180_02.vs.VSMOW, group=Site))+
   labs(x=expression(paste(O[2], ":Ar (ratio)")), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
   # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
   geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
@@ -159,13 +212,14 @@ ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.VSMOW, group=Site))+
   theme_bw() + 
   theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
   guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
-
+)
 
 dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Oxygen18vTurb.png'), width=4, height=5, units='in', res=200)
 
-ggplot(met.final, aes(x=log10(EXOTurbFNU), y=d180_02.vs.VSMOW, group=Site))+
+print(
+ggplot(met.join, aes(x=log10(EXOTurbFNU), y=d180_02.vs.VSMOW, group=Site))+
   labs(x=expression(paste(log[10], ' of Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
   # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
   geom_hline(yintercept=24.2, linetype="dashed", color = "grey", size=1) +
@@ -176,26 +230,11 @@ ggplot(met.final, aes(x=log10(EXOTurbFNU), y=d180_02.vs.VSMOW, group=Site))+
   theme_bw() + 
   theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
   guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
-
+)
 
 dev.off()
 
 
-
-ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.air, group=Site))+
-  labs(x=expression(paste(O[2], ":Ar (ratio)")), y=expression(paste(delta^'18', "O-", O[2], " (", "\211", ")")))+
-  # geom_vline(xintercept=100, linetype="dashed", color = "grey", size=1) +
-  geom_hline(yintercept=0, linetype="dashed", color = "grey", size=1) +
-  geom_point(size=2, aes(fill=Site, shape=Site)) + 
-  scale_colour_manual(values = colors) +
-  scale_fill_manual(values = colors) +
-  scale_shape_manual(values=rep(21:25, 5)) +
-  theme_bw() + 
-  theme(plot.title = element_text(hjust=0.5), legend.position="bottom") +
-  guides(fill = guide_legend(nrow = 3, title.position='top', title.hjust=0.5))
-
-
-#End
 
 
 
@@ -211,7 +250,7 @@ ggplot(met.final, aes(x=O2.Ar, y=d180_02.vs.air, group=Site))+
 
 #colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(length(unique(met.final$Site)))
+colors<-color.palette(length(unique(met.join$Site)))
 
 
 #Common theme for all metabolism timeseries panels
@@ -228,13 +267,13 @@ commonThemePrint<-list(
   theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank())
 )
 
-NO3TS<-ggplot(met.final, aes_string('Date', 'NO3.ppm', group='Site')) + 
+NO3TS<-ggplot(met.join, aes_string('Date', 'NO3.ppm', group='Site')) + 
   commonThemePrint + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
   labs(y=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
 
-TurbTS<-ggplot(met.final, aes_string('Date', 'EXOTurbFNU', group='Site')) + 
+TurbTS<-ggplot(met.join, aes_string('Date', 'EXOTurbFNU', group='Site')) + 
   commonThemePrint + 
   # scale_y_log10() + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
@@ -249,20 +288,19 @@ TurbTS_withLegened <- TurbTS +
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/NO3Turb.png'), width=5, height=5, units='in', res=200)
 
 grid.newpage()
-
 plots<-grid.draw(rbind(ggplotGrob(NO3TS), ggplotGrob(TurbTS_withLegened), size = "first"))
 
 dev.off()
 
 
 # ammonium and srp
-NH4TS<-ggplot(met.final, aes_string('Date', 'NH4.ppm', group='Site')) + 
+NH4TS<-ggplot(met.join, aes_string('Date', 'NH4.ppm', group='Site')) + 
   commonThemePrint + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
   labs(y=expression(paste(NH[4], ' (mg N L'^'-1', ')')))
 
-SRPTS<-ggplot(met.final, aes_string('Date', 'PO4', group='Site')) + 
+SRPTS<-ggplot(met.join, aes_string('Date', 'PO4', group='Site')) + 
   commonThemePrint + 
   # scale_y_log10() + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
@@ -277,7 +315,6 @@ SRPTS_withLegened <- SRPTS +
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Timeseries/NH4SRP.png'), width=5, height=5, units='in', res=200)
 
 grid.newpage()
-
 plots<-grid.draw(rbind(ggplotGrob(NH4TS), ggplotGrob(SRPTS_withLegened), size = "first"))
 
 dev.off()
@@ -285,8 +322,8 @@ dev.off()
 
 
 
-# incubation metabolism and srp
-NEPTS<-ggplot(met.final, aes(Date, NEP*24, group=Site)) + 
+# incubation metabolism
+NEPTS<-ggplot(met.join, aes(Date, NEP_inc, group=Site)) + 
   commonThemePrint + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
@@ -294,14 +331,15 @@ NEPTS<-ggplot(met.final, aes(Date, NEP*24, group=Site)) +
   theme(plot.margin = unit(c(0.5, .5, 0.5, 1.5), "lines")) + 
   ggtitle('Incubation Metabolism')
 
-GPPTS<-ggplot(met.final, aes(Date, GPP*24, group=Site)) + 
+
+GPPTS<-ggplot(met.join, aes(Date, GPP_inc, group=Site)) + 
   commonThemePrint + 
   # scale_y_log10() + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
   labs(y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
 
-ERTS<-ggplot(met.final, aes(Date, ER*24, group=Site)) + 
+ERTS<-ggplot(met.join, aes(Date, ER_inc, group=Site)) + 
   commonThemePrint + 
   # scale_y_log10() + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
@@ -312,11 +350,127 @@ ERTS_withLegened <- ERTS +
   theme(legend.position="bottom",  legend.title=element_blank()) +
   guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment/IncubationMetabolism/GPPERNEP_print.png'), width=5, height=7, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Metabolism/Inc_GPPERNEP_print.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
-
-plots<-grid.draw(rbind(ggplotGrob(NEPTS), ggplotGrob(GPPTS), ggplotGrob(ERTS_withLegened), size = "last"))
+plots1<-grid.draw(rbind(ggplotGrob(NEPTS), ggplotGrob(GPPTS), ggplotGrob(ERTS_withLegened), size = "last"))
 
 dev.off()
+
+
+
+
+
+
+# oxygen 18 metabolism
+NEPTS_O18<-ggplot(met.join, aes(Date, nepv, group=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  theme(plot.margin = unit(c(0.5, .5, 0.5, 1.5), "lines")) + 
+  ggtitle(expression(paste(delta^'18', "O-", O[2], " Metabolism")))
+
+GPPTS_O18<-ggplot(met.join, aes(Date, gppv, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS_O18<-ggplot(met.join, aes(Date, rv, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS_O18_withLegened <- ERTS_O18 + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Metabolism/O18_GPPERNEP_print.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots2<-grid.draw(rbind(ggplotGrob(NEPTS_O18), ggplotGrob(GPPTS_O18), ggplotGrob(ERTS_O18_withLegened), size = "last"))
+
+dev.off()
+
+
+
+
+
+
+# buoy metabolism
+NEPTS_buoy<-ggplot(met.join, aes(Date, NEP_buoy, group=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+  theme(plot.margin = unit(c(0.5, .5, 0.5, 1.5), "lines")) +
+  ggtitle("Buoy Metabolism")
+
+GPPTS_buoy<-ggplot(met.join, aes(Date, GPP_buoy, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS_buoy<-ggplot(met.join, aes(Date, ER_buoy, group=Site)) + 
+  commonThemePrint + 
+  # scale_y_log10() + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
+
+ERTS_buoy_withLegened <- ERTS_buoy + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Metabolism/Buoy_GPPERNEP_print.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots3<-grid.draw(rbind(ggplotGrob(NEPTS_buoy), ggplotGrob(GPPTS_buoy), ggplotGrob(ERTS_buoy_withLegened), size = "last"))
+
+dev.off()
+
+
+
+mylegend<-g_legend(ERTS_buoy_withLegened)
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Metabolism/ThreeMethods_GPPERNEP_print.png'), width=10, height=7, units='in', res=200)
+
+panel9<-grid.arrange((NEPTS_buoy+theme(plot.title=element_blank())), (GPPTS_buoy), (ERTS_buoy),
+             (NEPTS_O18+theme(plot.title=element_blank())), (GPPTS_O18), (ERTS_O18),
+             (NEPTS+theme(plot.title=element_blank())), (GPPTS), (ERTS), nrow=3)
+
+grid.arrange(panel9, mylegend, nrow=2, heights=c(15,1))
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Metabolism/ThreeMethods_GPPERNEP_print_ggarrange.png'), width=12, height=7, units='in', res=200)
+
+
+panel9_v2<-ggarrange((NEPTS_buoy+theme(plot.title=element_blank())), (GPPTS_buoy), (ERTS_buoy),
+          (NEPTS_O18+theme(plot.title=element_blank())), (GPPTS_O18), (ERTS_O18),
+          (NEPTS+theme(plot.title=element_blank())), (GPPTS), (ERTS),
+          heights = c(1,1,1),
+          ncol = 3, nrow = 3, align = "hv")
+
+
+grid.arrange(panel9_v2, mylegend, nrow=2, heights=c(15,1))
+
+
+dev.off()
+
+
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEPTS_buoy), ggplotGrob(GPPTS_buoy), ggplotGrob(ERTS_buoy),
+                       ggplotGrob(NEPTS_O18), ggplotGrob(GPPTS_O18), ggplotGrob(ERTS_O18),
+                       ggplotGrob(NEPTS), ggplotGrob(GPPTS), ggplotGrob(ERTS),
+                       size = "last"))
 
