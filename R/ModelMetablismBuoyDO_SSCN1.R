@@ -9,6 +9,7 @@ library(LakeMetabolizer) # lake analyses
 library(RcppRoll) # Rolling operations
 
 source('R/g_legend.R')
+source('R/lightmodel.R')
 
 # Project folder where outputs are stored
 dropbox_dir<-'C:/Dropbox/USBR Delta Project'
@@ -253,6 +254,10 @@ plots<-grid.draw(rbind(ggplotGrob(NEPplot), ggplotGrob(GPPplot),  ggplotGrob(p1)
 dev.off()
 
 
+write.table(metab.df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/Buoys/MetabolismEstimates_v1.csv'), row.names=F, sep=',')
+
+
+
 
 
 
@@ -289,7 +294,7 @@ DO_TS <- ggplot(df_deploy, aes(DateTime_PST, Dissolved.Oxygen, group=Buoy)) +
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/DissolvedOxygen_TS_SSCN.png'), width=5, height=3, units='in', res=200)
 
-DO_TS 
+print(DO_TS) 
 
 dev.off()
 
@@ -297,3 +302,50 @@ dev.off()
 
 
 
+
+#Estimate P using Jassby and/or Cloern model
+times<-(df_deploy$DateTime_PST)
+# times<-times[order(times)]
+localHour<-hour(times) +  minute(times)/60 + second(times)/3600
+DayOfYear<-yday(times)
+
+Lat=38.5064
+Long= -121.5847
+Altitude <- 0.001
+Aspect <- 0.001
+Slope <- 0.05
+TimeZone <- -8
+DST <- 1
+Transmissivity <- 0.95
+# timeStep <- 5/60
+
+
+
+PAR<-lightModel(Altitude, Aspect, Slope, Lat, localHour, Long, DayOfYear, TimeZone, DST, Transmissivity)
+
+
+plot(PAR~times, col='red', pch=16)
+
+
+#From Jassby et al 2002
+Pro_Jassby <- function(B, I, k){
+  P = 4.61 * 0.728 * B * I / k
+  return(P)
+}
+
+#From Cloern et al 2007
+Pro_Cloern<-function(B, I, k){
+  P = 4.6*0.82 * B * I / k
+  return(P)
+}
+
+summary(P_Cloern)
+Pro_Cloern(B=mean(merge_df$EXOChlugL, na.rm=T), I=mean(PAR, na.rm=T)*3600*24/1000000, k=mean(merge_df$kd_meters+1, na.rm=T))
+mean(mean(merge_df$EXOChlugL, na.rm=T)* mean(PAR, na.rm=T)*3600*24/1000000 * (mean(merge_df$PhoticDepth_m, na.rm=T)), na.rm=T)
+
+P_Jassby<-Pro_Jassby(B=mean(merge_df$EXOChlugL, na.rm=T), I=PAR*3600*24/1000000, k=mean(merge_df$kd_meters, na.rm=T))
+P_Cloern<-Pro_Cloern(B=mean(merge_df$EXOChlugL, na.rm=T), I=PAR*3600*24/1000000, k=mean(merge_df$kd_meters, na.rm=T))
+
+
+plot(P_Jassby~times, xlab='Date', ylab='Primary production (mg C m-2, d-1)', ylim=c(0,800), col='black', type='p', pch=20)
+points(P_Cloern~times, col='red', type='p', pch=20)
