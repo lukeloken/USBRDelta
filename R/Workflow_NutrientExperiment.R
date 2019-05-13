@@ -18,6 +18,7 @@ library(gridExtra)
 source('R/read_excel_allsheets_skip.R')
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
+source('R/lightmodel.R')
 
 # Project folder where outputs are stored
 dropbox_dir<-'C:/Dropbox/USBR Delta Project'
@@ -27,6 +28,9 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 #Field data
 source('R/CleanFieldData_NutrientExperiment.R')
+
+#Light profiles
+source('R/Calculatekd_NutrientExperiment.R')
 
 #Nutrient data
 source('R/CleanNutrientData_NutrientExperiment.R')
@@ -47,10 +51,21 @@ source('R/CreateO18InputTable.R')
 source('R/CalculateO18metabolism_NutrientExperiment.R')
 source('R/Plot_O18Metabolism.R')
 
+#Estimate Photic depth and scale incubation metabolism to whole ecosystem
+source('R/PredictPhoticDepth_NutrientExperiment.R')
+
+#Buoy Metabolism
+source('R/ModelMetabolismBuoyDO_SSCN1.R')
+source('R/AggregateBuoyMetabolismByZone_NutrientExperiment.R')
+
+#Merge Buoy metabolism
+source('R/MergeBuoyMetabolism_NutrientExperiment.R')
+
+#Plot a bunch of stuff
+source('R/PlotTimeseries_NutrientExperiment.R')
+
 #Zooplankton, Phytoplankton, Picoplankton
 source('R/CompilePlankton_NutrientExperiment.R')
-
 source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
-source('R/PlotTimeseries_NutrientExperiment.R')
 # source('R/.R')
