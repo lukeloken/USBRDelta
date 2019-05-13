@@ -49,7 +49,14 @@ summary_df$Date<-as.Date(summary_df$Date)
 
 incubation_df<-summary_df %>%
   dplyr::select(Date, Site, Metric, mean) %>%
-  spread(key=Metric, value=mean)
+  spread(key=Metric, value=mean) %>%
+  mutate(ER=ER*24, 
+         NEP=NEP*24, 
+         GPP=NEP-ER)
+
+#Light profiles
+kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds'))
+
 
 
 #Merge everything together
@@ -64,8 +71,12 @@ merge4<-dplyr::select(merge3, -Date.1)
 #Nutrient data
 merge5<-full_join(merge4, nutrient_surface)
 
+#Light Profiles
+merge6<-full_join(merge5, kd_alldates)
 
 #Merge water chemistry data
-merge_df<-merge5
+merge_df<-merge6
+
+
 write.csv(merge_df, file=paste0(dropbox_dir, '/Data/NutrientExperiment/SurfaceChemistry/YSIMetabolismSurface.csv'), row.names=F)
 
