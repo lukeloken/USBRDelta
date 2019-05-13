@@ -139,6 +139,42 @@ dev.off()
 
 
 
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_Turb_WL_Timeseries_2weeks.png'), width=6, height=3, units='in', res=200)
+
+par(mar=c(1.5,2.5,0.5,2), mgp=c(3,.4, 0), tck=-.02, ps=8)
+par(mfrow=c(1,1))
+
+TurbData<-BuoyData_sub[!is.na(BuoyData_sub$`Turbidity (FNU)`),]
+
+plot(TurbData$DateTime.PST, TurbData$`Turbidity (FNU)`, type='n', ylab='', xlab='', axes=F, ylim=c(0,90), xaxs='i')
+abline(v=BuoyData_fert$DateTime.PST, col='grey85', lwd=2)
+abline(v=ferttime, lty=1, col='grey35', lwd=3)
+abline(v=shipdate[1:2], lty=2, col='grey35', lwd=2)
+# abline(h=prefertNO3)
+# abline(h=postfertNO3)
+# axis.POSIXct(1, at=seq.POSIXt(FertDates[1], FertDates[2], by='day'), format='%b %d')
+
+points(TurbData$DateTime.PST, TurbData$`Turbidity (FNU)`, type='l', pch=16, cex=.4, col='brown', lwd=2)
+axis(2, las=1,  col.ticks='brown', col.axis='brown')
+
+par(new=T)
+
+plot(TurbData$DateTime.PST, TurbData$`Depth (m)`, ylim=c(-4,5), type='l', col='blue', axes=F, ylab='', xlab='', xaxs='i')
+
+axis.POSIXct(1, at=seq.POSIXt(deploydates[1]+3600*4, deploydates[2], by='day'), format='%b %d', mgp=c(3,.1,0))
+axis(4, col.ticks='blue', col.axis='blue', at=seq(2,5,1), las=1)
+
+mtext(expression(paste('                                                 Water level (m)')), 4, 0.75, col='blue')
+mtext('Turbidity (FNU)', 2, 1.5, col='brown')
+# mtext('Date', 1, 2)
+
+box(which='plot')
+
+dev.off()
+
+
+
+
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/USGSMooring_NO3_Timeseries_FullRecord.png'), width=8, height=12, units='in', res=200)
 
 par(mar=c(1.25,3.5,0.25,0.25), oma=c(1.75,0,0,0), mgp=c(3,.3, 0), tck=-.04)
