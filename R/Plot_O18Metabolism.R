@@ -16,9 +16,6 @@ met.final<-read.csv(file = paste(dropbox_dir, "Data", "NutrientExperiment", "Oxy
 met.final$Date<-as.Date(met.final$Date)
 met.final$Site<-factor(met.final$Site, c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'))
 
-met.final$GPP<-met.final$NEP-met.final$ER
-
-
 met.final<-drop_na(met.final, d180_02.vs.VSMOW)
 
 
@@ -58,7 +55,7 @@ GPP_O18<-ggplot(met.final, aes(x=Date, y=gppv, fill=Site)) +
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
   labs(x='Date', y=expression(paste('GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')))
 
-ER_O18<-ggplot(met.final, aes(x=Date, y=(rv*-1), fill=Site)) + 
+ER_O18<-ggplot(met.final, aes(x=Date, y=(rv), fill=Site)) + 
   commonThemePrint + 
   geom_line(size=1, aes(colour=Site,  group=Site)) +    
   geom_point(size=2, aes(fill=Site, shape=Site)) + 
@@ -144,7 +141,7 @@ dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_ER_NEP_IncubationVersusO18.png'), width=12, height=4, units='in', res=200)
 
-GPPplot<-ggplot(met.final, aes(x=GPP*24, y=gppv, fill=Site)) + 
+GPPplot<-ggplot(met.final, aes(x=GPP, y=gppv, fill=Site)) + 
   labs(x=expression(paste('Incubation GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
@@ -154,7 +151,7 @@ GPPplot<-ggplot(met.final, aes(x=GPP*24, y=gppv, fill=Site)) +
   theme(plot.title = element_text(hjust=0.5))  +
   theme(legend.position='bottom')
 
-ERplot<-ggplot(met.final, aes(x=ER*(-24), y=rv, fill=Site)) + 
+ERplot<-ggplot(met.final, aes(x=ER, y=rv, fill=Site)) + 
   labs(x=expression(paste('Incubation ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
@@ -164,7 +161,7 @@ ERplot<-ggplot(met.final, aes(x=ER*(-24), y=rv, fill=Site)) +
   theme(plot.title = element_text(hjust=0.5))  +
   theme(legend.position='bottom')
 
-NEPplot<-ggplot(met.final, aes(x=NEP*24, y=nepv, fill=Site)) + 
+NEPplot<-ggplot(met.final, aes(x=NEP, y=nepv, fill=Site)) + 
   labs(x=expression(paste('Incubation NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) + 
@@ -181,6 +178,7 @@ dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusTurb.png'), width=4, height=4, units='in', res=200)
 
+print(
 ggplot(met.final, aes(x=EXOTurbFNU, y=gppv, fill=Site)) +
   labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
   # scale_x_log10() +
@@ -191,6 +189,7 @@ ggplot(met.final, aes(x=EXOTurbFNU, y=gppv, fill=Site)) +
   theme_bw() +
   theme(plot.title = element_text(hjust=0.5))  +
   theme(legend.position='bottom')
+)
 
 dev.off()
 
@@ -220,6 +219,7 @@ dev.off()
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
 
+print(
 ggplot(met.final, aes(x=EXOChlugL, y=gppv, fill=Site)) +
   labs(x=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
   # scale_x_log10() +
@@ -230,12 +230,14 @@ ggplot(met.final, aes(x=EXOChlugL, y=gppv, fill=Site)) +
   theme_bw() +
   theme(plot.title = element_text(hjust=0.5))  +
   theme(legend.position='bottom')
+)
 
 dev.off()
 
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
 
+print(
 ggplot(met.final, aes(x=NO3.ppm, y=gppv, fill=Site)) +
   labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
   # scale_x_log10() +
@@ -246,6 +248,7 @@ ggplot(met.final, aes(x=NO3.ppm, y=gppv, fill=Site)) +
   theme_bw() +
   theme(plot.title = element_text(hjust=0.5))  +
   theme(legend.position='bottom')
+)
 
 dev.off()
 
