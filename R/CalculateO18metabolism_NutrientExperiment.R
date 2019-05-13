@@ -114,8 +114,15 @@ met.fun <- function(args){
 met.result = met.fun(met)
 #print out of metabolism summary stats ####### 
 summary(met.result)
+
+met.result <- met.result %>%
+  mutate(ra=ra*(-1), rv=rv*(-1))
+
+
 #mergining metabolism results into the original input data frame #######
 met.final <- cbind(met, met.result)
+
+
 #exporting metabolism data as csv file#####
 write.csv(met.final, file= paste(dropbox_dir, "Data", "NutrientExperiment", "Oxygen18", "O18MetabolismEstimates.csv", sep='/'), row.names = F)
 
