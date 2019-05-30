@@ -36,23 +36,25 @@ abline(v=fert_times, lty=2)
 y_no3_2<-rep(NA, length(x_times))
 y_no3_3<-rep(NA, length(x_times))
 
-
 time<-x[1]
 for (time in x){
   
-  if(time==1) {new<-base_no3
-  new2<-base_no3
-  
-  } else {old<-y_no3_2[time-1]
-  
-  new<- (old-(old-base_no3)*0.05)
-  new2<-(old-(old-base_no3)*0.05)
-  
-  if(x_times[time] %in% fert_times) {
-    new<-old-(old-base_no3)*0.05+0.5
-    new2<-0.5
-  }
-  
+  if (time==1){
+    new  <- base_no3
+    new2 <- base_no3
+    
+  } else {
+    old<-y_no3_2[time-1]
+    old2<-y_no3_3[time-1]
+    
+    if (x_times[time] %in% fert_times){
+      new  <- old-(old-base_no3)*0.05+0.5
+      new2 <- 0.5
+    } else {
+    new  <- (old-(old-base_no3)*0.05)
+    new2 <- (old2-(old2-base_no3)*0.05)
+    }
+    
   }
   
   y_no3_2[time]<-new
