@@ -72,7 +72,9 @@ WQ_AllSamples<-df_sub %>%
          DONppm = TDNppm - DINppm,
          TPNppm = TNppm - TDNppm,
          TPPppm = TPppm - TDPppm, 
-         Date = as.Date(Date)
+         Date = as.Date(Date),
+         FieldTurbidity = as.numeric(FieldTurbidity),
+         Secchicm = as.numeric(Secchicm)
   )
   
 
