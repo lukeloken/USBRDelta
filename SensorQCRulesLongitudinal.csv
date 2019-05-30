@@ -1,6 +1,6 @@
 Variable,MAD_Window,Median_Window,Persist_Max,Rule1,Rule2,Rule3
 Chlor,20,3,6,w > 3,is.na(x),is.na(x)
-Turb,20,3,20,w > 3,is.na(x),is.na(x)
+Turb,20,3,20,w > 3,x<= (-0.5),is.na(x)
 Water_Temp,40,3,200,w > 5,x<=0,x>=100
 Specific_Conductivity,40,3,100,w > 5,x<=10,is.na(x)
 pH,40,3,200,w > 5,x<=1,x>=14
