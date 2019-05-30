@@ -34,6 +34,8 @@ SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data')
 # colors<-color.palette(length(unique(SSC_joined_data$Station)))
 
 variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm', 'Chloroappb')
+variables_total<-c('TNppm', 'TPppm', 'DOCppm')
+variables_physical<-c('LabTurbidity', 'FieldTurbidity', 'Turbid..NTU', 'Secchicm')
 # variables<-c('NO3Nppm', 'NH4Nppm', 'PO4Pppm')
 upperstations<-c('66', '70', '74', '76', '84')
 upperstations2<-c('62', '64', '66', '70', '74', '76', '84')
@@ -121,6 +123,181 @@ png(paste0(dropbox_dir, '/Figures/Timeseries/InorganicNutrients_UpperStations_Ti
 grid.arrange(p2, mylegend, nrow=2, heights=c(10, 0.5))
 
 dev.off()
+
+
+# #################
+# Totals and DOC
+# #################
+
+
+#All Stations
+plot_list<-list()
+
+var<-1
+for (var in 1:length(variables_total)){
+  
+  plot_list[[var]]<-ggplot(SSC_joined_data, aes_string('Date', variables_total[var], group='Station')) + 
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors_stations) + 
+    scale_colour_manual(values = colors_stations) +
+    geom_line(size=.5, aes(colour=Station,  group=Station)) +    
+    geom_point(size=1, aes(fill=Station, shape=Station)) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='none') + 
+    theme(axis.title.x=element_blank())
+  
+  # if (variables[var]=="Chloroappb"){
+  #   plot_list[[var]] <- plot_list[[var]] + 
+  #     scale_y_log10()
+  # }
+  
+}
+
+# add legeng to first plot and then extract it
+p1<-plot_list[[1]] + 
+  theme(legend.position='bottom') +
+  guides(shape = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
+mylegend<-g_legend(p1)
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
+
+
+png(paste0(dropbox_dir, '/Figures/Timeseries/TotalNutrients_AllStations_TimeSeries.png'), units='in', width=7, height=5, res=400, bg='white')
+
+grid.arrange(p2, mylegend, nrow=2, heights=c(8, 1.2))
+
+dev.off()
+
+
+#Upper stations
+plot_list<-list()
+
+var<-1
+for (var in 1:length(variables_total)){
+  
+  plot_list[[var]]<-ggplot(SSC_joined_data[SSC_joined_data$Station %in% upperstations,], aes_string('Date', variables_total[var], group='Station')) + 
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors_stations[7:11]) + 
+    scale_colour_manual(values = colors_stations[7:11]) +
+    geom_line(size=.5, aes(colour=Station,  group=Station)) +    
+    geom_point(size=2, aes(fill=Station, shape=Station)) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='none') + 
+    theme(axis.title.x=element_blank())
+  
+  # if (variables[var]=="Chloroappb"){
+  #   plot_list[[var]] <- plot_list[[var]] + 
+  #     scale_y_log10()
+  # }
+  
+}
+
+# add legeng to first plot and then extract it
+p1<-plot_list[[1]] + 
+  theme(legend.position='bottom')
+mylegend<-g_legend(p1)
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
+
+
+png(paste0(dropbox_dir, '/Figures/Timeseries/TotalNutrients_UpperStations_TimeSeries.png'), units='in', width=7, height=5, res=400, bg='white')
+
+grid.arrange(p2, mylegend, nrow=2, heights=c(8, 0.5))
+
+dev.off()
+
+
+
+# #################
+# Physical
+# #################
+
+
+#All Stations
+plot_list<-list()
+
+var<-1
+for (var in 1:length(variables_physical)){
+  
+  plot_list[[var]]<-ggplot(SSC_joined_data, aes_string('Date', variables_physical[var], group='Station')) + 
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors_stations) + 
+    scale_colour_manual(values = colors_stations) +
+    geom_line(size=.5, aes(colour=Station,  group=Station)) +    
+    geom_point(size=1, aes(fill=Station, shape=Station)) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='none') + 
+    theme(axis.title.x=element_blank())
+  
+  # if (variables_physical[var] %in% c("Chloroappb", "LabTurbidity", "FieldTurbidity", "Turbid..NTU")){
+  #   plot_list[[var]] <- plot_list[[var]] +
+  #     scale_y_log10()
+  # }
+  
+}
+
+# add legeng to first plot and then extract it
+p1<-plot_list[[1]] + 
+  theme(legend.position='bottom') +
+  guides(shape = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
+mylegend<-g_legend(p1)
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
+
+
+png(paste0(dropbox_dir, '/Figures/Timeseries/Physical_AllStations_TimeSeries.png'), units='in', width=7, height=8.5, res=400, bg='white')
+
+grid.arrange(p2, mylegend, nrow=2, heights=c(12, 1.2))
+
+dev.off()
+
+
+#Upper stations
+plot_list<-list()
+
+var<-1
+for (var in 1:length(variables_physical)){
+  
+  plot_list[[var]]<-ggplot(SSC_joined_data[SSC_joined_data$Station %in% upperstations,], aes_string('Date', variables_physical[var], group='Station')) + 
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors_stations[7:11]) + 
+    scale_colour_manual(values = colors_stations[7:11]) +
+    geom_line(size=.5, aes(colour=Station,  group=Station)) +    
+    geom_point(size=2, aes(fill=Station, shape=Station)) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='none') + 
+    theme(axis.title.x=element_blank())
+  
+  # if (variables[var]=="Chloroappb"){
+  #   plot_list[[var]] <- plot_list[[var]] + 
+  #     scale_y_log10()
+  # }
+  
+}
+
+# add legeng to first plot and then extract it
+p1<-plot_list[[1]] + 
+  theme(legend.position='bottom')
+mylegend<-g_legend(p1)
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
+
+
+png(paste0(dropbox_dir, '/Figures/Timeseries/Physical_UpperStations_TimeSeries.png'), units='in', width=7, height=8.5, res=400, bg='white')
+
+grid.arrange(p2, mylegend, nrow=2, heights=c(12, 0.5))
+
+dev.off()
+
+
 
 
 
@@ -522,6 +699,7 @@ colors_slopes<-rev(brewer.pal(length(unique(slopes_summer$Month)), colorset))
 
 png(paste0(dropbox_dir, '/Figures/Timeseries/NO3_byYear.png'), width=10, height=8, units='in', res=200)
 
+print(
 ggplot(aes(x=Dist_km, y=NO3Nppm, group=Month, colour=Month), data=slopes_summer) + 
   scale_colour_manual(values = colors_slopes) + 
   geom_path(size=1) + 
@@ -529,6 +707,7 @@ ggplot(aes(x=Dist_km, y=NO3Nppm, group=Month, colour=Month), data=slopes_summer)
   theme_bw() + 
   theme(legend.position='bottom') +
   facet_wrap(~Year)
+)
 
 dev.off()
 
