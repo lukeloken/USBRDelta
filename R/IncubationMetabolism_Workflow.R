@@ -15,6 +15,16 @@ library(RColorBrewer)
 library(lubridate)
 
 source('R/CalculateIncubationMetabolism.R')
+# source('R/read_excel_allsheets.R')
+# source('R/g_legend.R')
+# 
+# 
+# # Project folder where outputs are stored
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# 
+# #Where data come from
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+
 
 
 # source('R/read_excel_allsheets.R')
