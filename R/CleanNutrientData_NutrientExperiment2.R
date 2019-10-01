@@ -52,8 +52,6 @@ tss_df_names<-names(read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_TSSDa
 names(tss_df)[1:7]<-tss_df_names[1:7]
 rm(tss_df_names)
 
-tss_df$SampleCode
-
 tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SiteCode', 'TSS', 'VSS')] %>%
   mutate(Date=as.Date(Date))
 
@@ -86,3 +84,6 @@ head(as.data.frame(full_chem_df))
 
 write.table(full_chem_df, file=paste0(google_dir, '/SSCN2_DataOutputs/AllWaterChemistry.csv'), row.names=F, sep=',')
 saveRDS(full_chem_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/AllWaterChemistry.rds'))
+
+
+rm(nutrient_df, tss_df, tss_df_sub, tss_df_names)
