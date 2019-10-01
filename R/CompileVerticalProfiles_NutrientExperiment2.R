@@ -27,7 +27,8 @@ library(gtools)
 # Find all filenames in directory
 # These will be used to loop through all old data
 
-ysi_directory<-paste0(dropbox_dir, "/Data/Rdata/YSIProfiles")
+
+ysi_directory<-paste0(dropbox_dir, "/Data/Rdata_SSCN2/YSIProfiles")
 
 filenames<-list.files(ysi_directory)
 
@@ -38,65 +39,65 @@ for (filename in filenames){
   
   # if the merged dataset doesn't exist, create it
   if (!exists("YSI_AllDepths")){
-    YSI_AllDepths <- readRDS(paste(ysi_directory, filename, sep='/'))
+    YSI_AllDepths <- readRDS(paste(ysi_directory, filename, sep='/')) %>%
+      dplyr::select(-Time)
   } else {
   # if the merged dataset does exist, append to it
-    temp_dataset <-readRDS(paste(ysi_directory, filename, sep='/'))
-    YSI_AllDepths<-smartbind(YSI_AllDepths, temp_dataset)
+    temp_dataset <-readRDS(paste(ysi_directory, filename, sep='/')) %>%
+      dplyr::select(-Time)
+    YSI_AllDepths<- bind_rows(YSI_AllDepths, temp_dataset)
+    # YSI_AllDepths<-smartbind(YSI_AllDepths, temp_dataset)
     rm(temp_dataset)
   }
   
 }
 
 row.names(YSI_AllDepths)<-NULL
-YSI_AllDepths$DateTime.PT<-as.POSIXct(YSI_AllDepths$DateTime.PT, tz='America/Los_Angeles')
-YSI_AllDepths$Date<-as.Date(YSI_AllDepths$DateTime.PT, tz='America/Los_Angeles')
 
-YSI_AllDepths<-YSI_AllDepths[which(!is.na(YSI_AllDepths$Date)),]
-
-YSI_AllDepths <- YSI_AllDepths %>%
-  drop_na(Date, Station, Depth.feet) %>%
-  arrange(Date, Station)
+YSI_AllDepths<-YSI_AllDepths[which(!is.na(YSI_AllDepths$Date)),] %>%
+  drop_na(Date, Site, Depth_m) %>%
+  arrange(Date, Site) %>%
+  mutate(Site = gsub("\\s*\\([^\\)]+\\)","",as.character(Site)))
 
 
 YSI_surf <- YSI_AllDepths %>%
-  subset(Depth.feet<3) %>%
-  group_by(Station, Date) %>% 
+  subset(Depth_m<1.5) %>%
+  group_by(Site, Date) %>% 
   summarize_all(mean, na.rm=T) %>%
-  mutate(DepthStrata = 'lessthan3')
+  mutate(DepthStrata = 'lessthan1.5m')
 
 
 YSI_mid <- YSI_AllDepths %>%
-  subset(Depth.feet>8 & Depth.feet<12) %>%
-  group_by(Station, Date) %>% 
+  subset(Depth_m>3 & Depth_m<5) %>%
+  group_by(Site, Date) %>% 
   summarize_all(mean, na.rm=T) %>%
-  mutate(DepthStrata = '8to10')
+  mutate(DepthStrata = '3to5m')
 
 
 YSI_deep <- YSI_AllDepths %>%
-  subset(Depth.feet>20) %>%
-  group_by(Station, Date) %>% 
+  subset(Depth_m>6) %>%
+  group_by(Site, Date) %>% 
   summarize_all(mean, na.rm=T) %>%
-  mutate(DepthStrata = 'morethan20')
+  mutate(DepthStrata = 'morethan6m')
 
 
 YSI_ThreeDepths<-bind_rows(YSI_surf, YSI_mid, YSI_deep) %>%
-  dplyr::arrange(Date, Station, Depth.feet)
+  dplyr::arrange(Date, Site, Depth_m)
 
 
-write.csv(YSI_AllDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_AllDepths.csv'), row.names=F)
-saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_AllDepths.rds'))
+write.csv(YSI_AllDepths, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSNC2Sites_AllDepths.csv'), row.names=F)
+saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_AllDepths.rds'))
 
-write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_ThreeDepths.csv'), row.names=F)
-saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_ThreeDepths.rds'))
+write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2Sites_ThreeDepths.csv'), row.names=F)
+saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_ThreeDepths.rds'))
 
 
 rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory)
 
 
 #View data to see if it makes sense
-# ggplot(YSI_ThreeDepths, aes(Date, Depth.feet, group=DepthStrata, colour=DepthStrata)) +
+# ggplot(YSI_ThreeDepths, aes(Date, Depth_m, group=DepthStrata, colour=DepthStrata)) +
 #   geom_point() +
 #   geom_line() +
-#   facet_wrap(~Station)
+#   facet_wrap(~Site)
 
