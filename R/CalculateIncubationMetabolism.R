@@ -33,8 +33,8 @@ DOdata<-mysheets[[2]]
 time_cols<-names(DOdata)[startsWith(names(DOdata), 'Date')]
 DO_cols<-names(DOdata)[startsWith(names(DOdata), 'Oxygen')]
 
-time_df<-DOdata[time_cols]
-DO_df<-DOdata[DO_cols]
+time_df <- DOdata[time_cols]
+DO_df <- DOdata[DO_cols]
 
 if (identical(dim(time_df), dim(DO_df))==FALSE){
   stop('Time and oxygen data are different dimensions. Check data file')
