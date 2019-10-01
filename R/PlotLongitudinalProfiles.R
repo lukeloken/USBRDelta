@@ -50,7 +50,7 @@ mopedfiles<-mopedfiles[grep('.mdb', mopedfiles)]
 mopedfiles<-mopedfiles[-which(mopedfiles %in% c("moped_10_27_2016.mdb", "moped_10_9_2012.mdb", "moped_6_30_2016.mdb", "moped_6_7_2016.mdb"))]
 
 # Or you can indicate a single file
-mopedfiles<-c("moped_3_28_2019.mdb")
+# mopedfiles<-c("moped_7_30_2019.mdb")
 # mopedfiles<-mopedfiles[47]
 
 #Plotting parameters
