@@ -86,4 +86,4 @@ write.table(full_chem_df, file=paste0(google_dir, '/SSCN2_DataOutputs/AllWaterCh
 saveRDS(full_chem_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/AllWaterChemistry.rds'))
 
 
-rm(nutrient_df, tss_df, tss_df_sub, tss_df_names)
+rm(nutrient_df, tss_df, tss_df_sub, tss_df_names, nut_tss_df)
