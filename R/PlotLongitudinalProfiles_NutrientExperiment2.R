@@ -63,17 +63,12 @@ color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, b
 # colours = color.palette(12)
 
 
-#Field notes
-# field_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/FieldData.csv'), sep=',', header=T, stringsAsFactors = F)
-# field_df$Date<-as.Date(field_df$Date)
-# 
-# sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
-
-# field_df$Site<-sitetable$site1[match(field_df$Location, sitetable$site4)]
-# field_df$DateTime_start<-as.POSIXct(field_df$DateTime_start, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
-# field_df$DateTime_end<-as.POSIXct(field_df$DateTime_end, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
-
+#Field notes (event)
+event_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_EventData.rds'))
 fls_dates<-unique(event_df$Date[!is.na(event_df$Date)])
+
+#Site notes (site)
+site_df<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_FieldData.rds'))
 
 
 #List of spatial files in google drive folder
@@ -81,33 +76,9 @@ spatialfiles<-list.files(paste0(box_dir, "/Data/LongitudinalProfiles"))
 # SUNAfiles<-spatialfiles[grep('SUNA', spatialfiles)]
 RTMCfiles<-spatialfiles[grep('raw', spatialfiles)]
 
-# ##################
-# Process SUNA data
-# ##################
 
-# SUNAfileslong<-paste0(google_dir, "/Data/NutrientExperiment/LongitudinalData/", SUNAfiles)
-# SUNA_list<-lapply(SUNAfileslong, function (l) read.csv(l, header=F, skip=7, stringsAsFactors = F))
-# 
-# SUNA_df<-ldply(SUNA_list, data.frame)
-# SUNA_df<-SUNA_df[,c(1,2,3,4,5)]
-# names(SUNA_df)<-c('DateTime', 'Type', 'X', 'NO3_uM', "NO3_mgL")
-# 
-# SUNA_df$Date<-as.Date(SUNA_df$DateTime)
-# 
-# times_list<-strsplit(SUNA_df$DateTime, 'T')
-# times_vector<-sapply(times_list, function (l) l[2])
-# 
-# SUNA_df$TIMESTAMP<-as.POSIXct(paste0(SUNA_df$Date, times_vector), "America/Los_Angeles", format="%Y-%m-%d%H:%M:%S")
-# 
-# SUNA_df_light<-SUNA_df[SUNA_df$Type=='SATSLF0250',]
-# SUNA_df_good<-SUNA_df_light[is.finite(SUNA_df_light$NO3_uM) & SUNA_df_light$NO3_uM>0 & !is.na(SUNA_df_light$DateTime),]
-
-# summary(SUNA_df_good)
-
-# ##################
-# Process RTMC data
-# ##################
-
+#Process RTMC (FLAME) data
+#Make one big file with everything. 
 RTMCfileslong<-paste0(paste0(box_dir, "/Data/LongitudinalProfiles/", RTMCfiles))
 RTMC_list<-lapply(RTMCfileslong, function (l) read.csv(l, header=F, skip=4, stringsAsFactors = F))
 
@@ -117,6 +88,7 @@ RTMC_df<-ldply(RTMC_list, data.frame)
 
 names(RTMC_df)<-RTMC_names
 
+#Subset data
 RTMC_df<-RTMC_df[,c(1,4,5, 9:10, 17:33)]
 RTMC_df[,2:ncol(RTMC_df)]<-sapply(RTMC_df[,2:ncol(RTMC_df)], as.numeric)
 
@@ -126,25 +98,6 @@ RTMC_df$TIMESTAMP<-as.POSIXct(RTMC_df$TIMESTAMP, "Etc/GMT+8", format="%Y-%m-%d %
 goodtimes<-which(RTMC_df$TIMESTAMP>=as.POSIXct("2019-07-08 00:00:01", tz='Etc/GMT+8') & RTMC_df$TIMESTAMP<=as.POSIXct("2019-09-15 23:59:59", tz='Etc/GMT+8'))
 
 RTMC_df<- RTMC_df[goodtimes,]
-
-# 
-# timedifference<-as.POSIXct(c("2018-10-01 11:39:45", "2018-09-28 17:48:16"), tz='America/Los_Angeles')
-# 
-# addtime<-difftime(timedifference[1],timedifference[2], units=c('secs'))-2
-# 
-# RTMC_df$TIMESTAMP[badtimes]<-RTMC_df$TIMESTAMP[badtimes]+addtime
-
-#Drop fdom
-# RTMC_df<-RTMC_df[,-grep("FDOM", names(RTMC_df))]
-
-#convert all data columns into numeric
-
-#Get rid of entire rows when any data are NA
-# RTMC_df_good<-RTMC_df[is.finite(rowMeans(RTMC_df[,2:ncol(RTMC_df)])),]
-
-#Delete oxygen data from first day (cap was over sensor)
-# RTMC_df_good$EXODOmgL[which(RTMC_df_good$TIMESTAMP<=as.POSIXct("2018-09-27 00:00:01", tz='America/Los_Angeles'))]<-NA
-# RTMC_df_good$EXOODO[which(RTMC_df_good$TIMESTAMP<=as.POSIXct("2018-09-27 00:00:01", tz='America/Los_Angeles'))]<-NA
 
 
 #Data limits
@@ -169,51 +122,36 @@ RTMC_df_geo<-RTMC_df[is.finite(rowMeans(RTMC_df[,2:3])),]
 
 summary(RTMC_df_geo)
 
-#Omit dates outside sampling window
-# RTMC_df_gooddates<-RTMC_df_geo[as.Date(RTMC_df_geo$TIMESTAMP) %in% unique(field_df$Date),]
-
-
-# summary(RTMC_df_gooddates)
-
-# ######################
-# Merge EXO and SUNA and convert to spatial object
-# ######################
-
-# SUNA_df_good$TIMESTAMP_round<-lubridate::round_date(SUNA_df_good$TIMESTAMP, "5 seconds")
-# RTMC_df_gooddates$TIMESTAMP_round<-lubridate::round_date(RTMC_df_gooddates$TIMESTAMP, "5 seconds")
-
-
-# merge_df<-left_join(RTMC_df_gooddates, SUNA_df_good[c('TIMESTAMP_round', 'NO3_uM')])
-
+#convert dataframe into a spatial object
 geo<-RTMC_df_geo
 coordinates(geo)<- ~Longitude + Latitude
 proj4string(geo) <- proj4string(outline)
 
-# geo$Date<-as.Date(geo$TIMESTAMP_round)
 
-#Linear Reference
+#Linear Reference (This takes a lot of computation!)
 # geo_UTM<-spTransform(geo, CRS(projection))
-# 
 # geo_snapped<-xy2segvert(x=coordinates(geo_UTM)[,1], y=coordinates(geo_UTM)[,2], rivers=SSCNetwork_clean)
-# 
 # geo$LinearDist<-unlist(SSCNetwork_clean$cumuldist)[geo_snapped$vert]
 # geo$LinearDist_km<-geo$LinearDist/1000
 
-
+#Plot two variables to visualize linear reference
 # plot(geo$LinearDist, geo$EXOSpCn)
 # plot(geo$LinearDist, geo$NO3_uM, pch=16)
 
 
-# geo_list<-apply(field_df[c('DateTime_start', 'DateTime_end')], 1, function (x) geo@data[geo$TIMESTAMP_round>x[1] & geo$TIMESTAMP_round<x[2],])
-# 
-# site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T) 
-# 
-# site_medians_df<-ldply(site_medians, data.frame)
-# 
-# field_df_withFlame<-cbind(field_df, site_medians_df)   
-# 
-# 
-# write.table(field_df_withFlame, file=paste0(dropbox_dir, '/Data/NutrientExperiment/FlameSiteData.csv'), row.names=F, sep=',')
+geo_list<-apply(site_df[c('DateTime_start', 'DateTime_end')], 1, function (x) geo@data[geo$TIMESTAMP>x[1] & geo$TIMESTAMP<x[2],])
+ 
+site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T) 
+ 
+site_medians_df<-ldply(site_medians, data.frame) %>%
+  select(-Date)
+names(site_medians_df)<-paste0("FLAMe_", names(site_medians_df))
+
+site_df_withFlame<-cbind(site_df, site_medians_df)   
+
+write.table(site_df_withFlame, file=paste0(google_dir, '/SSCN2_DataOutputs/FlameSiteData.csv'), row.names=F, sep=',')
+saveRDS(site_df_withFlame , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/FlameSiteData.rds'))
+
 
 #Plotting parameters
 B<-100 #Number of color breaks
@@ -287,7 +225,7 @@ for (event_i in 1:length(dates)){
   
 
   #Save shapefile
-  # writeOGR(geo_i, dsn=paste0(dropbox_dir, "/Data/NutrientExperiment2/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  saveRDS(geo_i, paste0(dropbox_dir, "/Data/Rdata_SSCN2/LongitudinalProfiles/LongitudinalProfile_", date, ".rds"))
   
   #Identify variables to plot  
   plotvars_i<-intersect(plotvars, names(geo_i))
