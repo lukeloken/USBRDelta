@@ -30,7 +30,7 @@ YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 23 2014 report
 YSIfilenames<-YSIfilenames[-grep('Sac Ship Channel Surface Summary', YSIfilenames)]
 
 #or enter a single file
-# YSIfilenames<-c('Channel Data depth Profiles May 29 2019.xlsx')
+# YSIfilenames<-c('Channel Data depth Profiles June 27 2019.xlsx')
 
 #If there is an open excel sheet exclude it from the loop of filenames
 if (length(grep('~', YSIfilenames))>0){
@@ -156,7 +156,7 @@ for (i in 1:length(YSIfilenames)){
   
   #Export to dropbox (.rds) and to google_dir (csv)
   write.csv(df_plot, file=paste0(google_dir, '/DataOutputs/YSIVerticalProfiles/VertialProfile_', Date, '.csv'), row.names=F)
-  saveRDS(df_plot , file=paste0(dropbox_dir, '/Data/Rdata/YSIProfiles/VertialProfile_', Date, '.rds'))
+  saveRDS(df_plot , file=paste0(dropbox_dir, '/Data/Rdata/YSIProfiles/VerticalProfile_', Date, '.rds'))
   
   
   # ###########
