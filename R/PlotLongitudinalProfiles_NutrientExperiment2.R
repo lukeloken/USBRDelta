@@ -1,6 +1,7 @@
 
 #Warning this script uses your API key. Do not use this a lot as you can get charged if you go over your monthly allotment. 
 
+library(grid)
 
 #Where spatial data are
 Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
@@ -63,14 +64,16 @@ color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, b
 
 
 #Field notes
-field_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/FieldData.csv'), sep=',', header=T, stringsAsFactors = F)
-field_df$Date<-as.Date(field_df$Date)
+# field_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/FieldData.csv'), sep=',', header=T, stringsAsFactors = F)
+# field_df$Date<-as.Date(field_df$Date)
+# 
+# sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
 
-sitetable<-data.frame(site1=c('NL70', 'EC2','EC3','EC4','EC5','EC6','EC7','EC8','NL76'), site2=c( "SSCN01_NV70", "SSCN02", "SSCN03", "SSCN04", "SSCN05", "SSCN06", "SSCN07", "SSCN08", "SSCN09 NL76"), site3=str_pad(1:9, 2, pad='0'))
+# field_df$Site<-sitetable$site1[match(field_df$Location, sitetable$site4)]
+# field_df$DateTime_start<-as.POSIXct(field_df$DateTime_start, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
+# field_df$DateTime_end<-as.POSIXct(field_df$DateTime_end, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
 
-field_df$Site<-sitetable$site1[match(field_df$Location, sitetable$site4)]
-field_df$DateTime_start<-as.POSIXct(field_df$DateTime_start, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
-field_df$DateTime_end<-as.POSIXct(field_df$DateTime_end, tz='America/Los_Angeles', format='%Y-%m-%d %H:%M:%S')
+fls_dates<-unique(event_df$Date[!is.na(event_df$Date)])
 
 
 #List of spatial files in google drive folder
@@ -150,7 +153,7 @@ RTMC_df<- RTMC_df[goodtimes,]
 # datalimits$max=c(38.562,-121.55,30,1500,9,0, 15,150,150, 100, 10)
 #Omit gps data that are
 
-plotvars<-names(RTMC_df)[-which(names(RTMC_df) %in% c("TIMESTAMP", "Latitude", "Longitude"))]
+plotvars<-names(RTMC_df)[-which(names(RTMC_df) %in% c("TIMESTAMP", "Latitude", "Longitude", "EXOpHmV"))]
 
 #Convert to NA if outside datalimits
 # var_no<-2
@@ -216,23 +219,28 @@ proj4string(geo) <- proj4string(outline)
 B<-100 #Number of color breaks
 colors<-bpy.colors(n=B, cutoff.tails=0.1, alpha=1)
 
-event_i<-3
 dates<-unique(geo$Date)
-for (event_i in 1:length(dates))){
+# dates<-dates[9]
+
+# dates<-dates[length(dates)] #Just use last date if processing newest file
+
+for (event_i in 1:length(dates)){
   # date<-as.Date(unique(field_df$Date)[event_i])
   date = dates[event_i]
+  
+  if(date %in% fls_dates){
+  
   geo_i<-geo[geo$Date==date,]
-  
-  # time_am<-min(field_df$DateTime_start[field_df$Date==date], na.rm=T)
-  # time_pm<-max(field_df$DateTime_end[field_df$Date==date], na.rm=T)
-  # 
-  
+
+  onoff_times<-event_df[match(date, event_df$Date),5:8]
+  # onoff_times[,4]<-as.POSIXct("2019-07-25 12:43:00")
+  # event10am<-as.POSIXct(c("2019-07-26 08:02", "2019-07-26 08:21"))
   #Identify north bound and south bound transects, omit other data
-  event5am <- as.POSIXct(paste("2019-07-12 ", c("08:07:00", "08:22:00")), tz='America/Los_Angeles')
+  geo_am<-geo_i[geo_i$TIMESTAMP<onoff_times[,2] & geo_i$TIMESTAMP>onoff_times[,1],]
   
-  event5pm <- as.POSIXct(paste("2019-07-12 ", c("11:06:00", "11:25:00")), tz='America/Los_Angeles')
-  
-  geo_am<-geo_i[geo_i$TIMESTAMP<event5am[2] & geo_i$TIMESTAMP>event5am[1],]
+  plot(geo_am)
+  plot(geo_am$Latitude)
+  plot(geo_am$Longitude)
   
   am_lat_rolldiff<-roll_mean(diff(geo_am$Latitude), n=241, fill=NA)
   am_long_rolldiff<-roll_mean(diff(geo_am$Longitude), n=241, fill=NA)
@@ -252,8 +260,13 @@ for (event_i in 1:length(dates))){
     geo_am_clip<-geo_am
   }
   
-  geo_pm <- geo_i[geo_i$TIMESTAMP<event5pm[2] & geo_i$TIMESTAMP>event5pm[1],]
+  geo_pm<-geo_i[geo_i$TIMESTAMP<onoff_times[,4] & geo_i$TIMESTAMP>onoff_times[,3],]
   
+  if (nrow(geo_pm)>0) {
+  plot(geo_pm)
+  plot(geo_pm$Latitude)
+  plot(geo_pm$Longitude)
+  }
   pm_lat_rolldiff<-roll_mean(diff(geo_pm$Latitude), n=181, fill=NA)
   pm_long_rolldiff<-roll_mean(diff(geo_pm$Longitude), n=181, fill=NA)
 
@@ -297,11 +310,15 @@ for (event_i in 1:length(dates))){
         col_values<-as.numeric(cut(c(am@data[,name], pm@data[,name]), breaks =B))
         col_colors<-colors[col_values]
         
+        if(nrow(am)>0){
         am$Color<-col_colors[1:nrow(am)]
+        }
+        if (nrow(pm)>0){
         pm$Color<-col_colors[(nrow(am)+1):length(col_colors)]
+        }
         
-        am$col_values<-col_values[1:nrow(am)]
-        am$color2<-color.palette(n=B)[am$col_values]
+        # am$col_values<-col_values[1:nrow(am)]
+        # am$color2<-color.palette(n=B)[am$col_values]
 
 
 
@@ -436,6 +453,8 @@ for (event_i in 1:length(dates))){
       }
     }
   }
+  }
+  
   print(date)
 }
 
