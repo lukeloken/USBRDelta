@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyr)
 library(lubridate)
 library(RColorBrewer)
-library(MASS)
+# library(MASS)
 
 
 # # Project folder where outputs are stored
@@ -228,6 +228,31 @@ ggplot(Phyto_total_monthly, aes(x= Month , y=Median_BioVolume)) +
 )
 
 dev.off()
+
+
+
+#Each day gets a barplot
+
+Phyto_dates<-unique(Phyto_total$Date)
+
+Phyto_i= 1
+for (Phyto_i in 1:length(Phyto_dates)){
+  Phyto_date<-Phyto_dates[Phyto_i]
+  
+  data_phyto <- Phyto_total[which(Phyto_total$Date==Phyto_date),]
+  phyto_barplot<- ggplot(data_phyto, aes(x=Station, y=Total_BioVolume)) + 
+    geom_bar(stat='identity', fill='seagreen4') + 
+    theme_bw() + 
+    labs(x='Station', y=BioVolExp)+ 
+    ggtitle(Phyto_date)
+  
+  png(paste0(dropbox_dir, "/Figures/Phytos/MonthlyBarplots/PhytoTotals_", Phyto_date, ".png", sep=""), res=300, width=6,height=4, units="in")
+  
+  print(phyto_barplot)
+  
+  dev.off()
+  
+}
 
 
 
