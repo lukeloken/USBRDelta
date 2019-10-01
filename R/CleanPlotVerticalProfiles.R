@@ -211,5 +211,5 @@ for (i in 1:length(YSIfilenames)){
   
 }
 
-rm(df_plot, mylegend, p1, p2, plot_list, YSI_df_i, YSI_list_i, YSI_list_i_noNA, YSI_list_i_ordered, YSI_list_i2, YSI_list_i3)
+rm(df_plot, mylegend, p1, p2, plot_list, YSI_df_i, YSI_list_i, YSI_list_i_noNA, YSI_list_i_ordered, YSI_list_i2, YSI_list_i3, mylegend, p1, p2, plot_list, YSI_df_i, YSI_list_i, YSI_list_i_noNA, YSI_list_i_ordered, YSI_list_i2, YSI_list_i3)
 
