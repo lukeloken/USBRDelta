@@ -25,7 +25,7 @@ source('R/g_legend.R')
 
 #Field notes
 site_df<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_FieldData.rds'))
-
+site_df_withFlame<- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/FlameSiteData.rds'))
 
 #Water chemistry
 # nutrient_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/NutrientData.csv'), sep=',', header=T, stringsAsFactors = F)
@@ -40,11 +40,16 @@ YSI_ThreeDepths <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_Three
 YSI_surf<- YSI_ThreeDepths %>%
   dplyr::filter(DepthStrata=="lessthan1.5m") %>%
   group_by() %>%
-  mutate(SensorDepth_m = Depth_m, 
-         Site = factor(Site, levels(site_df$Site)), 
-         DateTime_UTC = DateTime) %>%
-  select(-DepthStrata, -Depth_m, -DateTime) %>%
-  arrange(Date, Site)
+  mutate(Site = factor(Site, levels(site_df$Site))) %>%
+  select(-DepthStrata) %>%
+  arrange(Date, Site) %>%
+  dplyr::rename(DateTime_UTC = DateTime)
+
+names(YSI_surf)[-which(names(YSI_surf) %in% c("Site", "Date", "DateTime_UTC", "AirPressure_mmHg"))] <- paste0(
+  "YSISurf_", names(YSI_surf)[-which(names(YSI_surf) %in% c("Site", "Date", "DateTime_UTC", "AirPressure_mmHg"))]
+)
+
+
   
 
 # incubation metabolism results
@@ -66,9 +71,10 @@ YSI_surf<- YSI_ThreeDepths %>%
 
 #Merge everything together
 
-merge1<-full_join(site_df, YSI_surf)
+# merge1<-full_join(site_df, YSI_surf)
+merge1<-full_join(site_df_withFlame, YSI_surf)
 
-  
+
 #Field notes
 # merge3<-full_join(merge2, field_df_withFlame)
 # merge4<-dplyr::select(merge3, -Date.1)
