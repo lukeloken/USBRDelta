@@ -246,3 +246,26 @@ dev.off()
 
 
 
+
+#Each day gets a barplot
+
+Zoo_dates<-unique(Zoo_total$Date)
+
+Zoo_i= 1
+for (Zoo_i in 1:length(Zoo_dates)){
+  Zoo_date<-Zoo_dates[Zoo_i]
+  
+  data_zoo <- Zoo_total[which(Zoo_total$Date==Zoo_date),]
+  zoo_barplot<- ggplot(data_zoo, aes(x=Station, y=Total_SpeciesBiomass_ugdwL)) + 
+    geom_bar(stat='identity', fill='lightsalmon4') + 
+    theme_bw() + 
+    labs(x='Station', y=BiomassExp)+ 
+    ggtitle(Zoo_date)
+
+  png(paste0(dropbox_dir, "/Figures/Zoops/MonthlyBarplots/ZooTotals_", Zoo_date, ".png", sep=""), res=300, width=6,height=4, units="in")
+  
+  print(zoo_barplot)
+
+  dev.off()
+    
+}
