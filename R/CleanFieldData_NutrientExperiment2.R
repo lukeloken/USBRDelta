@@ -72,4 +72,5 @@ event_df$Long_PM_EndTime<-as.POSIXct(paste0(event_df$Date, str_pad(event_df$Long
 saveRDS(event_df , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_EventData.rds'))
 write.table(event_df, file=paste0(google_dir, '/SSCN2_DataOutputs/SSCN2_EventData.csv'), row.names=F, sep=',')
 
+rm(field_list)
 
