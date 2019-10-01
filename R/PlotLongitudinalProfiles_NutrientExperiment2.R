@@ -396,7 +396,7 @@ for (event_i in 1:length(dates)){
   print(date)
 }
 
-
+rm(a, am, CloseSites, commonTheme_map,geo, geo_am, geo_am_clip, geo_i, geo_list, geo_pm, geo_pm_clip,geo_UTM, map, map2, onoff_times, outline, pm, map_am, map_pm, map_test, RTMC_df, RTMC_df_geo, RTMC_list, site_medians, site_medians_df, SSCNetwork_clean, SSCSites)
 
 
 
