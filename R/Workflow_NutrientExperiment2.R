@@ -32,24 +32,32 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
 
-
 #Field data
-# source('R/CleanFieldData_NutrientExperiment.R')
+source('R/CleanFieldData_NutrientExperiment2.R')
+
+#Nutrient data
+source('R/CleanNutrientData_NutrientExperiment2.R')
+
+
+# Longitudinal Data
+source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
+
+#USGS buoy data
+# source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
 
 #Light profiles
 # source('R/Calculatekd_NutrientExperiment.R')
 
-#Nutrient data
-# source('R/CleanNutrientData_NutrientExperiment.R')
 
 #Incubation data
-# source('R/IncubationMetabolismLightDark_Workflow.R')
-# source('R/Plot_IncubationMetabolism_Timeseries.R')
+source('R/IncubationMetabolism_SSCN2_Workflow.R')
+source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
 #Vertical profiles
+source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
 source('R/CompileVerticalProfiles_NutrientExperiment2.R')
 
-# source('R/ExtractSurfaceYSI_NutrientExperiment.R')
+
 # source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R')
 
 #O18 metabolism (still need to add these)
