@@ -67,6 +67,11 @@ if  (nrow(YSI_df_i)>1){
     mutate(DateTime = as.POSIXct(paste(mdy(Date), Time, sep=' '), tz='UTC'), 
            Date=mdy(Date))
   
+  if ("DO.mg.L" %in% names(YSI_df_i_ordered)){
+    YSI_df_i_ordered <- dplyr::rename(YSI_df_i_ordered, DO_mgL = 'DO.mg.L')
+  }
+    
+  
 
   #Create summary table to identify outliers for Chla and Turb
 YSI_df_i_summary <- YSI_df_i_ordered %>%
