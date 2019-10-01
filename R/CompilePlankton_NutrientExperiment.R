@@ -33,7 +33,8 @@ Phyto_df<-ldply(Phyto_list, data.frame)
 
 Phyto_FullRecord<- Phyto_df %>%
   drop_na(STATION, SAMPLE) %>%
-  dplyr::rename(bottle.ID = STATION) %>%
+  dplyr::rename(bottle.ID = STATION) 
+Phyto_FullRecord <- Phyto_FullRecord %>% 
   mutate(Date=as.Date(SAMPLE), 
          Station=paste0("EC", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3]))
 
