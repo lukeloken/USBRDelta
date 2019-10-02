@@ -44,6 +44,13 @@
   #HSmixing = final mixing ratio (ppmv, of CO2 at equilibrium in source gas; computed from GC or IRGA data as water sample)
   ##
     # clear all
+
+#load field and chem data
+merge_df <- saveRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_Merged.rds'))
+
+
+#load exetainer gas data
+
   
     ##Load pCO2 data:
     data <-read.csv(file="02_pCO2_data_cleaned_2017_2018.csv",header=TRUE)
