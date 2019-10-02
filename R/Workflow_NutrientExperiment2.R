@@ -35,12 +35,30 @@ box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 #Field data
 source('R/CleanFieldData_NutrientExperiment2.R')
 
+#Longitudinal Data (Script works, but takes a long time)
+# source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
+
+#Vertical profiles (Script works, just takes a long time)
+# source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
+source('R/CompileVerticalProfiles_NutrientExperiment2.R')
+
+
 #Nutrient data
 source('R/CleanNutrientData_NutrientExperiment2.R')
 
+#Merge multiple datasets together. 
+#This script is still a work in progress and more datasets can be included in the merger
+source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
 
-# Longitudinal Data
-source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
+# ######################################################
+# All code above is functioning (Oct 1, 2019, Luke Loken)
+# ######################################################
+
+#Compute dissolved gases
+
+
+
+
 
 #USGS buoy data
 # source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
@@ -51,14 +69,9 @@ source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
 
 #Incubation data
 source('R/IncubationMetabolism_SSCN2_Workflow.R')
-source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
-
-#Vertical profiles
-source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
-source('R/CompileVerticalProfiles_NutrientExperiment2.R')
+# source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
 
-# source('R/MergeSurfaceYSIChemistryMetabolism_NutrientExperiment.R')
 
 #O18 metabolism (still need to add these)
 # source('R/CreateO18InputTable.R')
