@@ -38,8 +38,10 @@ nutrient_df <- dplyr::select(nutrient_df, -starts_with('X__')) %>%
     `DIN-ppm` = `NH4-ppm` + `NO3-ppm`, 
     `DON-ppm` = `TDN-ppm` - `NH4-ppm` - `NO3-ppm`, 
     `TPN-ppm` = `TN-ppm` - `TDN-ppm`, 
-    Date = as.Date(Date)
-  )
+    Date = as.Date(Date),
+    Site = SiteName
+  ) %>%
+  rename(LocationName = SiteName)
 
 # head(nutrient_df)
 
@@ -72,7 +74,7 @@ tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SiteCode', 'TSS', '
 # 
 
 
-nut_tss_df<-full_join(nutrient_df, tss_df_sub)
+nut_tss_df<-full_join(nutrient_df, tss_df_sub) 
 
 # nut_tss_O18_df<-left_join(nut_tss_df, O18avg, by='SampleLabel')
 
