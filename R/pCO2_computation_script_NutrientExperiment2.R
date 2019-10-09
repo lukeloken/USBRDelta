@@ -106,7 +106,7 @@ tempairK = AirT + 273.15
 # Calculate dissolved gas concentrations
 # #######################################
 
-##Calculate CO2
+##Calculate CO2 (Weiss 1974)
 co2bunsen = (exp(-58.0931+(90.5069*(100/tempK))+(22.294*log(tempK/100))))*((0.0821*tempK)+((-1636.75+(12.0408*tempK)-(3.27957*0.01*tempK*tempK)+(3.16528*0.00001*tempK*tempK*tempK))/1000))
 #Bunsen solubility coefficients for headspace equilibration (L/L*atm)
 
@@ -175,36 +175,37 @@ N2OuM = (totalgas_N2O-(sourcegas_N2O*HSVol))/WaterVol
 #concentration of gas in lake water (umol/L)
 
 
-
-#Working script
-#End here for now
-
-
-
-
-
-# Calculate the solubility potential for CO2 at field pressure and temp
+# Calculate the solubility potential for CO2, CH4, and N2O at field pressure and temp
 # based on Henry's law adjusted for temp, field pressure, and atmospheric
 # concentration of gas
 
 #KH_t= Henry's law adjusted for temp  Units= mol/L*atm
-KH_t=0.034*exp(2400*((1/tempK)-1/(298.15)))
+KH_t_CO2=0.034*exp(2400*((1/tempK)-1/(298.15)))
+KH_t_CH4=0.0014*exp(1900*((1/tempK)-1/(298.15)))
+KH_t_N2O=0.024*exp(2700*((1/tempK)-1/(298.15)))
 
-#Saturation concentration of CO2 at ambient temp and pressure
+
+#Saturation concentration at ambient temp and pressure
 #units: umol/L
-CO2sat= SGmixing* BP_atm * KH_t
+CO2sat= SG_CO2* BP_atm * KH_t_CO2
+CH4sat= SG_CH4* BP_atm * KH_t_CH4
+N2Osat= SG_N2O* BP_atm * KH_t_N2O
 
-#Departure from saturation of CO2 as uM
+#Departure from saturation as uM
 CO2dep=CO2uM - CO2sat
+CH4dep=CH4uM - CH4sat
+N2Odep=N2OuM - N2Osat
 
-#Saturation concentration of CO2 represented as a percent
-CO2sat_pct= CO2dep/ CO2sat*100
+#Saturation concentration represented as a percent
+CO2sat_pct= CO2uM/ CO2sat*100
+CH4sat_pct= CH4uM/ CH4sat*100
+N2Osat_pct= N2OuM/ N2Osat*100
 
+#Merge calculated concentrations with rest of data
+gas_out<-data.frame(SampleCode=merge_df_gas$SampleCode, CO2uM, CO2sat_pct, CH4uM, CH4sat_pct, N2OuM, N2Osat_pct) 
+merge_df_gascals<-left_join(merge_df, gas_out)
 
-#Express CO2 concentration in alternate units
-pCO2uatm=tempK*0.082057*CO2uM
-pCO2ppmv=pCO2uatm/BP_atm
+#Save
+write.csv(merge_df_gascals, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_withGas_Merged.csv'), row.names=F)
+saveRDS(merge_df_gascals , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
 
-##Export csv with pCO2 values in different units:
-pCO2.export <- data.frame(Lake_Name=data$Lake_Name,Coll_Date=data$Coll_Date, Time=data$Time, Depth_m=data$Depth_m, CO2uM=CO2uM, CO2sat_pct=CO2sat_pct, pCO2uatm=pCO2uatm, pCO2ppmv=pCO2ppmv)
-write.csv(pCO2.export, file='03_computed_pCO2_2017_2018.csv')
