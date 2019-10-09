@@ -4,6 +4,7 @@
 #Code to download meta and field sheet data
 
 library(readxl)
+library(tidyr)
 library(dplyr)
 library(plyr)
 library(viridis)
