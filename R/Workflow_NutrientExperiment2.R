@@ -50,13 +50,14 @@ source('R/CleanNutrientData_NutrientExperiment2.R')
 #This script is still a work in progress and more datasets can be included in the merger
 source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
 
-# ######################################################
-# All code above is functioning (Oct 1, 2019, Luke Loken)
-# ######################################################
 
 #Compute dissolved gases
+source('R/pCO2_computation_script_NutrientExperiment2.R')
 
 
+# ######################################################
+# All code above is functioning (Oct 9, 2019, Luke Loken)
+# ######################################################
 
 
 
