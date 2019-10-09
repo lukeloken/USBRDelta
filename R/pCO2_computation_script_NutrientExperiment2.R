@@ -130,8 +130,8 @@ CO2uM = (totalgas_CO2-(sourcegas_CO2*HSVol))/WaterVol
 ##Calculate CH4 (Wiesenburg and Guinasso 1979)
 # CH4 constants A1=-68.8862 A2=101.4956 A3=28.7314 B1=-0.076146 B2=0.043970 B3=-0.0068672
 
-ch4bunsen = exp(-68.8862 + 101.4956*(100/tempK) + 28.7314*log(tempK/100) + Salinity*(-0.076146 + 0.043970*(tempK/100) + (-0.0068672)*(tempK/100)^2))
-
+ch4bunsen = exp(-68.8862 + 101.4956*(100/tempK) + 28.7314*log(tempK/100) + Salinity*(-0.076146 + 0.043970*(tempK/100) + (-0.0068672)*(tempK/100)^2))*(0.0821*tempK)
+#Bunsen solubility coefficients for headspace equilibration (L/L*atm)
 
 sourcegas_CH4 = SG_CH4/(0.0821*tempairK)   
 #source gas conc. umol/L, 0.0821 is R, the ideal gas constant L*atm/T*mol (T is temp in K)
@@ -147,6 +147,33 @@ totalgas_CH4 = (finalHSconc_CH4*HSVol)+(finalWaterconc_CH4*WaterVol)
 
 CH4uM = (totalgas_CH4-(sourcegas_CH4*HSVol))/WaterVol  
 #concentration of gas in lake water (umol/L)
+
+
+
+##Calculate N2O (Weiss et al 1980)
+# N2O constants A1=-62.7062 A2=97.3066 A3=24.1406 B1=-0.058420 B2=0.033193 B3=-0.0051313
+
+n2obunsen = exp(-62.7062 + 97.3066*(100/tempK) + 24.1406*log(tempK/100) + Salinity*(-0.058420 + 0.033193*(tempK/100) + (-0.0051313)*(tempK/100)^2))*(0.0821*tempK)
+#Bunsen solubility coefficients for headspace equilibration (L/L*atm)
+
+N2O_solubility<-exp(-60.7467 +88.8280/tempK*100 + 21.2531*log(tempK/100))
+#Solubility from https://sites.chem.colostate.edu/diverdi/all_courses/CRC%20reference%20data/solubility%20of%20gases%20in%20water.pdf
+
+sourcegas_N2O = SG_N2O/(0.0821*tempairK)   
+#source gas conc. umol/L, 0.0821 is R, the ideal gas constant L*atm/T*mol (T is temp in K)
+
+finalHSconc_N2O = HS_N2O/(0.0821*tempairK) 
+#final headspace conc (umol/L)
+
+finalWaterconc_N2O = HS_N2O*n2obunsen*BP_atm*(1/(0.0821*tempK)) 
+#final concentration in water used for equilibrium(umol/L)
+
+totalgas_N2O = (finalHSconc_N2O*HSVol)+(finalWaterconc_N2O*WaterVol) 
+#total gas in system (umoles)
+
+N2OuM = (totalgas_N2O-(sourcegas_N2O*HSVol))/WaterVol  
+#concentration of gas in lake water (umol/L)
+
 
 
 #Working script
