@@ -58,7 +58,7 @@ write.table(hypso_alldepths, file=paste(dropbox_dir, 'Data', 'Bathy', 'Hypso_NL7
 outline_data<-readOGR(paste(dropbox_dir, 'Data', 'SpatialData', sep='/'), "ShipChannel_4km_outline")
 outline_area<-area(outline_data)
 
-sp_data<-readOGR(paste(dropbox_dir, 'Data', 'SpatialData', sep='/'), "DWSC_Bathy_NL74_4km")
+sp_data<-readOGR(paste(dropbox_dir, 'Data', 'SpatialData', sep='/'), "DWSC_Bathy_NL74_4km", stringsAsFactors = F)
 summary(sp_data@data)
 
 sp_data$Depth_m_v2 <- as.numeric(gsub("Level ", "", sp_data$Name))
@@ -80,7 +80,7 @@ Area_Total<-sum(WaterArea$Area_m2)
 Depth_names<-unique(sp_data2$Name)
 
 i=1
-Depth_df<-data.frame(Depth_name=Depth_names, Depth_m=NA, Area_m2=NA)
+Depth_df<-data.frame(Depth_name=Depth_names, Depth_m=NA, Area_m2=NA, stringsAsFactors = F)
 for (i in 1:length(Depth_names)){
   Area_i <- sp_data2[which(sp_data2$Name ==Depth_names[i]),]
   Area_sum <-  sum(Area_i$Area_m2, na.rm=T)
@@ -94,11 +94,16 @@ for (i in 1:length(Depth_names)){
 
 Depth_df$Depth_m= (as.numeric(gsub('Level ', '', Depth_names)))*(-1)+0.5
 
-shallow_df<-Depth_df[1,]
-shallow_df$Depth_name='Level +0.5'
-shallow_df$Depth_m=0
-shallow_df$Area_m2<-outline_area
-Depth_df<-bind_rows(Depth_df, shallow_df)
+shallow_df<-Depth_df[(nrow(Depth_df)-2):nrow(Depth_df),]
+shallow_df$Depth_name[1]=c('Level +0.5')
+shallow_df$Depth_m[1]=0
+shallow_df$Area_m2[1]<-outline_area
+shallow_df$Area_m2[3]<-mean(shallow_df$Area_m2[1:2])
+
+
+Depth_df<-bind_rows(Depth_df[1:(nrow(Depth_df)-2),], shallow_df) %>%
+  arrange(Depth_m)
+
 
 Depth_df$Volume_m3 <- Depth_df$Area_m2*.5
 
@@ -106,7 +111,7 @@ Depth_df$Area_percent<-Depth_df$Area_m2/outline_area
 Depth_df$Volume_percent<-Depth_df$Volume_m3/sum(Depth_df$Volume_m3)
 
 plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16, xlab='Area (m2)', ylab='Depth (m)')
-plot(Depth_df$Volume_m3, Depth_df$Depth_m, ylim=c(12,0))
+plot(Depth_df$Volume_m3, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 sum(Depth_df$Volume_m3)/9400*400
 
