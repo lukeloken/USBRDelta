@@ -14,6 +14,7 @@ library(ggplot2)
 library(gridExtra)
 library(gtools)
 library(rLakeAnalyzer)
+library(wql)
 
 # source('R/read_excel_allsheets.R')
 # source('R/g_legend.R')
@@ -129,7 +130,9 @@ for (day in 1:length(YSI_dates)){
     avg_df2[site,avg_vars]<-var_avg
     
     #Schmidt Stability
-    Schmidt<-schmidt.stability(wtr=YSI_i_j$Temp_C, depths=YSI_i_j$Depth_m, bthA = Depth_df$Area_m2, bthD = Depth_df$Depth_m)
+    Salinity <-ec2pss(YSI_i_j$SPC_uScm/1000, YSI_i_j$Temp_C, p=0)
+    
+    Schmidt<-schmidt.stability(wtr=YSI_i_j$Temp_C, depths=YSI_i_j$Depth_m, bthA = Depth_df$Area_m2, bthD = Depth_df$Depth_m, sal=Salinity)
     avg_df2$Schmidt_Jm2[site] <- Schmidt
   }
   
