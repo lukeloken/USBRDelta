@@ -90,7 +90,7 @@ source('R/IncubationMetabolism_SSCN2_Workflow.R')
 # source('R/MergeBuoyMetabolism_NutrientExperiment.R')
 
 #Plot a bunch of stuff
-# source('R/PlotTimeseries_NutrientExperiment2.R')
+source('R/PlotTimeseries_NutrientExperiment2.R')
 
 #Zooplankton, Phytoplankton, Picoplankton
 source('R/CompilePlankton_NutrientExperiment2.R')
