@@ -84,14 +84,14 @@ YSI_df_i_summary <- YSI_df_i_ordered %>%
   )
 
 badChlA <-which(
-  YSI_df_i_ordered$Depth_m > 5 & 
+  YSI_df_i_ordered$Depth_m > 4 & 
   YSI_df_i_ordered$ChlA_ugL > 
     YSI_df_i_summary$medianChlA[match(YSI_df_i_ordered$Site, YSI_df_i_summary$Site)] + 
     YSI_df_i_summary$madChlA[match(YSI_df_i_ordered$Site, YSI_df_i_summary$Site)]*5
 )
 
 badTurb <-which(
-  YSI_df_i_ordered$Depth_m > 5 & 
+  YSI_df_i_ordered$Depth_m > 4 & 
     YSI_df_i_ordered$Turb_FNU > 
     YSI_df_i_summary$medianTurb[match(YSI_df_i_ordered$Site, YSI_df_i_summary$Site)] + 
     YSI_df_i_summary$madTurb[match(YSI_df_i_ordered$Site, YSI_df_i_summary$Site)]*5
@@ -100,7 +100,7 @@ badTurb <-which(
 omitrows<-unique(c(badTurb, badChlA))
 
 if (length(omitrows>0)){
-  # YSI_df_i_ordered<-YSI_df_i_ordered[-omitrows,]
+  # YSI_df_i_cleaned<-YSI_df_i_ordered[-omitrows,]
   YSI_df_i_cleaned<-YSI_df_i_ordered[-badTurb,]
 } else if (length(omitrows)==0){
   YSI_df_i_cleaned<-YSI_df_i_ordered
