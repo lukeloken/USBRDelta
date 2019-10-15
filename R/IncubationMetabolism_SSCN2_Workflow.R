@@ -69,9 +69,10 @@ for (file_nu in 1:length(files)){
   
   #Extract Date from file name
   file<-files[file_nu]
-  Date<-unlist(strsplit(file, split='Delta'))[2]
-  Date<- unlist(strsplit(Date, split='_'))[1] #Date must be mmddyy
-  Date_ymd<-mdy(Date) #For saving data
+  
+  Date<-gsub("[^0-9.]", "",  file)
+  Date<-gsub("\\.", "", Date)
+  Date_ymd<-mdy(Date)
   
   #read in excel file
   mysheets <- read_excel_allsheets(paste(directory_incubation, file, sep='/'))
