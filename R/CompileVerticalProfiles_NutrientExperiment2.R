@@ -145,7 +145,7 @@ write.csv(YSI_avg_out, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2_Vert
 saveRDS(YSI_avg_out , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverage.rds'))
 
 
-rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory, YSI_avg_out, avg_list, avg_df2, site,avg_vars, var_avg, Depth_df, YSI_everydepth,YSI_i_j,Depth_closest, YSI_i )
+rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory, avg_list, avg_df2, site,avg_vars, var_avg, Depth_df, Depth_df2, YSI_everydepth,YSI_i_j,Depth_closest, YSI_i, avg_df, Schmidt, day, Salinity, Sites_i, var, YSI_dates)
 
 
 #View data to see if it makes sense
