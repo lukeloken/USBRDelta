@@ -59,7 +59,16 @@ names(gas_df) <- str_replace_all(names(gas_df), c(" " = "" , "," = "" ))
 water_df<- gas_df %>%
   filter(Type =='Water' & Project =='SSCN2') %>%
   dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -Date, -LabNumber, -Type) %>%
-  mutate(SampleCode = gsub("_a", "", SampleCode))
+  mutate(SampleCode = gsub("_a", "", SampleCode), 
+         SampleCode = gsub("_b", "", SampleCode)) %>%
+  group_by(SampleCode) %>%
+  summarize(ppmCH4 = mean(ppmCH4),
+            ppmCO2 = mean(ppmCO2),
+            ppmN2O = mean(ppmN2O),
+            WaterVolume_mL = mean(WaterVolume_mL),
+            AirVolume_mL = mean(AirVolume_mL)
+            )
+  
 
 air_df <- gas_df %>%
   filter(Type =='Air' & Project =='SSCN2') %>%
@@ -208,4 +217,7 @@ merge_df_gascals<-left_join(merge_df, gas_out)
 #Save
 write.csv(merge_df_gascals, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_withGas_Merged.csv'), row.names=F)
 saveRDS(merge_df_gascals , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
+
+
+
 
