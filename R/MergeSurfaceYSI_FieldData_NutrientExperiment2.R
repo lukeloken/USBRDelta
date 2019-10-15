@@ -73,6 +73,9 @@ YSI_deep<- YSI_ThreeDepths %>%
 
 YSI_TwoDepths<- bind_rows(YSI_surf, YSI_deep)
 
+#Vertically weighted average
+YSI_avg_out <- readRDS(paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverage.rds'))
+
 # incubation metabolism results
 # summary_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/IncubationMetabolism/', 'LightDarkMetabolism.csv'), header=T, stringsAsFactors = F)
 # str(summary_df)
