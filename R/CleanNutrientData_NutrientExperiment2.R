@@ -41,10 +41,10 @@ nutrient_df <- dplyr::select(nutrient_df, -starts_with('X__')) %>%
     `TPN-ppm` = `TN-ppm` - `TDN-ppm`, 
     Date = as.Date(Date),
     Site = SiteName
-  ) %>%
-  rename(LocationName = SiteName)
+  ) #%>%
+  #rename(LocationName = SiteName)
 
-# head(nutrient_df)
+#head(nutrient_df)
 
 
 #TSS data
@@ -59,6 +59,30 @@ tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SiteCode', 'TSS', '
   mutate(Date=as.Date(Date))
 
 #ChlA
+
+chla_df<-read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_chla.xlsx"), skip=1)
+
+
+chla_df_names<-names(read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_chla.xlsx")))
+
+names(chla_df)<-chla_df_names
+rm(chla_df_names)
+
+chla_df_mean <- dplyr::select(chla_df, -starts_with('X__')) %>%
+  dplyr::select(-starts_with('Lab')) %>%
+  drop_na(SampleCode) %>%
+  mutate(SampleCode = gsub("_a", "", SampleCode)) %>%
+  mutate(SampleCode = gsub("_b", "", SampleCode)) %>%
+  mutate(Date = as.Date(Date, format='%m/%d/%Y')) %>%
+  group_by(SampleCode, LocationCode, LocationName, Date) %>%
+  dplyr::summarize(
+    chla_mean = mean(ChlA, na.rm=T),
+    chla_sd = sd(ChlA, na.rm=T),
+    pheo_mean = mean(Pheo, na.rm=T),
+    pheo_sd = sd(Pheo, na.rm=T)) %>% 
+  dplyr::arrange(Date, LocationCode) %>%
+  dplyr::rename(Site = LocationName)
+  
 
 #Oxygen18data
 # O18_batch1<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenSadro_ExetData_decomposed_Bath01.txt"), sep='\t', skip=71, header=T, stringsAsFactors = F)
@@ -77,11 +101,11 @@ tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SiteCode', 'TSS', '
 
 nut_tss_df<-full_join(nutrient_df, tss_df_sub) 
 
-# nut_tss_O18_df<-left_join(nut_tss_df, O18avg, by='SampleLabel')
+nut_tss_chla_df<-left_join(nut_tss_df, chla_df_mean)
 
 # nut_tss_O18_df$Site<-sitetable$site1[match(nut_tss_O18_df$Site, sitetable$site3)]
 
-full_chem_df <- nut_tss_df
+full_chem_df <- nut_tss_chla_df
 
 head(as.data.frame(full_chem_df))
 
@@ -89,4 +113,4 @@ write.table(full_chem_df, file=paste0(google_dir, '/SSCN2_DataOutputs/AllWaterCh
 saveRDS(full_chem_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/AllWaterChemistry.rds'))
 
 
-rm(nutrient_df, tss_df, tss_df_sub, tss_df_names, nut_tss_df)
+rm(nutrient_df, tss_df, tss_df_sub, nut_tss_df, nut_tss_chla_df, chla_df, chla_df_mean)
