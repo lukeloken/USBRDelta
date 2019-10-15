@@ -40,7 +40,7 @@ source('R/CleanFieldData_NutrientExperiment2.R')
 
 #Vertical profiles (Script works, just takes a long time)
 # source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
-source('R/CompileVerticalProfiles_NutrientExperiment2.R')
+# source('R/CompileVerticalProfiles_NutrientExperiment2.R')
 
 
 #Nutrient data
@@ -51,7 +51,7 @@ source('R/CleanNutrientData_NutrientExperiment2.R')
 source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
 
 
-#Compute dissolved gases
+#Compute dissolved gases and merge with data
 source('R/pCO2_computation_script_NutrientExperiment2.R')
 
 
@@ -93,7 +93,7 @@ source('R/IncubationMetabolism_SSCN2_Workflow.R')
 # source('R/PlotTimeseries_NutrientExperiment2.R')
 
 #Zooplankton, Phytoplankton, Picoplankton
-# source('R/CompilePlankton_NutrientExperiment.R')
-# source('R/PlotZoopsTimeseries_NutrientExperiment.R')
+source('R/CompilePlankton_NutrientExperiment2.R')
+source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
 # source('R/.R')
