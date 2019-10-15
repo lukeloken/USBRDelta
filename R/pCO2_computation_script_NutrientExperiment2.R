@@ -59,10 +59,10 @@ names(gas_df) <- str_replace_all(names(gas_df), c(" " = "" , "," = "" ))
 water_df<- gas_df %>%
   filter(Type =='Water' & Project =='SSCN2') %>%
   dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -Date, -LabNumber, -Type) %>%
-  mutate(SampleCode = gsub("_a", "", SampleCode), 
-         SampleCode = gsub("_b", "", SampleCode)) %>%
-  group_by(SampleCode) %>%
-  summarize(ppmCH4 = mean(ppmCH4),
+  mutate(SampleCode = gsub("_a", "", SampleCode)) %>%
+  mutate(SampleCode = gsub("_b", "", SampleCode)) %>%
+  dplyr::group_by(SampleCode) %>%
+  dplyr::summarize(ppmCH4 = mean(ppmCH4),
             ppmCO2 = mean(ppmCO2),
             ppmN2O = mean(ppmN2O),
             WaterVolume_mL = mean(WaterVolume_mL),
@@ -74,7 +74,7 @@ air_df <- gas_df %>%
   filter(Type =='Air' & Project =='SSCN2') %>%
   dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -Date, -LabNumber, -Type, -AirVolume_mL, -WaterVolume_mL) %>%
   mutate(SampleCode = gsub("_A", "_S", SampleCode)) %>%
-  rename(Air_ppmCH4 = ppmCH4, 
+  dplyr::rename(Air_ppmCH4 = ppmCH4, 
          Air_ppmCO2 = ppmCO2, 
          Air_ppmN2O = ppmN2O)
 
