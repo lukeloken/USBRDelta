@@ -13,6 +13,7 @@ library(lubridate)
 library(ggplot2)
 library(gridExtra)
 library(gtools)
+library(rLakeAnalyzer)
 
 # source('R/read_excel_allsheets.R')
 # source('R/g_legend.R')
@@ -23,6 +24,8 @@ library(gtools)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
+#Hypso curve
+Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
 
 # Find all filenames in directory
 # These will be used to loop through all old data
@@ -92,7 +95,54 @@ write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2S
 saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_ThreeDepths.rds'))
 
 
-rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory)
+#Calculate volume weighted averages and Schmidt Stability
+
+avg_vars<-names(YSI_AllDepths)[-which(names(YSI_AllDepths) %in% c('Date', 'Site', "AirPressure_mmHg", "Depth_m", "DateTime"))]
+
+YSI_dates<-unique(YSI_AllDepths$Date)
+day=1
+avg_list<-list()
+for (day in 1:length(YSI_dates)){
+  YSI_i<-YSI_AllDepths[YSI_AllDepths$Date == YSI_dates[day],]
+  Sites_i <- unique(YSI_i$Site)
+  
+  avg_df <- YSI_i %>%
+    group_by(Date, Site) %>%
+    dplyr::select(-Depth_m) %>%
+    summarize_all(mean)
+  
+  avg_df2 <- avg_df
+  avg_df2$Schmidt_Jm2 <- rep(NA, nrow(avg_df2))
+  site=1
+  for (site in 1:length(Sites_i)){
+    YSI_i_j<-YSI_i[YSI_i$Site == Sites_i[site],]
+    Depth_closest<-sapply(Depth_df$Depth_m, function (x) which.min(abs(YSI_i_j$Depth_m-x)))
+    
+    YSI_everydepth<-YSI_i_j[Depth_closest,avg_vars]
+    
+    Depth_df2<-data.frame(Depth_df, Depth_closest, YSI_everydepth)
+    
+    var=avg_vars[1]
+    
+    var_avg <- sapply(avg_vars, function (y) sum(Depth_df2[y]*Depth_df2$Volume_percent))
+
+    avg_df2[site,avg_vars]<-var_avg
+    
+    #Schmidt Stability
+    Schmidt<-schmidt.stability(wtr=YSI_i_j$Temp_C, depths=YSI_i_j$Depth_m, bthA = Depth_df$Area_m2, bthD = Depth_df$Depth_m)
+    avg_df2$Schmidt_Jm2[site] <- Schmidt
+  }
+  
+  avg_list[[day]] <- avg_df2
+  
+}
+YSI_avg_out <- ldply(avg_list, data.frame)
+
+write.csv(YSI_avg_out, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2_VerticalAverage.csv'), row.names=F)
+saveRDS(YSI_avg_out , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverage.rds'))
+
+
+rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory, YSI_avg_out, avg_list, avg_df2, site,avg_vars, var_avg, Depth_df, YSI_everydepth,YSI_i_j,Depth_closest, YSI_i )
 
 
 #View data to see if it makes sense
