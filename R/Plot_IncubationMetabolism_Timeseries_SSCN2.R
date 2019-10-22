@@ -182,25 +182,56 @@ IncMetabDaily <- full_join(GPPTable, ERTable, by = c("SampleDate", "Site")) %>%
   rename(Date = SampleDate)
 
 
-
-
-
 merge_df_IncMetab<-left_join(merge_df_gascals, IncMetabDaily)
+
+
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+colors<-color.palette(length(levels(merge_df_IncMetab$Site)))
+shapes<-rep(21:25, 5)
+
+
+#Common theme for all metabolism timeseries panels
+commonTheme_metab<-list(
+  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors),
+  scale_shape_manual(values=rep(21:25, 5)),
+  # geom_smooth(method='loess',  se=F),
+  # geom_smooth(method='auto', se=T, alpha=.2),
+  # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom", axis.title.x=element_blank())
+)
 
 ggplot(aes(x=Date, y=GPP_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
   geom_point() + 
-  geom_path()
+  geom_path() + 
+  commonTheme_metab
 
 ggplot(aes(x=Date, y=ER_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
   geom_point() + 
-  geom_path()
+  geom_path() + 
+  commonTheme_metab
 
 ggplot(aes(x=Date, y=NEP_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
   geom_point() + 
-  geom_path()
+  geom_path() + 
+  commonTheme_metab
 
 
+ggplot(aes(y=GPP_Total, x=ER_Total*(-1), colour=Site),data=merge_df_IncMetab) +
+  geom_abline() + 
+  geom_point() + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  scale_x_continuous(limits=c(0,max(c(GPP_out, (ER_out*(-1)))))) +
+  scale_y_continuous(limits=c(0,max(c(GPP_out, (ER_out*(-1)))))) + 
+  labs(x = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')),
+       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))
 
+  
 
 
 #Still working below
