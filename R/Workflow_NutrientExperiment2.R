@@ -31,6 +31,8 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 #Where data come from
 box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
+fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+
 
 #Field data
 source('R/CleanFieldData_NutrientExperiment2.R')
@@ -42,9 +44,11 @@ source('R/CleanFieldData_NutrientExperiment2.R')
 # source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
 # source('R/CompileVerticalProfiles_NutrientExperiment2.R')
 
-
 #Nutrient data
 source('R/CleanNutrientData_NutrientExperiment2.R')
+
+#Light profiles
+source('R/Calculatekd_NutrientExperiment2.R')
 
 #Merge multiple datasets together. 
 #This script is still a work in progress and more datasets can be included in the merger
@@ -55,22 +59,22 @@ source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
 source('R/pCO2_computation_script_NutrientExperiment2.R')
 
 
-# ######################################################
-# All code above is functioning (Oct 9, 2019, Luke Loken)
-# ######################################################
-
-
-
-#USGS buoy data
-# source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
-
-#Light profiles
-# source('R/Calculatekd_NutrientExperiment.R')
-
-
 #Incubation data
 source('R/IncubationMetabolism_SSCN2_Workflow.R')
 # source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
+
+
+#Plot a bunch of stuff
+source('R/PlotTimeseries_NutrientExperiment2.R')
+
+#Zooplankton, Phytoplankton, Picoplankton
+source('R/CompilePlankton_NutrientExperiment2.R')
+source('R/PlotZoopsTimeseries_NutrientExperiment.R')
+
+
+# ######################################################
+# All code above is functioning (Oct 9, 2019, Luke Loken)
+# ######################################################
 
 
 
@@ -79,8 +83,8 @@ source('R/IncubationMetabolism_SSCN2_Workflow.R')
 # source('R/CalculateO18metabolism_NutrientExperiment.R')
 # source('R/Plot_O18Metabolism.R')
 
-#Estimate Photic depth and scale incubation metabolism to whole ecosystem
-# source('R/PredictPhoticDepth_NutrientExperiment.R')
+#USGS buoy data
+# source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
 
 #Buoy Metabolism
 # source('R/ModelMetabolismBuoyDO_SSCN1.R')
@@ -89,11 +93,5 @@ source('R/IncubationMetabolism_SSCN2_Workflow.R')
 #Merge Buoy metabolism
 # source('R/MergeBuoyMetabolism_NutrientExperiment.R')
 
-#Plot a bunch of stuff
-source('R/PlotTimeseries_NutrientExperiment2.R')
-
-#Zooplankton, Phytoplankton, Picoplankton
-source('R/CompilePlankton_NutrientExperiment2.R')
-source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
 # source('R/.R')
