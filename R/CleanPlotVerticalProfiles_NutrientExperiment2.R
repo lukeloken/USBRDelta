@@ -33,7 +33,7 @@ if (length(grep('~', YSIfilenames))>0){
 }
 
 # Loop through filenames and read in data
-i=10
+i=27
 for (i in 1:length(YSIfilenames)){
 YSI_df_i<-read.csv(paste0(box_dir, "/Data/YSIVerticalProfiles/", YSIfilenames[i]))
 
