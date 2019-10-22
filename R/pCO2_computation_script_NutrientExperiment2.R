@@ -58,10 +58,10 @@ names(gas_df) <- str_replace_all(names(gas_df), c(" " = "" , "," = "" ))
 
 water_df<- gas_df %>%
   filter(Type =='Water' & Project =='SSCN2') %>%
-  dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -Date, -LabNumber, -Type) %>%
+  dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -LabNumber, -Type) %>%
   mutate(SampleCode = gsub("_a", "", SampleCode)) %>%
   mutate(SampleCode = gsub("_b", "", SampleCode)) %>%
-  dplyr::group_by(SampleCode) %>%
+  dplyr::group_by(SampleCode, Date) %>%
   dplyr::summarize(ppmCH4 = mean(ppmCH4),
             ppmCO2 = mean(ppmCO2),
             ppmN2O = mean(ppmN2O),
@@ -72,13 +72,14 @@ water_df<- gas_df %>%
 
 air_df <- gas_df %>%
   filter(Type =='Air' & Project =='SSCN2') %>%
-  dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -Date, -LabNumber, -Type, -AirVolume_mL, -WaterVolume_mL) %>%
+  dplyr::select(-SampleName, -SampleID, -Event, -LocationCode, -LabNumber, -Type, -AirVolume_mL, -WaterVolume_mL, -LocationName, -Project) %>%
   mutate(SampleCode = gsub("_A", "_S", SampleCode)) %>%
   dplyr::rename(Air_ppmCH4 = ppmCH4, 
          Air_ppmCO2 = ppmCO2, 
          Air_ppmN2O = ppmN2O)
 
-gas_join<-left_join(water_df, air_df)
+gas_join<-left_join(water_df, air_df) %>% mutate(Date = as.Date(Date))
+gas_join[gas_join$SampleCode == 'SSCN2_06_05_S',c("Air_ppmCH4", "Air_ppmCO2", "Air_ppmN2O")] <- colMeans(gas_join[gas_join$Date == as.Date('2019-07-15'),c("Air_ppmCH4", "Air_ppmCO2", "Air_ppmN2O")], na.rm=T)
 
 merge_df_gas <- right_join (merge_df, gas_join)
 
