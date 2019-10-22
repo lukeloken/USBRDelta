@@ -89,8 +89,8 @@ YSI_avg_out <- readRDS(paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverag
 #          GPP=NEP-ER)
 
 #Light profiles
-# kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds'))
-
+kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+str(kd_alldates)
 
 
 #Merge everything together
@@ -101,8 +101,6 @@ merge1<-full_join(site_df_twodepths, full_chem_df)
 #Nutrient data
 merge2<-full_join(merge1, YSI_TwoDepths)
 
-#Light Profiles
-# merge6<-full_join(merge5, kd_alldates)
 
 #Merge water chemistry data
 merge_df<-merge2
@@ -111,4 +109,4 @@ saveRDS(merge_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_Merged.rd
 write.csv(merge_df, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_Merged.csv'))
 
 
-rm(YSI_surf, merge1, merge2, merge3, merge4, merge5)
+rm(YSI_surf, merge1, merge2, merge3)
