@@ -320,7 +320,18 @@ p2 <- ggplot(aes(y=GPP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_
        y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
   theme(legend.position='none')
 
-p3 <- ggplot(aes(y=ER_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
+p3 <- ggplot(aes(y=GPP_Total, x=`NO3-ppm`, fill=Site, shape=Site),data=merge_df_IncMetab[-which(is.na(merge_df_IncMetab$GPP_Total)),]) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste(NO[3], " mg N L"^"-1", ")")),
+       y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
+
+
+p4 <- ggplot(aes(y=ER_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_point(size=2) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) + 
@@ -330,7 +341,7 @@ p3 <- ggplot(aes(y=ER_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_I
        y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
   theme(legend.position='none')
 
-p4 <- ggplot(aes(y=ER_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
+p5 <- ggplot(aes(y=ER_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_point(size=2) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) + 
@@ -340,7 +351,17 @@ p4 <- ggplot(aes(y=ER_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_d
        y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
   theme(legend.position='none')
 
-p5 <- ggplot(aes(y=NEP_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
+p6 <- ggplot(aes(y=ER_Total, x=`NO3-ppm`, fill=Site, shape=Site),data=merge_df_IncMetab[-which(is.na(merge_df_IncMetab$ER_Total)),]) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste(NO[3], " mg N L"^"-1", ")")),
+       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))+ 
+  theme(legend.position='none')
+
+p7 <- ggplot(aes(y=NEP_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_point(size=2) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) + 
@@ -350,7 +371,7 @@ p5 <- ggplot(aes(y=NEP_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_
        y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))+ 
   theme(legend.position='none')
 
-p6 <- ggplot(aes(y=NEP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
+p8 <- ggplot(aes(y=NEP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_point(size=2) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) + 
@@ -360,8 +381,18 @@ p6 <- ggplot(aes(y=NEP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_
        y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
   theme(legend.position='none')
 
+p9 <-ggplot(aes(y=NEP_Total, x=`NO3-ppm`, fill=Site, shape=Site),data=merge_df_IncMetab[-which(is.na(merge_df_IncMetab$NEP_Total)),]) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste(NO[3], " mg N L"^"-1", ")")),
+       y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
 
-plot6<-grid.arrange(grobs=list(p1, p2, p3, p4, p5, p6), ncol=2, as.table=T)
+
+plot6<-grid.arrange(grobs=list(p1, p2, p3, p4, p5, p6, p7, p8, p9), ncol=3, as.table=T)
 
 plot_withlegend <- p1 + 
   theme(legend.position="bottom", legend.title=element_blank()) +
@@ -370,7 +401,7 @@ plot_withlegend <- p1 +
 mylegend<-g_legend(plot_withlegend)
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotDrivers.png'), width=8, height=8.5, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotDrivers.png'), width=11, height=8.5, units='in', res=200)
 
 grid.arrange(plot6, mylegend, nrow=2, heights=c(15,1))
 
