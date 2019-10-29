@@ -73,7 +73,7 @@ source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
 
 # ######################################################
-# All code above is functioning (Oct 9, 2019, Luke Loken)
+# All code above is functioning (Oct 29, 2019, Luke Loken)
 # ######################################################
 
 
