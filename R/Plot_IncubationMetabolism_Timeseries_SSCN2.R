@@ -11,6 +11,7 @@ library(RColorBrewer)
 library(viridis)
 
 library(lubridate)
+library(LakeMetabolizer)
 
 #choose starting directory
 # setwd("C:/Users/lcloken/Box/SadroLab/Incubation_Experiments")
@@ -80,16 +81,10 @@ merge_df_gascals$PD01_est = log(1/100)/(merge_df_gascals$Kd_est*(-1))
 rm(Turb, PD, SD, Kd, PD_SD_model, PD_Turb_model, InverseKd_SD_model, InverseKd_Turb_model)
 
 
-#Inputs for loop below. These are the numbers used for each water sample. 
-#Calculate depth to 65%, 20%, and 1% Light. These are the boundaries for the rate measurments
-d1 <- log(65/100)/(merge_df_gascals$Kd_est*(-1))
-d2 <- log(20/100)/(merge_df_gascals$Kd_est*(-1))
-d3 <- log(1/100)/(merge_df_gascals$Kd_est*(-1))
+# #######################################################################
+#Inputs for loop below. These are the numbers used for each water sample.
+# ####################################################################### 
 
-V1 = sapply(d1, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)]))
-V2 = sapply(d2, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)])) - V1
-V3 = sapply(d3, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)])) - V2
-V4 = sapply(d3, function(x) sum(Depth_pred$y[which(Depth_pred$x > x/2)])) 
 
 #Estimate day length
 sunrise<-sun.rise.set(as.POSIXct(merge_df_gascals$Date), lat=38.5064)[,1]
@@ -103,9 +98,20 @@ Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.r
 plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
-Depth_df
+# Depth_df
 Depth_pred <- data.frame(approx(x=Depth_df$Depth_m, y=Depth_df$Volume_m3, xo=seq(0, max(Depth_df$Depth_m), by=0.01)))
 Total_volume = sum(Depth_pred$y, na.rm=T)
+
+
+#Calculate depth to 65%, 20%, and 1% Light. These are the boundaries for the rate measurments
+d1 <- log(65/100)/(merge_df_gascals$Kd_est*(-1))
+d2 <- log(20/100)/(merge_df_gascals$Kd_est*(-1))
+d3 <- log(1/100)/(merge_df_gascals$Kd_est*(-1))
+
+V1 = sapply(d1, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)]))
+V2 = sapply(d2, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)])) - V1
+V3 = sapply(d3, function(x) sum(Depth_pred$y[which(Depth_pred$x < x/2)])) - V2
+V4 = sapply(d3, function(x) sum(Depth_pred$y[which(Depth_pred$x > x/2)])) 
 
 
 
@@ -172,7 +178,7 @@ for (i in 1:nrow(GPPTable)){
 GPPTable$GPP_Total <- GPP_out
 ERTable$ER_Total <- ER_out
 
-
+# Metabolism is in mg O2 L-1 hr-1
 IncMetabDaily <- full_join(GPPTable, ERTable, by = c("SampleDate", "Site")) %>%
   group_by() %>%
   dplyr::select(SampleDate, Site, GPP_Total, ER_Total) %>%
@@ -183,6 +189,26 @@ IncMetabDaily <- full_join(GPPTable, ERTable, by = c("SampleDate", "Site")) %>%
 
 
 merge_df_IncMetab<-left_join(merge_df_gascals, IncMetabDaily)
+
+
+
+
+#Save incubation results
+write.csv(merge_df_IncMetab,  file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_withIncMetab_Merged.csv'))
+saveRDS(merge_df_IncMetab, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withIncMetab_Merged.rds'))
+
+write.csv(results_df, file=paste0(google_dir, '/SSCN2_DataOutputs/IncubationMetabolismSummary.csv'))
+saveRDS(results_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/IncubationMetabolismSummary.rds'))
+
+
+
+
+
+# ########################################
+# Plotting
+# 1) Timeseries of each metric/site
+# 2) Boxplot of metric by site
+# #######################################
 
 
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
@@ -203,23 +229,59 @@ commonTheme_metab<-list(
   theme(plot.title = element_text(hjust=0.5), legend.position="bottom", axis.title.x=element_blank())
 )
 
-ggplot(aes(x=Date, y=GPP_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
-  geom_point() + 
+
+
+#Timeseries
+p1<-ggplot(aes(x=Date, y=GPP_Total, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
   geom_path() + 
-  commonTheme_metab
+  theme(legend.position='none') + 
+  labs(y=expression(paste('Inc GPP (mg ', O[2], ' L'^'-1', ' hr'^'-1', ')')))
 
-ggplot(aes(x=Date, y=ER_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
-  geom_point() + 
+p2<-ggplot(aes(x=Date, y=ER_Total, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
   geom_path() + 
-  commonTheme_metab
 
-ggplot(aes(x=Date, y=NEP_Total, color=Site, group=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
-  geom_point() + 
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc ER (mg ', O[2], ' L'^'-1', ' hr'^'-1', ')')))
+
+p3<-ggplot(aes(x=Date, y=NEP_Total, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
   geom_path() + 
-  commonTheme_metab
+
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc NEP (mg ', O[2], ' L'^'-1', ' hr'^'-1', ')')))
 
 
-ggplot(aes(y=GPP_Total, x=ER_Total*(-1), colour=Site),data=merge_df_IncMetab) +
+plot_withlegend <- p1 + 
+  theme(legend.position="bottom", legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1))
+
+mylegend<-g_legend(plot_withlegend)
+
+
+plot3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismTimeseries.png'), width=10, height=8, units='in', res=200)
+
+grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
+
+dev.off()
+
+
+
+#Scatterplot ER vs GPP
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotGPPER.png'), width=4.5, height=4, units='in', res=200)
+
+ggplot(aes(y=GPP_Total, x=ER_Total*(-1), fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_abline() + 
   geom_point() + 
   scale_colour_manual(values = colors) +
@@ -229,152 +291,135 @@ ggplot(aes(y=GPP_Total, x=ER_Total*(-1), colour=Site),data=merge_df_IncMetab) +
   scale_x_continuous(limits=c(0,max(c(GPP_out, (ER_out*(-1)))))) +
   scale_y_continuous(limits=c(0,max(c(GPP_out, (ER_out*(-1)))))) + 
   labs(x = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')),
-       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))
+       y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))+
+  theme(legend.position = 'right', legend.title = element_blank())
 
-  
-
-
-#Still working below
-
-
-write.csv(results_df, file=paste0(google_dir, '/SSCN2_DataOutputs/IncubationMetabolismSummary.csv'))
-
-saveRDS(results_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/IncubationMetabolismSummary.rds'))
+dev.off()
 
 
 
-results
+#Scatterplot of other drivers (chla, turb, etc versus metabolism)
+
+p1 <- ggplot(aes(y=GPP_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Chl a (", mu, 'g L'^'-1', ')')),
+       y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
+
+p2 <- ggplot(aes(y=GPP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Turbidity (FNU)")),
+       y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
+
+p3 <- ggplot(aes(y=ER_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Chl a (", mu, 'g L'^'-1', ')')),
+       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
+
+p4 <- ggplot(aes(y=ER_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Turbidity (FNU)")),
+       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
+
+p5 <- ggplot(aes(y=NEP_Total, x=chla_mean, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Chl a (", mu, 'g L'^'-1', ')')),
+       y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))+ 
+  theme(legend.position='none')
+
+p6 <- ggplot(aes(y=NEP_Total, x=YSI_Turb_FNU, fill=Site, shape=Site),data=merge_df_IncMetab) +
+  geom_point(size=2) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Turbidity (FNU)")),
+       y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none')
 
 
-# ########################################
-# Plotting
-# 1) Timeseries of each metric/site
-# 2) Boxplot of within measurement sd
-# 3) Boxplot of metric/site calculations
-# #######################################
+plot6<-grid.arrange(grobs=list(p1, p2, p3, p4, p5, p6), ncol=2, as.table=T)
+
+plot_withlegend <- p1 + 
+  theme(legend.position="bottom", legend.title=element_blank()) +
+  guides(fill = guide_legend(nrow = 1))
+
+mylegend<-g_legend(plot_withlegend)
 
 
-# ################################################
-# 1) Multi panel of metabolism estimates over time 
-# Each panel is a site/metric
-# X is day, y is value, color is treatment
-# ################################################
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotDrivers.png'), width=8, height=8.5, units='in', res=200)
+
+grid.arrange(plot6, mylegend, nrow=2, heights=c(15,1))
+
+dev.off()
 
 
-#Plotting parameters
-jitterwidth=0.15
-# colorset<-'Dark2'
-# colors<-brewer.pal(3, colorset)[c(1,3,2)]
-
-#colors
-color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
-colors<-color.palette(length(unique(results_df$Site)))
-shapes<-rep(21:25, 5)
 
 
-#Common theme for all metabolism timeseries panels
-commonTheme<-list(
-  # scale_colour_manual(values = colors),
-  # scale_fill_manual(values = colors),
-  # geom_smooth(method='loess',  se=F),
-  # geom_smooth(method='auto', se=T, alpha=.2),
-  # geom_jitter(size=2, width=jitterwidth, height=0),
-  theme_bw(),
-  theme(plot.title = element_text(hjust=0.5), legend.position="bottom", axis.title.x=element_blank())
-)
+#boxplots of metabolism by site
 
-# Make a table to determine how many panels are needed
-# Each panel is a site and a metric
-uniquetable<-unique(results_df[c('Metric', 'Site')])
-uniquetable$Metric<-factor(uniquetable$Metric, c('NEP', 'ER', 'GPP'))
-uniquetable<-uniquetable[order(uniquetable$Site),]
-uniquetable<-uniquetable[order(uniquetable$Metric),]
-
-ranges<-sapply(uniquetable$Metric, function(x) extendrange(results_df$MeanValue[results_df$Metric ==x], f=0.05))
-
-# Loop through metrics and sites and make a gg object
-plot_list<-list()
-plot_nu<-1
-for (plot_nu in 1:nrow(uniquetable)){
-  
-  site<-uniquetable$Site[plot_nu]
-  metric<-uniquetable$Metric[plot_nu]
-  col<-c(colors,colors)[plot_nu]
-  shape<-rep(shapes[1:9],2)[plot_nu]
-  
-  table<-results_df[results_df$Metric==metric & 
-                                  results_df$Site==site,]
-  
-  plot_list[[plot_nu]] <- ggplot(table, aes(SampleDate, MeanValue, fill=Treatment)) + 
-    labs(x='Date', y=metric) +
-    # ggtitle(site) +
-    geom_path(aes(color=Treatment), size=1.5) + 
-    geom_point(aes(color=Treatment, shape=Treatment), col='black', size=3) +
-    # ylim(ranges[1,plot_nu], ranges[2,plot_nu]) +
-    # scale_y_continuous(limits=ranges[,plot_nu]) +
-    coord_cartesian(ylim=ranges[,plot_nu]) + 
-    commonTheme 
-  
-}
+p1 <- ggplot(aes(y=GPP_Total, x=Site, fill=Site),data=merge_df_IncMetab) +
+  geom_hline(yintercept=0) + 
+  geom_boxplot() + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  # scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Site")),
+       y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none', axis.title.x=element_blank())
 
 
-#Old code below. Do not run
+p2<- ggplot(aes(y=ER_Total, x=Site, fill=Site),data=merge_df_IncMetab) +
+  geom_hline(yintercept=0) + 
+  geom_boxplot() + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  # scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs(x = expression(paste("Site")),
+       y = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none', axis.title.x=element_blank())
 
-#Add and extract legend from first plot
-# NEP <- ggplot(summary_df[which(summary_df$Metric=='NEP'),], aes(Date, mean, color=Site, fill=Site)) + 
-#   labs(x='Date', y=expression(paste('NEP (mg ', O[2], ' L'^'-1', ' hr'^'-1', ')'))) +
-#   scale_fill_manual(values = colors) +
-#   scale_colour_manual(values = colors) +
-#   scale_shape_manual(values=rep(21:25, 5))  + 
-#   ggtitle('NEP') +
-#   geom_path(size=1.5) + 
-#   geom_point(size=3, col='black', aes(fill=Site, shape=Site)) +
-#   # ylim(ranges[1,plot_nu], ranges[2,plot_nu]) +
-#   # scale_y_continuous(limits=ranges[,plot_nu]) +
-#   coord_cartesian(ylim=ranges[,1]) + 
-#   theme_bw() + 
-#   theme(plot.title = element_text(hjust=0.5), legend.position="none")
-# 
-# ER <- ggplot(summary_df[which(summary_df$Metric=='ER'),], aes(Date, mean, color=Site, fill=Site)) + 
-#   labs(x='Date', y=expression(paste('ER (mg ', O[2], ' L'^'-1', ' hr'^'-1', ')'))) +
-#   scale_fill_manual(values = colors) +
-#   scale_colour_manual(values = colors) +
-#   scale_shape_manual(values=rep(21:25, 5))  + 
-#   ggtitle('ER') +
-#   geom_path(size=1.5) + 
-#   geom_point(size=3, col='black', aes(fill=Site, shape=Site)) +
-#   # ylim(ranges[1,plot_nu], ranges[2,plot_nu]) +
-#   # scale_y_continuous(limits=ranges[,plot_nu]) +
-#   coord_cartesian(ylim=ranges[,10]) + 
-#   theme_bw() + 
-#   theme(plot.title = element_text(hjust=0.5), legend.position="none")
-# 
-# 
-# 
-# plot_withlegend <- NEP + 
-#   theme(plot.title = element_text(hjust=0.5), legend.position="bottom")
-# 
-#   
-# 
-# 
-# mylegend<-g_legend(plot_withlegend)
-# 
-# # p_cols1<-grid.arrange(grobs=plot_list[c(1,4,7,11)], ncol=1, as.table=F, top = "GPP")
-# 
-# # arrange plots without legend
-# p2<-grid.arrange(grobs=plot_list, ncol=length(unique(uniquetable$Metric)), as.table=F)
-# 
-# #Add legend to bottom of figure and save
-# png(paste0(dropbox_dir, '/Figures/NutrientExperiment/IncubationMetabolism/MetabolismTimeseries_bySite.png'), width=6, height=12, units='in', res=200)
-# 
-# grid.arrange(p2, mylegend, nrow=2,heights=c(10, length(unique(uniquetable$Site))/16))
-# 
-# dev.off()
-# 
-# 
-# #Add legend to bottom of figure and save
-# png(paste0(dropbox_dir, '/Figures/NutrientExperiment/IncubationMetabolism/MetabolismTimeseries.png'), width=6, height=6, units='in', res=200)
-# 
-# grid.arrange(NEP, ER, mylegend, nrow=3, heights=c(5,5,1))
-# 
-# dev.off()
+p3<-ggplot(aes(y=NEP_Total, x=Site, fill=Site),data=merge_df_IncMetab) +
+  geom_hline(yintercept=0) + 
+  geom_boxplot() + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  # scale_shape_manual(values=rep(21:25, 5)) + 
+  theme_bw() +
+  labs( y = expression(paste("Inc NEP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')'))) + 
+  theme(legend.position='none', axis.title.x=element_blank())
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismBoxplotBySite.png'), width=4, height=8.5, units='in', res=200)
+
+box3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=T)
+
+dev.off()
+
+
+
