@@ -126,9 +126,20 @@ results_df<-ldply(results_list, data.frame) %>%
   group_by(SampleDate, Site, Metric, Treatment) %>%
   summarize(MeanValue = mean(Value, na.rm=T), 
             SDValue = sd(Value, na.rm=T)) %>%
-  drop_na(Site)
+  drop_na(Site) %>%
+  rename(Date = SampleDate)
 
 results_df$Site <- sitetable$site1[match(results_df$Site, sitetable$site2)]
+results_df$Site <-factor(results_df$Site, sitetable$site1)
+
+results_df2<-merge_df_gascals %>%
+  filter(DepthCode=="S") %>%
+  dplyr::select(Site, Date, chla_mean, `NO3-ppm`) %>%
+  group_by(Site, Date) %>%
+  right_join(results_df) %>%
+  rename(ChlAJar = chla_mean,
+         NO3Jar = `NO3-ppm`) %>%
+  mutate(Metric = factor(Metric, c('GPP', 'ER', 'NEP')))
 
 #Spread tables
 GPPTable<- results_df %>%
@@ -453,4 +464,59 @@ box3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=T)
 dev.off()
 
 
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismByChlAJar.png'), width=8.5, height=8, units='in', res=200)
+
+ggplot(aes(y=MeanValue, x=ChlAJar), data=results_df2) + 
+  geom_hline(yintercept=0) + 
+  geom_smooth(method='lm', formula=y~x, fill=NA, linetype='dashed' , color='black') + 
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  facet_grid(Metric ~Treatment, scales='free_y') + 
+  theme_bw() + 
+  labs(y=expression(paste('(mg ', O[2], ' L'^'-1', ' hr'^'-1', ')')), 
+       x=expression(paste('Jar Chl a (', mu, 'g L'^'-1', ')'))) + 
+  ggtitle('Jar metabolism by light level and jar chlorophyll')
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismByNO3Jar.png'), width=8.5, height=8, units='in', res=200)
+
+ggplot(aes(y=MeanValue, x=NO3Jar), data=results_df2) + 
+  geom_hline(yintercept=0) + 
+  geom_smooth(method='lm', formula=y~x, fill=NA, linetype='dashed' , color='black') + 
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) + 
+  scale_shape_manual(values=rep(21:25, 5)) + 
+  facet_grid(Metric ~Treatment, scales='free_y') + 
+  theme_bw() + 
+  labs(y=expression(paste('(mg ', O[2], ' L'^'-1', ' hr'^'-1', ')')), 
+       x=expression(paste('Jar ', NO[3], ' (mg N L'^'-1', ')'))) + 
+  ggtitle('Jar metabolism by light level and jar nitrate')
+
+dev.off()
+
+
+jarmodel_GPP<-lm(MeanValue ~ ChlAJar*NO3Jar + Treatment, data=results_df2[results_df2$Metric=='GPP',])
+jarmodel_ER<-lm(MeanValue ~ ChlAJar*NO3Jar + Treatment, data=results_df2[results_df2$Metric=='ER',])
+jarmodel_NEP<-lm(MeanValue ~ ChlAJar*NO3Jar + Treatment, data=results_df2[results_df2$Metric=='NEP',])
+
+summary(jarmodel_GPP)
+anova(jarmodel_GPP)
+
+summary(jarmodel_ER)
+anova(jarmodel_ER)
+
+summary(jarmodel_NEP)
+anova(jarmodel_NEP)
+
+
+jarmodel_P<-lm(MeanValue ~ ChlAJar + as.numeric(as.character(Treatment)), data=results_df2[results_df2$Metric=='GPP',])
+summary(jarmodel_P)
 
