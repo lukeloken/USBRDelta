@@ -33,10 +33,14 @@ dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 merge_df_gascals <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
 
 #Calculate photic depth (1%) from kd
-merge_df_gascals$PhoticDepth_m=log(1/100)/(merge_df_gascals$kd_meters*(-1))
-#Calculate 10 and 30 percent light depths
-merge_df_gascals$PhoticDepth_30per=log(30/100)/(merge_df_gascals$kd_meters*(-1))
-merge_df_gascals$PhoticDepth_10per=log(10/100)/(merge_df_gascals$kd_meters*(-1))
+# merge_df_gascals$PhoticDepth_m=log(1/100)/(merge_df_gascals$kd_meters*(-1))
+# #Calculate 10 and 30 percent light depths
+# merge_df_gascals$PhoticDepth_30per=log(30/100)/(merge_df_gascals$kd_meters*(-1))
+# merge_df_gascals$PhoticDepth_10per=log(10/100)/(merge_df_gascals$kd_meters*(-1))
+
+#Add photic depth and light extinction
+kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+merge_df_gascals<-full_join(merge_df_gascals, kd_alldates)
 
 
 #Model light extinction and photic depth using Secchi Depth or Turbidity
@@ -292,7 +296,8 @@ dev.off()
 #Scatterplot ER vs GPP
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotGPPER.png'), width=4.5, height=4, units='in', res=200)
 
-ggplot(aes(y=GPP_Total, x=ER_Total*(-1), fill=Site, shape=Site),data=merge_df_IncMetab) +
+print(
+  ggplot(aes(y=GPP_Total, x=ER_Total*(-1), fill=Site, shape=Site),data=merge_df_IncMetab) +
   geom_abline() + 
   geom_point() + 
   scale_colour_manual(values = colors) +
@@ -304,6 +309,7 @@ ggplot(aes(y=GPP_Total, x=ER_Total*(-1), fill=Site, shape=Site),data=merge_df_In
   labs(x = expression(paste("Inc ER (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')),
        y = expression(paste("Inc GPP (mg ", O[2], ' L'^'-1', ' hr'^'-1', ')')))+
   theme(legend.position = 'right', legend.title = element_blank())
+)
 
 dev.off()
 
