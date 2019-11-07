@@ -17,7 +17,7 @@ library(ggplot2)
 library(gridExtra)
 
 
-source('R/read_excel_allsheets_skip.R')
+# source('R/read_excel_allsheets_skip.R')
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 source('R/lightmodel.R')
@@ -32,6 +32,8 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
 fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+
+fert_posix<-as.POSIXct(c("2019-07-22 08:00", "2019-07-23 08:00","2019-07-24 08:00", "2019-07-25 08:00", "2019-08-05 08:00", "2019-08-06 08:00","2019-08-07 08:00", "2019-08-08 08:00"), format='%Y-%m-%d %H:%M', tz="Etc/GMT+8")
 
 
 #Field data
@@ -63,6 +65,10 @@ source('R/pCO2_computation_script_NutrientExperiment2.R')
 source('R/IncubationMetabolism_SSCN2_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
+#Buoy metabolism
+
+source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
+source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 
 #Plot a bunch of stuff
 source('R/PlotTimeseries_NutrientExperiment2.R')
