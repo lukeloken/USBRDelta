@@ -12,6 +12,9 @@ library(viridis)
 library(ggplot2)
 library(gridExtra)
 library(akima)
+library(tidyr)
+library(rLakeAnalyzer)
+library(RcppRoll)
 
 # box folder where oxygen data comes from
 box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/DeltaBuoy'
@@ -40,7 +43,7 @@ for (i in 1:length(folders)){
   
   df_i_clean<- df_i %>%
     dplyr::select(1:3) %>%
-    rename("Obs_Nu" = !!names(.[1]),
+    dplyr::rename("Obs_Nu" = !!names(.[1]),
            "DateTime_PDT" = !!names(.[2]), 
            "Temp_C" = !!names(.[3])) %>%
     mutate(DateTime_PDT = as.POSIXct(DateTime_PDT, format="%m/%d/%y %I:%M:%S %p", tz="America/Los_Angeles"), 
@@ -62,14 +65,15 @@ depth_df<-data.frame(SensorName = c("20174618", "20174614", "20174622", "2017462
 
 df_deploy$SensorDepth<-depth_df$depth_m[match(df_deploy$SensorName, depth_df$SensorName)]
 
+head(df_deploy)
 
 
-#Get conductivity and PME temp data as well
+#Get conductivity temp data as well
 
 df_cond<-read.table(paste0(box_dir, '/Conductivity/20438693.csv'), skip=1, sep=',', header=T)
 df_cond_clean<- df_cond %>%
   dplyr::select(1:4) %>%
-  rename("Obs_Nu" = !!names(.[1]),
+  dplyr::rename("Obs_Nu" = !!names(.[1]),
          "DateTime_PDT" = !!names(.[2]), 
          "SPC_uScm" = !!names(.[3]), 
          "Temp_C" = !!names(.[4])) %>%
@@ -80,7 +84,7 @@ df_cond_clean$SensorDepth<-rep(1, nrow(df_cond_clean))
 
 
 
-#Get conductivity and PME temp data as well
+#Get PME temp data as well
 
 
 df_do<-read.table(paste0(box_dir, '/miniDot_Data/543493/Cat.TXT'), skip=8, sep=',', header=T)
@@ -97,7 +101,7 @@ attributes(df_do$DateTime_PST)$tzone<-'America/Los_Angeles'
 
 df_do_clean<- df_do %>%
   dplyr::select(DateTime_PST, Temperature) %>%
-  rename("DateTime_PDT" = DateTime_PST, 
+  dplyr::rename("DateTime_PDT" = DateTime_PST, 
          "Temp_C" = Temperature) %>%
   mutate(SensorName = rep("543493", nrow(df_do)))
 
@@ -120,12 +124,13 @@ par(mfrow=c(1,1))
 par(mar = c(3,3.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 par(lend=2)
 
-
+print(
 ggplot(df_alldepth2, aes(DateTime_PDT, Temp_C, group=as.character(SensorDepth))) + 
   geom_path(aes(colour=SensorDepth)) + 
   theme_bw() + 
   scale_x_datetime(date_breaks = "weeks", date_minor_breaks = "days") + 
   theme(legend.position=c(.85, .7))
+)
 
 dev.off()
 
@@ -138,7 +143,7 @@ par(mfrow=c(1,1))
 par(mar = c(3,3.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 par(lend=2)
 
-
+print(
 ggplot(df_alldepth2[which(df_alldepth2$SensorDepth %in% c(1,6)),], aes(DateTime_PDT, Temp_C, group=as.character(SensorDepth))) + 
   geom_path(aes(colour=as.character(SensorDepth))) + 
   theme_bw() + 
@@ -147,6 +152,7 @@ ggplot(df_alldepth2[which(df_alldepth2$SensorDepth %in% c(1,6)),], aes(DateTime_
   labs(colour='Depth (m)', y='Temp (C)', x='Date') +
   scale_color_manual(values=c("Darkblue", "Darkred")) + 
   theme(legend.background=element_blank())
+)
 
 dev.off()
 
@@ -162,25 +168,65 @@ Temp_Est$DateTime_PDT<-seq(ceiling_date(min(dates), "mins"),floor_date(max(dates
 #Calculate thermocline depth
 wrt1<-spread(df_alldepth2[c('DateTime_PDT', 'SensorDepth', 'Temp_C')], key=SensorDepth, value=Temp_C, fill=NA )
 wrt3<-wrt1[which(!is.na(rowSums(wrt1[,3:8]))),]
--as.matrix(wrt2[,-1])
+
 
 # Calculating rolloing thermocline depth
-t.d<-apply(wrt3[,3:8], 1, function (x) thermo.depth(x, depths=1:6)[1])
+t.d<-apply(wrt3[,3:8], 1, function (x) thermo.depth(x, depths=1:6, mixed.cutoff = 0.2)[1])
+
+#Calculate upper mixed layer depth (top of metalimnion)
+m.d.top <- apply(wrt3[,3:8], 1, function (x) meta.depths(x, depths=1:6, mixed.cutoff = 0.5)[1])
+m.d.bot <- apply(wrt3[,3:8], 1, function (x) meta.depths(x, depths=1:6, mixed.cutoff = 0.5)[2])
+
+t.d[which(is.na(t.d))]<- 6 
+m.d.top[which(is.na(m.d.top))]<- 6 
+m.d.bot[which(is.na(m.d.bot))]<- 6 
+
+
+#run a rolling mean to smooth
 t.d.roll<-roll_mean(t.d, n=5, align='center', fill=NA)
+m.d.top.roll<-roll_mean(m.d.top, n=5, align='center', fill=NA)
+m.d.bot.roll<-roll_mean(m.d.bot, n=5, align='center', fill=NA)
+
+
+#Look at thermocline and metalimnion demarcations
+plot(wrt3[,1],t.d, lwd=2, col='black', type='l', ylim=c(6,0))
+points(wrt3[,1],m.d.top, lwd=1, col='red', type='l')
+points(wrt3[,1],m.d.bot, lwd=1, col='blue', type='l')
+
+#Look at thermocline and metalimnion demarcations (smoothed)
+plot(wrt3[,1],t.d.roll, lwd=2, col='black', type='l', ylim=c(6,0))
+points(wrt3[,1],m.d.top.roll, lwd=1, col='red', type='l')
+points(wrt3[,1],m.d.bot.roll, lwd=1, col='blue', type='l')
+
+#Look at just metalimnion demarcations (smoothed)
+# plot(wrt3[,1],t.d.roll, lwd=2, col='black', type='l', ylim=c(6,0))
+plot(wrt3[,1],m.d.top.roll, lwd=2, col='red', type='l', ylim=c(6,0))
+points(wrt3[,1],m.d.bot.roll, lwd=1, col='blue', type='l', lty=2)
+
 
 png(paste(dropbox_dir, '/Figures/NutrientExperiment/Buoys/TemperatureVerticalProfileTimeseries.png', sep=''), width=7.15, height=3.5, units='in', res=400, bg='white')
 par(pch=16)
 par(ps=10)
 par(mfrow=c(1,1))
-par(mar = c(3,3.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
+par(mar = c(3,3.5,0,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 par(lend=2)
+
+
+xticks<-seq(ceiling_date(min(deploydates), "days"),floor_date(max(deploydates), "days"), by='days')
+xlabels<-paste(lubridate::month(xticks, label=TRUE, abbr=T), day(xticks), sep=" ")
+
+sunset<-xticks + 60*60*17
+sunrise<-xticks + 60*60*8
 
 
 # Plot
 filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)")
 
-filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels); axis(2);lines(wrt3[,1],t.d, lwd=1, col='black')})
+ # plot with thermocline and 5pm lines
+# filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],t.d.roll, lwd=2, col='black'); axis(1, at=sunset, labels=NA, tck=50, col='white', lwd=2, lty=2)})
 
+# plot with mixed layer depth and 5pm lines
+filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],m.d.top.roll, lwd=2, col='black'); axis(1, at=sunset, labels=NA, tck=50, col='white', lwd=2, lty=2); axis(1, at=sunrise, labels=NA, tck=50, col='red', lwd=2, lty=2)})
 
 
 # filled.contour(x=dates, y=depths, z=wrt, ylim=c(max(depths), 0), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels); axis(2);lines(wrt3[,1],t.d.roll, lwd=1, col='black')})
@@ -190,3 +236,65 @@ mtext(expression(paste("Water temperature (", degree, "C)", sep="")), 4, -6)
 
 dev.off()
 
+
+physics_df<-data.frame(DateTime = wrt3[,1], Zmix_m=m.d.top.roll) %>%
+  mutate(Date = as.Date(DateTime, tz='America/Los_Angeles'),
+         DateTime_PDT = as.POSIXct(DateTime, tz="America/Los_Angeles")) %>%
+  tidyr::fill(Zmix_m, .direction='down') %>%
+  tidyr::fill(Zmix_m, .direction='up')
+
+physics_df$DateTime_PDT_round <- lubridate::round_date(physics_df$DateTime_PDT, unit='5 minutes')
+
+
+isday = is.day(as.POSIXct(physics_df$DateTime, tz='America/Los_Angeles'),38.5) #Sparkling Lake is at 48 degrees N latitude
+physics_df$dayIrr = rep(0,nrow(physics_df))
+physics_df$dayIrr[isday] = 1
+
+physics_list<-list()
+day_nu = 1
+for (day_nu in 1:length(unique(physics_df$Date))){
+  physics_list[[day_nu]] <- physics_df %>%
+    dplyr::filter(Date == unique(physics_df$Date)[day_nu]) %>%
+    dplyr::filter(dayIrr == 1) %>%
+    arrange(desc(DateTime_PDT)) %>%
+    mutate(Z_new = cummax(Zmix_m))
+
+}
+
+# plot(physics_list[[2]]$DateTime_PST,  physics_list[[2]]$Zmix_m, type='l', ylim=c(6,0))
+# points( physics_list[[2]]$DateTime_PST,  physics_list[[2]]$Z_new, type='l', col='red')
+
+physics_out<-ldply(physics_list, data.frame) %>%
+  arrange(DateTime_PDT)
+
+
+physics_out2<-left_join(physics_df, physics_out)
+
+plot(physics_out2$DateTime_PDT, physics_out2$Zmix_m, type='l', ylim=c(6,0))
+points(physics_out2$DateTime_PDT, physics_out2$Z_new, type='l', col='red')
+
+
+physics_df_byday <- physics_df %>%
+  mutate(Time = strftime(DateTime, format='%H:%M'),
+         LocalHour = as.numeric(strftime(DateTime, format='%H')), 
+         LocalMin =  as.numeric(strftime(DateTime, format='%M')) ) %>% 
+  mutate(DecHour = LocalHour + LocalMin/60 )
+
+
+
+ggplot(aes(x=DateTime_PDT, y=Zmix_m),data=physics_df) + 
+  geom_line() + 
+  scale_y_reverse() + 
+  theme_bw() + 
+  scale_x_datetime(date_breaks='weeks', date_minor_breaks = 'days')
+
+ggplot(aes(x=DecHour, y=Zmix_m, group=as.factor(Date), colour=as.factor(Date)),data=physics_df_byday) + 
+  geom_line() + 
+  scale_y_reverse() + 
+  theme_bw() +
+  labs(x='Hour (PDT)')
+  # facet_wrap(~Date)
+  # scale_x_datetime(date_breaks='weeks', date_minor_breaks = 'days')
+
+
+write.csv(physics_out2, file=paste0(dropbox_dir, '/Data/NutrientExperiment/Buoys/Zmix_Oct2018.csv'), row.names=F)
