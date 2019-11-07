@@ -2,22 +2,6 @@
 #Warning this script uses your API key. Do not use this a lot as you can get charged if you go over your monthly allotment. 
 
 library(grid)
-
-#Where spatial data are
-Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
-
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-box_dir <- "C:/Users/lcloken/Box/SadroLab/Luke/SSCN2"
-
-
-#GoogleKey
-GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
-
 library(rgdal)
 # library(gtools)
 library(sp)
@@ -39,6 +23,25 @@ library(riverdist)
 
 source('R/ImageScale.R')
 
+
+#Where spatial data are
+Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
+
+# Project folder where outputs are stored
+dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+
+#Where data come from
+google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+
+box_dir <- "C:/Users/lcloken/Box/SadroLab/Luke/SSCN2"
+
+
+#GoogleKey
+GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
+
+register_google(key = as.character(GoogleAPIkey))
+
+
 #shapefile outline of north delta major water bodies
 outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 
@@ -59,6 +62,7 @@ map2<-GetMap(center=c(38.51, -121.57), size=c(240,480), zoom=12, maptype=c("sate
 
 #Experiment with ggmap
 map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, maptype = "satellite", key=GoogleAPIkey )
+
 color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, begin=.25, end=.98))), bias=1)
 # colours = color.palette(12)
 
@@ -129,28 +133,44 @@ proj4string(geo) <- proj4string(outline)
 
 
 #Linear Reference (This takes a lot of computation!)
-# geo_UTM<-spTransform(geo, CRS(projection))
-# geo_snapped<-xy2segvert(x=coordinates(geo_UTM)[,1], y=coordinates(geo_UTM)[,2], rivers=SSCNetwork_clean)
-# geo$LinearDist<-unlist(SSCNetwork_clean$cumuldist)[geo_snapped$vert]
-# geo$LinearDist_km<-geo$LinearDist/1000
+geo_UTM<-spTransform(geo, CRS(projection))
+geo_snapped<-xy2segvert(x=coordinates(geo_UTM)[,1], y=coordinates(geo_UTM)[,2], rivers=SSCNetwork_clean)
+geo$LinearDist<-unlist(SSCNetwork_clean$cumuldist)[geo_snapped$vert]
+geo$LinearDist_km<-geo$LinearDist/1000
 
 #Plot two variables to visualize linear reference
-# plot(geo$LinearDist, geo$EXOSpCn)
-# plot(geo$LinearDist, geo$NO3_uM, pch=16)
+plot(geo$LinearDist, geo$EXOSpCn)
+plot(geo$LinearDist, geo$NO3_uM, pch=16)
 
 
 geo_list<-apply(site_df[c('DateTime_start', 'DateTime_end')], 1, function (x) geo@data[geo$TIMESTAMP>x[1] & geo$TIMESTAMP<x[2],])
  
-site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T) 
+site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T)
+
  
 site_medians_df<-ldply(site_medians, data.frame) %>%
   select(-Date)
 names(site_medians_df)<-paste0("FLAMe_", names(site_medians_df))
 
-site_df_withFlame<-cbind(site_df, site_medians_df)   
+geo_points<-apply(site_df[c('DateTime_start', 'DateTime_end')], 1, function (x) data.frame(geo@coords)[geo$TIMESTAMP>x[1] & geo$TIMESTAMP<x[2],])
+
+site_points<-lapply(geo_points, summarize_all, .funs=median, na.rm=T)
+site_points_df<-ldply(site_points, data.frame)
+
+site_df_withFlame<-cbind(site_df, site_points_df, site_medians_df)   
+
+SiteLocations<- site_df_withFlame %>% 
+  group_by(Site) %>%
+  summarize(LinearDist = mean(FLAMe_LinearDist, na.rm=T),
+            Latitude = mean(Latitude, na.rm=T),
+            Longitude = mean(Longitude, na.rm=T))
 
 write.table(site_df_withFlame, file=paste0(google_dir, '/SSCN2_DataOutputs/FlameSiteData.csv'), row.names=F, sep=',')
 saveRDS(site_df_withFlame , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/FlameSiteData.rds'))
+
+write.table(SiteLocations, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteLocations.csv'), row.names=F, sep=',')
+saveRDS(SiteLocations , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteLocations.rds'))
+
 
 
 #Plotting parameters
@@ -161,7 +181,8 @@ dates<-unique(geo$Date)
 # dates<-dates[9]
 
 # dates<-dates[length(dates)] #Just use last date if processing newest file
-
+event_i<-1
+plot=FALSE
 for (event_i in 1:length(dates)){
   # date<-as.Date(unique(field_df$Date)[event_i])
   date = dates[event_i]
@@ -227,6 +248,18 @@ for (event_i in 1:length(dates)){
   #Save shapefile
   saveRDS(geo_i, paste0(dropbox_dir, "/Data/Rdata_SSCN2/LongitudinalProfiles/LongitudinalProfile_", date, ".rds"))
   
+  writeOGR(geo_am_clip, dsn=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_am"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  
+  writeOGR(geo_pm_clip, dsn=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_pm"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  
+  df_am_clip<-data.frame(coordinates(geo_am_clip), geo_am_clip@data)
+  df_pm_clip<-data.frame(coordinates(geo_pm_clip), geo_pm_clip@data)
+  
+  write.csv(df_am_clip, file=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfilesCSV/LongituidnalProfile_", date, "_am.csv"), row.names = F)
+  write.csv(df_pm_clip, file=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfilesCSV/LongituidnalProfile_", date, "_pm.csv"), row.names = F)
+  
+
+  
   #Identify variables to plot  
   plotvars_i<-intersect(plotvars, names(geo_i))
   
@@ -258,7 +291,7 @@ for (event_i in 1:length(dates)){
         # am$col_values<-col_values[1:nrow(am)]
         # am$color2<-color.palette(n=B)[am$col_values]
 
-
+        if (plot==TRUE){
 
         #Plot single image of all data
         png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LongitudinalProfiles/", date, '_', name, ".png", sep=""), res=300, width=4,height=9, units="in")
@@ -339,29 +372,31 @@ for (event_i in 1:length(dates)){
         grid.arrange(map_am, map_pm, top=textGrob(as.character(date), gp=gpar(fontsize=18)), ncol=2)
 
         dev.off()
+        
+        }
 
-        # #Linear Distance
-        # png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LinearDistance/", date, '_', name, ".png", sep=""), res=300, width=6,height=4, units="in")
-        # 
-        # layout(matrix(c(1), 1, 1, byrow=T))
-        # par(mar=c(4,4,1,1))
-        # par(mgp=c(2,0.5,0), las=0,tck=-0.02, pch=16)
-        # color_lines<-c("#4daf4a", "#984ea3")
-        # ylim=c(min(geo_i@data[,name], na.rm=T), extendrange(geo_i@data[,name], f=0.07)[2])
-        # xlim=range(geo_i$LinearDist)/1000
-        # plot((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], xlab='Linear distance (km)', ylab='', ylim=ylim, xlim=xlim, las=1, type='n')
-        # 
-        # abline(v=CloseSites$Dist/1000, lty=3, col='darkgrey')
-        # text(CloseSites$Dist/1000, par('usr')[4], CloseSites$Station, pos=1, cex=0.8, col='darkgrey')
-        # 
-        # points((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], col=color_lines[1], cex=0.5)
-        # points(geo_pm_clip$LinearDist/1000, geo_pm_clip@data[,name], col=color_lines[2], cex=0.5)
-        # mtext(name, 2, 2.5)
-        # legend('topleft', inset=0.0, c('AM', 'PM'), lty=0, pch=NA, text.col=color_lines, bty='n', cex=.8, ncol=2)
-        # 
-        # box(which='plot')
-        # 
-        # dev.off()
+        #Linear Distance
+        png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LinearDistance/", date, '_', name, ".png", sep=""), res=300, width=6,height=4, units="in")
+
+        layout(matrix(c(1), 1, 1, byrow=T))
+        par(mar=c(4,4,1,1))
+        par(mgp=c(2,0.5,0), las=0,tck=-0.02, pch=16)
+        color_lines<-c("#4daf4a", "#984ea3")
+        ylim=c(min(c(geo_am_clip@data[,name], geo_pm_clip@data[,name]), na.rm=T), extendrange(c(geo_am_clip@data[,name], geo_pm_clip@data[,name]), f=0.07)[2])
+        xlim=range(geo_i$LinearDist)/1000
+        plot((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], xlab='Linear distance (km)', ylab='', ylim=ylim, xlim=xlim, las=1, type='n')
+
+        abline(v=CloseSites$Dist/1000, lty=3, col='darkgrey')
+        text(CloseSites$Dist/1000, par('usr')[4], CloseSites$Station, pos=1, cex=0.8, col='darkgrey')
+
+        points((geo_am_clip$LinearDist/1000), geo_am_clip@data[,name], col=color_lines[1], cex=0.5)
+        points(geo_pm_clip$LinearDist/1000, geo_pm_clip@data[,name], col=color_lines[2], cex=0.5)
+        mtext(name, 2, 2.5)
+        legend('topleft', inset=0.0, c('AM', 'PM'), lty=0, pch=NA, text.col=color_lines, bty='n', cex=.8, ncol=2)
+
+        box(which='plot')
+
+        dev.off()
         # 
         # #Stadler style figure
         # #GGMAP side by side, better quality
@@ -387,16 +422,15 @@ for (event_i in 1:length(dates)){
         # 
         # dev.off()
 
-          
+      }
       }
     }
-  }
   }
   
   print(date)
 }
 
-rm(a, am, CloseSites, commonTheme_map,geo, geo_am, geo_am_clip, geo_i, geo_list, geo_pm, geo_pm_clip,geo_UTM, map, map2, onoff_times, outline, pm, map_am, map_pm, map_test, RTMC_df, RTMC_df_geo, RTMC_list, site_medians, site_medians_df, SSCNetwork_clean, SSCSites)
+rm(a, am, CloseSites, commonTheme_map,geo, geo_am, geo_am_clip, geo_i, geo_list, geo_pm, geo_pm_clip,geo_UTM, map, map2, onoff_times, outline, pm, map_am, map_pm, map_test, RTMC_df, RTMC_df_geo, RTMC_list, site_medians, site_medians_df, SSCNetwork_clean, SSCSites, df_am_clip, df_pm_clip, geo_points, geo_snapped, site_points, site_points_df)
 
 
 
