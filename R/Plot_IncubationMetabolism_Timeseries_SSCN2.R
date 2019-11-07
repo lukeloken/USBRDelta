@@ -104,7 +104,9 @@ plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 #Approximate volume by depth
 # Depth_df
 Depth_pred <- data.frame(approx(x=Depth_df$Depth_m, y=Depth_df$Volume_m3, xo=seq(0, max(Depth_df$Depth_m), by=0.01)))
-Total_volume = sum(Depth_pred$y, na.rm=T)
+Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
+Surface_area = Depth_df$Area_m2[which(Depth_df$Depth_m==0)]
+Mean_depth <- Total_volume/Surface_area
 
 
 #Calculate depth to 65%, 20%, and 1% Light. These are the boundaries for the rate measurments
@@ -128,10 +130,10 @@ results_list<-lapply(paste0(dropbox_dir, "/Data/Rdata_SSCN2/IncubationMetabolism
 
 results_df<-ldply(results_list, data.frame) %>%
   group_by(SampleDate, Site, Metric, Treatment) %>%
-  summarize(MeanValue = mean(Value, na.rm=T), 
+  dplyr::summarize(MeanValue = mean(Value, na.rm=T), 
             SDValue = sd(Value, na.rm=T)) %>%
   drop_na(Site) %>%
-  rename(Date = SampleDate)
+  dplyr::rename(Date = SampleDate)
 
 results_df$Site <- sitetable$site1[match(results_df$Site, sitetable$site2)]
 results_df$Site <-factor(results_df$Site, sitetable$site1)
@@ -141,18 +143,18 @@ results_df2<-merge_df_gascals %>%
   dplyr::select(Site, Date, chla_mean, `NO3-ppm`) %>%
   group_by(Site, Date) %>%
   right_join(results_df) %>%
-  rename(ChlAJar = chla_mean,
+  dplyr::rename(ChlAJar = chla_mean,
          NO3Jar = `NO3-ppm`) %>%
   mutate(Metric = factor(Metric, c('GPP', 'ER', 'NEP')))
 
 #Spread tables
 GPPTable<- results_df %>%
-  dplyr::select(SampleDate, Site, Metric, MeanValue, Treatment) %>%
+  dplyr::select(Date, Site, Metric, MeanValue, Treatment) %>%
   dplyr::filter(Metric == 'GPP') %>%
   tidyr::spread(key=Treatment, value = MeanValue)
 
 ERTable<- results_df %>%
-  dplyr::select(SampleDate, Site, Metric, MeanValue, Treatment) %>%
+  dplyr::select(Date, Site, Metric, MeanValue, Treatment) %>%
   dplyr::filter(Metric == 'ER') %>%
   tidyr::spread(key=Treatment, value = MeanValue)
 
@@ -165,7 +167,7 @@ i=1
 GPP_out <- c()
 ER_out <-c()
 for (i in 1:nrow(GPPTable)){
-  Date_i <- GPPTable$SampleDate[i]
+  Date_i <- GPPTable$Date[i]
   Site_i <- GPPTable$Site[i]
   
   row_i<-which(merge_df_gascals$Date == Date_i & merge_df_gascals$Site == Site_i & merge_df_gascals$DepthCode=="S")
@@ -194,18 +196,19 @@ GPPTable$GPP_Total <- GPP_out
 ERTable$ER_Total <- ER_out
 
 # Metabolism is in mg O2 L-1 hr-1
-IncMetabDaily <- full_join(GPPTable, ERTable, by = c("SampleDate", "Site")) %>%
+IncMetabDaily <- full_join(GPPTable, ERTable, by = c("Date", "Site")) %>%
   group_by() %>%
-  dplyr::select(SampleDate, Site, GPP_Total, ER_Total) %>%
+  dplyr::select(Date, Site, GPP_Total, ER_Total) %>%
   mutate(Site = factor(Site, levels(merge_df_gascals$Site)),
-         NEP_Total = GPP_Total + ER_Total,
-         DepthCode = "S") %>%
-  rename(Date = SampleDate)
-
+         NEP_Total = GPP_Total + ER_Total) %>%
+  #Convert to areal rates
+  # g O2 per m2 per d
+  mutate(GPP_Total_area = GPP_Total*Mean_depth*24,
+         ER_Total_area = ER_Total*Mean_depth*24,
+         NEP_Total_area = NEP_Total*Mean_depth*24,
+         DepthCode = "S")
 
 merge_df_IncMetab<-left_join(merge_df_gascals, IncMetabDaily)
-
-
 
 
 #Save incubation results
@@ -246,7 +249,7 @@ commonTheme_metab<-list(
 
 
 
-#Timeseries
+#Timeseries volumetric rate
 p1<-ggplot(aes(x=Date, y=GPP_Total, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total)),]) + 
   commonTheme_metab + 
   geom_hline(yintercept=0) + 
@@ -291,6 +294,87 @@ grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
 
 dev.off()
 
+
+
+#Timeseries areal rate
+p1<-ggplot(aes(x=Date, y=GPP_Total_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
+  geom_path() + 
+  theme(legend.position='none') + 
+  labs(y=expression(paste('Inc GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+p2<-ggplot(aes(x=Date, y=ER_Total_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
+  geom_path() + 
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+p3<-ggplot(aes(x=Date, y=NEP_Total_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonTheme_metab + 
+  geom_hline(yintercept=0) + 
+  geom_point(colour='black', size=2) + 
+  geom_path() + 
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+
+plot_withlegend <- p1 + 
+  theme(legend.position="bottom", legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1))
+
+mylegend<-g_legend(plot_withlegend)
+
+
+plot3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolism_Area_Timeseries.png'), width=5, height=7, units='in', res=200)
+
+grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
+
+dev.off()
+
+
+#Areal rates boxplot
+commonBox<-list(
+  geom_vline(xintercept=fert_dates, color='green', linetype=2, size=1),
+  geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank()), 
+  scale_x_date(date_minor_breaks= "weeks", date_breaks = "2 weeks", date_labels="%b %d"), 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
+)
+
+
+
+GPPbox<-ggplot(aes(x=Date, group=Date, y=GPP_Total_area), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='darkgreen', outlier.size=0.5) 
+
+ERbox<-ggplot(aes(x=Date, group=Date, y=ER_Total_area), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='sienna4', outlier.size=0.5) 
+
+NEPbox<-ggplot(aes(x=Date, group=Date, y=NEP_Total_area), data=merge_df_IncMetab[which(!is.na(merge_df_IncMetab$GPP_Total_area)),]) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='grey30', outlier.size=0.5) 
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+
+
+grid.newpage()
+boxes<-grid.draw(rbind(ggplotGrob(GPPbox), ggplotGrob(ERbox),  ggplotGrob(NEPbox), size = "first"))
+
+dev.off()
 
 
 #Scatterplot ER vs GPP
