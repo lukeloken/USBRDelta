@@ -292,15 +292,20 @@ for (buoy_nu in 1:length(buoy_names)){
   
 }
 
-
+#combine all buoys
 metab.df<-ldply(metab.list, data.frame)
 
-
+#Save to file
 write.table(metab.df, file=paste0(google_dir, '/SSCN2_DataOutputs/BuoyMetabolism.csv'), row.names=F, sep=',')
 
 saveRDS(metab.df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/BuoyMetabolism.rds'))
 
+
+
+
+# ####################
 #Plotting
+# ####################
 
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 
