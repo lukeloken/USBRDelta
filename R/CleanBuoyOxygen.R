@@ -108,7 +108,7 @@ plot_list[[2]] <- ggplot(RawData, aes(dateTime, DO_Inst, group=site_no)) +
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
   scale_colour_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")) + 
-  geom_vline(xintercept=shipdate[2], color='grey', linetype=2, size=1) + 
+  geom_vline(xintercept=shipdate[1:2], color='grey', linetype=2, size=1) + 
   geom_vline(xintercept=fertdate, color='black', linetype=1, size=1) + 
   geom_path(aes(color=site_no), size=1) + 
   # geom_point(size=3, aes(fill=Sensor, shape=Sensor)) + 
