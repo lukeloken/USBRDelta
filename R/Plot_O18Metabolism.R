@@ -74,6 +74,40 @@ plots<-grid.draw(rbind(ggplotGrob(NEP_O18), ggplotGrob(GPP_O18), ggplotGrob(ER_O
 
 dev.off()
 
+#area
+NEP_O18_area<-ggplot(met.final, aes(x=Date, y=nepa, fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) + 
+  ggtitle(expression(paste(delta^'18', "O-", O[2], ' Metabolism')))
+
+GPP_O18_area<-ggplot(met.final, aes(x=Date, y=gppa, fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+ER_O18_area<-ggplot(met.final, aes(x=Date, y=(ra), fill=Site)) + 
+  commonThemePrint + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  labs(x='Date', y=expression(paste('ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+
+ER_O18area_withLegened <- ER_O18_area + 
+  theme(legend.position="bottom",  legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/O18Metabolism/NEPGPPER_area_TS.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEP_O18_area), ggplotGrob(GPP_O18_area), ggplotGrob(ER_O18area_withLegened), size = "first"))
+
+dev.off()
+
+
 
 plot_list<-list()
 plot_list[[1]]<-ggplot(met.final, aes(x=Date, y=gppv, fill=Site)) + 
