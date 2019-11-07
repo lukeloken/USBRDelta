@@ -255,17 +255,27 @@ for (buoy_nu in 1:length(buoy_names)){
   }
   }
   
+
+  
+  metab.roll <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 3, mean, align='center', fill=NA)
+  colnames(metab.roll)<-paste0(colnames(metab.roll), '_roll')
+  
+  metab.out2 <- bind_cols(metab.out, data.frame(metab.roll))
+  
+  metab.list[[buoy_nu]]<-metab.out2
+  
+  
   png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism/Metabolism_', site_name, '_TS.png'), width=5, height=4, units='in', res=200)
   par(mar=c(3,3,1.5,.5), mgp=c(3,.5,0), tck=-0.02)
   
-  plot(metab.out$Date, metab.out$NEP, type='l', ylim=range(metab.out[,3:5], na.rm=T), lwd=.5, xlab='', ylab='', las=1)
+  plot(metab.out2$Date, metab.out2$NEP, type='l', ylim=range(metab.out[,3:5], na.rm=T), lwd=.5, xlab='', ylab='', las=1)
   abline(h=0, lty=3, lwd=.5)
-  points(metab.out$Date, metab.out$GPP, type='l', col='darkgreen', lwd=.5)
-  points(metab.out$Date, metab.out$ER, type='l', col='sienna4', lwd=.5)
-
-  points(metab.out$Date, roll_mean(metab.out$NEP, 3, fill=NA), type='l', lwd=2)
-  points(metab.out$Date, roll_mean(metab.out$GPP, 3, fill=NA), type='l', lwd=2, col='darkgreen')
-  points(metab.out$Date, roll_mean(metab.out$ER, 3, fill=NA), type='l', lwd=2, col='sienna4')
+  points(metab.out2$Date, metab.out2$GPP, type='l', col='darkgreen', lwd=.5)
+  points(metab.out2$Date, metab.out2$ER, type='l', col='sienna4', lwd=.5)
+  
+  points(metab.out2$Date, metab.out2$NEP_roll, type='l', lwd=2)
+  points(metab.out2$Date, metab.out2$GPP_roll, type='l', lwd=2, col='darkgreen')
+  points(metab.out2$Date, metab.out2$ER_roll, type='l', lwd=2, col='sienna4')
   
   # points(metab.out$Date, roll_mean(metab.out$NEP, 5, fill=NA), type='l', lwd=3)
   # points(metab.out$Date, roll_mean(metab.out$GPP, 5, fill=NA), type='l', lwd=3, col='darkgreen')
@@ -274,14 +284,160 @@ for (buoy_nu in 1:length(buoy_names)){
   
   mtext(expression(paste('g ', O[2], ' m'^'-2', ' d'^'-1')), 2, 1.5)
   mtext(site_name, 3, 0.1)
-
+  
   legend('topright', inset=0.02, c('GPP', 'NEP', 'ER'), text.col=c('darkgreen', 'black', 'sienna4'), lty=0, bty='n')
   
   dev.off()  
   
   
-  metab.list[[buoy_nu]]<-metab.out
-  
 }
 
-  
+
+metab.df<-ldply(metab.list, data.frame)
+
+
+write.table(metab.df, file=paste0(google_dir, '/SSCN2_DataOutputs/BuoyMetabolism.csv'), row.names=F, sep=',')
+
+saveRDS(metab.df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/BuoyMetabolism.rds'))
+
+#Plotting
+
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+
+colors<-(color.palette(length(unique(metab.df$Site))))
+xlim<-range(metab.df$Date[which(is.finite(metab.df$NEP))], na.rm=T)
+
+#Common theme for all metabolism timeseries panels
+commonThemePrint<-list(
+  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors),
+  scale_shape_manual(values=c(23, 22,22,22,21,21,21,21,22,22,22,23)),
+  # geom_smooth(method='loess',  se=F),
+  # geom_smooth(method='auto', se=T, alpha=.2),
+  # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
+  # geom_vline(xintercept=shipdate, color='grey', linetype=2, size=1),
+  geom_vline(xintercept=fert_dates, color='green', linetype=2, size=1),
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank()), 
+  scale_x_date(limits=xlim, date_minor_breaks= "weeks", date_breaks = "2 weeks", date_labels="%b %d"), 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
+)
+
+NEPplot<-ggplot(metab.df, aes(Date, NEP, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=0.5) + 
+  # geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  ggtitle('Free-water metabolism')
+
+GPPplot<-ggplot(metab.df, aes(Date, GPP, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=0.5) 
+  # geom_point(size=2, aes(fill=Site, shape=Site))
+
+ERplot<-ggplot(metab.df, aes(Date, ER, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=0.5) 
+  # geom_point(size=2, aes(fill=Site, shape=Site))
+
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=list(GPPplot, ERplot, NEPplot), ncol=1, as.table=F)
+
+p1<-ERplot + 
+  theme(legend.position='bottom') + 
+  guides(colour = guide_legend(nrow = 1, title.position='left', title.hjust=0.5))
+mylegend<-g_legend(p1)
+
+grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1.5))
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_TS.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEPplot), ggplotGrob(GPPplot),  ggplotGrob(p1), size = "first"))
+
+dev.off()
+
+
+
+
+NEPplot<-ggplot(metab.df, aes(Date, NEP_roll, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=1.5) + 
+  # geom_point(size=2, aes(fill=Site, shape=Site)) + 
+  ggtitle('Free-water metabolism: 3 day rolling mean')
+
+GPPplot<-ggplot(metab.df, aes(Date, GPP_roll, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=1.5) 
+# geom_point(size=2, aes(fill=Site, shape=Site))
+
+ERplot<-ggplot(metab.df, aes(Date, ER_roll, group=(Site))) + 
+  commonThemePrint + 
+  labs(x='Date', y=expression(paste('Daily ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_path(aes(color=Site, group=Site), size=1.5) 
+# geom_point(size=2, aes(fill=Site, shape=Site))
+
+
+# arrange plots without legend
+p2<-grid.arrange(grobs=list(GPPplot, ERplot, NEPplot), ncol=1, as.table=F)
+
+p1<-ERplot + 
+  theme(legend.position='bottom') + 
+  guides(colour = guide_legend(nrow = 1, title.position='left', title.hjust=0.5))
+mylegend<-g_legend(p1)
+
+grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1.5))
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_Rollmean_TS.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEPplot), ggplotGrob(GPPplot),  ggplotGrob(p1), size = "first"))
+
+dev.off()
+
+
+
+
+commonBox<-list(
+  geom_vline(xintercept=fert_dates, color='green', linetype=2, size=1),
+  geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="none", axis.title.x=element_blank()), 
+  scale_x_date(limits=xlim, date_minor_breaks= "weeks", date_breaks = "2 weeks", date_labels="%b %d"), 
+  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5)) 
+)
+
+
+GPPbox<-ggplot(metab.df, aes(x=Date, group=Date, y=GPP_roll)) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='darkgreen', outlier.size=0.5) 
+
+ERbox<-ggplot(metab.df, aes(x=Date, group=Date, y=ER_roll)) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='sienna4', outlier.size=0.5) 
+
+NEPbox<-ggplot(metab.df, aes(x=Date, group=Date, y=NEP_roll)) + 
+  commonBox +
+  labs(x='Date', y=expression(paste('Daily NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_boxplot(fill='grey30', outlier.size=0.5) 
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+
+
+grid.newpage()
+boxes<-grid.draw(rbind(ggplotGrob(GPPbox), ggplotGrob(ERbox),  ggplotGrob(NEPbox), size = "first"))
+
+dev.off()
