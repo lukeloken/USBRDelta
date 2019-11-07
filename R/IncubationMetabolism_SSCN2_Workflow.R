@@ -15,33 +15,6 @@ library(RColorBrewer)
 library(lubridate)
 
 source('R/CalculateIncubationMetabolism.R')
-# source('R/read_excel_allsheets.R')
-# source('R/g_legend.R')
-# 
-# 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
-
-# source('R/read_excel_allsheets.R')
-# source('R/g_legend.R')
-# 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-# Set date %m%d%y
-# This should match the folder name within the dropbox direcetory listed above. 
-
-# Date<-'081618'
-# Date<-'071218'
-# Date<-'032819'
 
 # ##############################################################################################
 # Code looks into the dropbox directory/incubation data and loads the correct file using 'Date'
@@ -64,7 +37,7 @@ if (length(grep('~', files))>0){
   files<-files[-grep('~', files)]
 }
 
-file_nu<-2
+file_nu<-12
 for (file_nu in 1:length(files)){
   
   #Extract Date from file name
