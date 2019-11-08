@@ -57,9 +57,10 @@ Temp_df_clean2 <- Temp_df_clean %>%
 Temp_df_clean2$Temp_C[which(Temp_df_clean2$Temp_C>30)]  <- NA
 Temp_df_clean2$Temp_C[which(Temp_df_clean2$Temp_C<22.5)]  <- NA
 
-saveRDS(Temp_df_clean2, file=paste0(box_dir, "/Outputs/BuoyTempCleaned.RDS"))
-saveRDS(Cond_df_clean2, file=paste0(box_dir, "/Outputs/BuoyCondCleaned.RDS"))
-saveRDS(DO_df_clean2, file=paste0(box_dir, "/Outputs/BuoyDOCleaned.RDS"))
+
+saveRDS(Temp_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_cleaned.rds'))
+saveRDS(Cond_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_cleaned.rds'))
+saveRDS(DO_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_cleaned.rds'))
 
 write.table(Temp_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_cleaned.csv'), row.names=F, sep=',')
 write.table(Cond_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_cleaned.csv'), row.names=F, sep=',')
