@@ -61,6 +61,10 @@ saveRDS(Temp_df_clean2, file=paste0(box_dir, "/Outputs/BuoyTempCleaned.RDS"))
 saveRDS(Cond_df_clean2, file=paste0(box_dir, "/Outputs/BuoyCondCleaned.RDS"))
 saveRDS(DO_df_clean2, file=paste0(box_dir, "/Outputs/BuoyDOCleaned.RDS"))
 
+write.table(Temp_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_cleaned.csv'), row.names=F, sep=',')
+write.table(Cond_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_cleaned.csv'), row.names=F, sep=',')
+write.table(DO_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_DO_cleaned.csv'), row.names=F, sep=',')
+
 
 # ######################
 # plotting
