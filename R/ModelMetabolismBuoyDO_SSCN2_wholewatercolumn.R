@@ -5,9 +5,9 @@ library(LakeMetabolizer)
 library(akima)
 library(zoo)
 
-Temp_df_clean2 <- readRDS(file=paste0(box_dir, "/Outputs/BuoyTempCleaned.RDS"))
-Cond_df_clean2 <- readRDS(file=paste0(box_dir, "/Outputs/BuoyCondCleaned.RDS"))
-DO_df_clean2   <- readRDS(file=paste0(box_dir, "/Outputs/BuoyDOCleaned.RDS"))
+Temp_df_clean2 <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_cleaned.rds'))
+Cond_df_clean2 <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_cleaned.rds'))
+DO_df_clean2   <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_cleaned.rds'))
 
 #Prep Temp data
 Temp_df_clean2 <- Temp_df_clean2 %>%
@@ -34,13 +34,13 @@ names(wind_pred)<-c("Datetime_PDT_round", "WS_ms")
 wind_pred$SolRad_Wsqm <- approx(x=wind_df_summary$DateTime, y=wind_df_summary$SolRad_Wsqm, xo=seq.POSIXt(min(DO_df_clean2$Datetime_PDT_round), max(DO_df_clean2$Datetime_PDT_round), by="5 mins"))$y
 
 
-#upload hypso data
+#load hypso data
 Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
 # plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
 Depth_pred25 <- data.frame(approx(x=Depth_df$Depth_m, y=.5*(Depth_df$Volume_m3), xo=seq(0, max(Depth_df$Depth_m), by=0.25)))
-Total_volume = sum(Depth_pred25$y, na.rm=T)
+Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
 Surface_area = Depth_df$Area_m2[which(Depth_df$Depth_m==0)]
 Mean_depth <- Total_volume/Surface_area
 
@@ -51,17 +51,16 @@ Vol_bot <- sum(Depth_pred25$y[which(Depth_pred25$x >= mean(DO_depths_num[2:3]))]
 
 
 #constants
+#these might not be useful or accurate
 z.mean<-8
 wind.height <- 10
 area <- .153
 
-#Average of data used for Oxygen 18 metabolism
+#Average of data used for Oxygen 18 metabolism SSCN 1
 ko2md_mean<-2.307741
 
-
-
+#Code to loop through each buoy and whole water column integrated metabolism
 buoy_names<-unique(DO_df_clean2$Site)
-
 
 metab.list<-list()
 buoy_nu <- 3
@@ -74,7 +73,6 @@ for (buoy_nu in 1:length(buoy_names)){
     dplyr::filter(Site == site_name) %>%
     tidyr::drop_na(Temp_C)
   
-  
   temp_times = temp_buoy$Datetime_PDT_round
   temp_depths=as.numeric(temp_buoy$Depth)
   temp_values =temp_buoy$Temp_C
@@ -83,11 +81,10 @@ for (buoy_nu in 1:length(buoy_names)){
   # names(Temp_Est)<-c('DateTime_PDT', 'SensorDepth', 'Temp_C')
   # 
   # Temp_Est$DateTime_PDT<-seq(ceiling_date(min(dates), "mins"),floor_date(max(dates), "mins"), by='mins')
-  # 
+  
   #Calculate thermocline depth
   wrt1<-spread(temp_buoy[c('Datetime_PDT_round', 'Depth', 'Temp_C')], key=Depth, value=Temp_C, fill=NA )
   wrt3<-wrt1[which(!is.na(rowSums(wrt1[,2:10]))),]
-  
   
   # Calculating rolloing thermocline depth
   t.d<-apply(wrt3[,2:10], 1, function (x) thermo.depth(x, depths=as.numeric(names(wrt3[,2:10])), mixed.cutoff = 0.2)[1])
@@ -128,11 +125,11 @@ for (buoy_nu in 1:length(buoy_names)){
   ####################################################################################################
   
   #Prepare DO data
+  #Metab date starts at 6am
   DO_buoy <- DO_df_clean2 %>%
     dplyr::filter(Site == site_name) %>%
     mutate(Date = as.Date(Datetime_PDT_round, tz='America/Los_Angeles'),
-           Date_metab = as.Date(Datetime_PDT_round-6*60*60, tz='America/Los_Angeles')) #Metab date starts at 6am
-  
+           Date_metab = as.Date(Datetime_PDT_round-6*60*60, tz='America/Los_Angeles')) 
   
   head(DO_buoy)
   
@@ -141,6 +138,7 @@ for (buoy_nu in 1:length(buoy_names)){
     spread(key=Depth, value=DO_mgL) %>%
     drop_na(DO_depths)
   
+  #Calculate rolling mean (7 observations 30 minute windows)
   DO_spread_mgL_roll <- rollapply(DO_spread_mgL[DO_depths], 7, mean, align='center', fill=NA) 
   colnames(DO_spread_mgL_roll) <- paste0("roll_", DO_depths)
   
