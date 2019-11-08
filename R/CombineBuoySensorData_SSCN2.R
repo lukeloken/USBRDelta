@@ -174,5 +174,5 @@ write.table(Final_Cond, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Co
 saveRDS(Final_Cond, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_raw.rds'))
 
 
-
+rm(Cond_df, Conductivity_list, df_Cond, df_i, df_names, df_temp, DO_df, DO_df_clean, DO_list, Final_Cond, Final_temp, Folder_list, Folders_list, Temp_df, Temperature_list, Cond_files, Cond_folder_i, Cond_folder_main, Cond_folders, DO_files, DO_folder, file, file_nu, files, folder, folders, temp_files, Temp_folder_i, Temp_folder_main, Temp_folders, SerialNumber)
 
