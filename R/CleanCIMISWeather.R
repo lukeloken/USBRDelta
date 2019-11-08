@@ -109,3 +109,6 @@ wind_df_summary$WS_ms_roll<-roll_mean(wind_df_summary$WS_ms, n=5, fill=NA, align
 
 write.csv(wind_df_summary, file=paste0(google_dir, '/SSCN2_DataOutputs/WindDataAvg.csv'), row.names=F)
 saveRDS(wind_df_summary, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/WindDataAvg.rds'))
+
+
+rm(weather_df, wind_df, wind_df_summary, wind_dir_mean)
