@@ -65,7 +65,7 @@ DO_df_clean$Datetime_UTC <- as.POSIXct(DO_df_clean$Datetime_UTC, tz="UTC", forma
 head(DO_df_clean)
 
 #Save to file
-write.table(DO_df_clean, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy_DO_raw.csv'), row.names=F, sep=',')
+write.table(DO_df_clean, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_DO_raw.csv'), row.names=F, sep=',')
 
 saveRDS(DO_df_clean, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_DO_raw.rds'))
 
@@ -117,7 +117,7 @@ Final_temp <- ldply(Folder_list, data.frame)
 Final_temp$Datetime_UTC <- as.POSIXct(Final_temp$Datetime_UTC, tz="UTC", format = "%m/%d/%y %I:%M:%S %p")
 
 #Save to file
-write.table(Final_temp, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy_Temp_raw.csv'), row.names=F, sep=',')
+write.table(Final_temp, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_raw.csv'), row.names=F, sep=',')
 
 saveRDS(Final_temp, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_Temp_raw.rds'))
 
@@ -169,7 +169,7 @@ Final_Cond <- ldply(Folders_list, data.frame)
 Final_Cond$Datetime_UTC <- as.POSIXct(Final_Cond$Datetime_UTC, tz="UTC", format = "%m/%d/%y %I:%M:%S %p")
 
 #Save to file
-write.table(Final_Cond, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy_Cond_raw.csv'), row.names=F, sep=',')
+write.table(Final_Cond, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_raw.csv'), row.names=F, sep=',')
 
 saveRDS(Final_Cond, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_Cond_raw.rds'))
 
