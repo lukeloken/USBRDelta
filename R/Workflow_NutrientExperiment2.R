@@ -66,7 +66,8 @@ source('R/IncubationMetabolism_SSCN2_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
 #Buoy metabolism
-
+source('R/CleanCIMISWeather.R') #Wind and solar rad data
+source('R/CombineBuoySensorData_SSCN2.R')
 source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
 source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 
