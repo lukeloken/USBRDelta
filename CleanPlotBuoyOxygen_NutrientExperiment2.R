@@ -91,17 +91,6 @@ for( i in 1: length(DO_SerialNumbers)){
   
   dev.off()
   
-  # png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", SerialNumbers[i], ".png"), units = 'in', width=10, height=5, res=200)
-  # 
-  # print(
-  #   ggplot(aes(x=Datetime_UTC, y=Temp_C), data=DO_data) +
-  #     geom_point(size = 0.5, colour="#3690c0") +
-  #     geom_path( colour="#3690c0") +
-  #     theme_bw() +
-  #     labs(x="", y="Degrees C") +
-  #     ggtitle(DO_SerialNumbers[i])
-  # )
-  # dev.off()
 }
 
 
@@ -125,17 +114,6 @@ for( i in 1: length(Cond_SerialNumbers)){
   
   dev.off()
   
-  # png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", Cond_SerialNumbers[i], ".png"), units = 'in', width=10, height=5, res=200)
-  # 
-  # print(
-  #   ggplot(aes(x=Datetime_UTC, y=Temp_C), data=Cond_data) +
-  #     geom_point(size = 0.5, colour="#3690c0") +
-  #     geom_path( colour="#3690c0") +
-  #     theme_bw() +
-  #     labs(x="", y="Degrees C") +
-  #     ggtitle(Cond_SerialNumbers[i])
-  # )
-  # dev.off()
 }
 
 
@@ -161,7 +139,6 @@ for( i in 1: length(Temp_SerialNumbers)){
   )
   dev.off()
 }
-
 
 
 
