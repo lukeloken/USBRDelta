@@ -108,7 +108,8 @@ png(paste0(dropbox_dir,"/Figures/NutrientExperiment2/LightExtinction_SSCN2.png")
 
 par(mar=c(3.25,3.25,2.5,2.5), mgp=c(3,1,0), tck = -.02)
 
-ggplot(aes(x=Date, y=kd_meters, group=Site, colour=Site), data=kd_alldates)+
+print(
+  ggplot(aes(x=Date, y=kd_meters, group=Site, colour=Site), data=kd_alldates)+
   commonTheme_kd + 
   geom_path() + 
   geom_point() +
@@ -117,6 +118,7 @@ ggplot(aes(x=Date, y=kd_meters, group=Site, colour=Site), data=kd_alldates)+
   labs(y=expression(paste('Light extinction (m'^'-1', ')'
 )), x=expression(paste (""))) +
 theme(legend.position = "bottom")
+)
 
 dev.off()
 # ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
@@ -127,7 +129,8 @@ dev.off()
 
 png(paste0(dropbox_dir,"/Figures/NutrientExperiment2/PhoticDepths_SSCN2_.png"), width = 12, height = 8, units = "in", res = 250)
 
-ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
+print(
+  ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
   commonTheme_kd + 
   geom_path() + 
   geom_point() +
@@ -135,13 +138,16 @@ ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
   theme(text = element_text(size=15)) +
   labs(y=expression(paste('Photic Depth (m)')), x=expression(paste (""))) +
   theme(legend.position = "bottom")
+)
 
 dev.off()
 
-plot(kd_alldates$kd_meters, kd_alldates$PhoticDepth_m)
+# plot(kd_alldates$kd_meters, kd_alldates$PhoticDepth_m)
 
 write.csv(kd_alldates, file=paste(google_dir, 'SSCN2_DataOutputs/Kd_NutrientExperiment2.csv', sep='/'), row.names=F)
 
-
 saveRDS(kd_alldates , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+
+
+rm(data_i, commonTheme_kd, kd_alldates, light, light_df, models, out_df, output_list, water_data, colors, dates, day, good_stations, shapes, slopes, stations)
 
