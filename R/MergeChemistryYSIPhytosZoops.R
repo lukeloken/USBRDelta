@@ -53,11 +53,9 @@ kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds')) %>
 # others...
 
 SSC_joined_data<-full_join(WQ_stations, YSI_surf) %>%
+  full_join(kd_alldates) %>%
   full_join(Phyto_summary_spread) %>%
-  full_join(Zoo_summary_spread) %>%
-  full_join(kd_alldates)
-
-
+  full_join(Zoo_summary_spread)
 
 
 #Plotting factors for consistent plots
