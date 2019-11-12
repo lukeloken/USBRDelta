@@ -43,12 +43,19 @@ Phyto_summary_spread <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summ
 #Zoops
 Zoo_summary_spread <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_spread.rds'))
 
-# others...
+#Light extinction
+kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds')) %>%
+  dplyr::rename(Station=Site) %>%
+  mutate(Station = gsub("NL", "", Station)) %>%
+  mutate(Station = gsub("RB", "", Station)) %>%
+  mutate(Station = factor(Station, stationfactors))
 
+# others...
 
 SSC_joined_data<-full_join(WQ_stations, YSI_surf) %>%
   full_join(Phyto_summary_spread) %>%
-  full_join(Zoo_summary_spread)
+  full_join(Zoo_summary_spread) %>%
+  full_join(kd_alldates)
 
 
 
