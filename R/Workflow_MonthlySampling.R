@@ -106,9 +106,6 @@ source('R/MergeChemistryYSIPhytosZoops.R')
 #compute and plot dissolved gases
 source('R/pCO2_computation_script_MonthlySampling.R')
 
-#Calculate kd and merge
-source('R/Calculatekd.R')
-
 # ################
 # Timeseries plots
 # ################
