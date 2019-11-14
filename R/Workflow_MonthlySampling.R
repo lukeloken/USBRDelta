@@ -45,6 +45,9 @@ stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"
 # Locate most recent water chemistry data from Xien
 source('R/CleanNutrientData.R')
 
+#Calculate photic depth
+source('R/Calculatekd_MonthlyRuns.R')
+
 #Mims data
 
 #O18 data
@@ -97,8 +100,14 @@ source('R/PlotZoops.R') # Plot Zoops records
 # Merge all data
 # ################
 
+#merge YSI, nutrients, phytos, zoops
 source('R/MergeChemistryYSIPhytosZoops.R')
 
+#compute and plot dissolved gases
+source('R/pCO2_computation_script_MonthlySampling.R')
+
+#Calculate kd and merge
+source('R/Calculatekd.R')
 
 # ################
 # Timeseries plots

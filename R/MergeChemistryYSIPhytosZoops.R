@@ -71,6 +71,19 @@ SSC_joined_data$Zone[SSC_joined_data$Station %in% c('16', '34')]<-'1'
 
 
 write.table(SSC_joined_data, file=paste0(google_dir, '/DataOutputs/SSC_JoinedSurfaceData.csv'), row.names=F, sep=',')
-saveRDS(SSC_joined_data , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+saveRDS(SSC_joined_data , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+
+
+
+light_data<-SSC_joined_data %>%
+  filter(!is.na(kd_meters)) %>%
+  select(Date, Station, Time, LabTurbidity, FieldTurbidity, Secchicm, Turbid..NTU, kd_meters, PhoticDepth_m) %>%
+  rename(LabTurbidity_NTU = LabTurbidity,
+         FieldTurbidity_NTU = FieldTurbidity,
+         Secchi_cm = Secchicm, 
+         SensorTurbidity_NTU = Turbid..NTU)
+
+write.table(light_data, file=paste0(google_dir, '/DataOutputs/light_data.csv'), row.names=F, sep=',')
+saveRDS(light_data , file=paste0(dropbox_dir, '/Data/Rdata/light_data.rds'))
 
 
