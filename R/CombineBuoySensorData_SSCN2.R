@@ -94,7 +94,7 @@ for (folder in 1 : length(Temp_folders)){
     
     df_temp <- select(df_temp, 2:3)
     
-    names(df_temp) <- c("Datetime_UTC", "Temp_C")
+    names(df_temp) <- c("Datetime_PST", "Temp_C")
     
     SerialNumber <- temp_files[file]
     
@@ -112,9 +112,13 @@ for (folder in 1 : length(Temp_folders)){
   
 }
 
-Final_temp <- ldply(Folder_list, data.frame)
+Final_temp <- ldply(Folder_list, data.frame) %>%
+  mutate(Datetime_PST = as.POSIXct(Datetime_PST, tz="Etc/GMT+8", format = "%m/%d/%y %I:%M:%S %p")) 
 
-Final_temp$Datetime_UTC <- as.POSIXct(Final_temp$Datetime_UTC, tz="UTC", format = "%m/%d/%y %I:%M:%S %p")
+Final_temp$Datetime_UTC <- Final_temp$Datetime_PST
+attributes(Final_temp$Datetime_UTC)$tzone <- 'UTC'
+Final_temp <- dplyr::select(Final_temp, Datetime_UTC, Temp_C, SerialNumber)
+
 
 #Save to file
 write.table(Final_temp, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_raw.csv'), row.names=F, sep=',')
@@ -147,7 +151,7 @@ for (folders in 1 : length(Cond_folders)){
     
     df_Cond <- dplyr::select(df_Cond, 2:4)
     
-    names(df_Cond) <- c("Datetime_UTC", "Cond_uScm", "Temp_C")
+    names(df_Cond) <- c("Datetime_PST", "Cond_uScm", "Temp_C")
     
     SerialNumber <- Cond_files[files]
     SerialNumber <- gsub(".csv", '', SerialNumber)
@@ -163,10 +167,13 @@ for (folders in 1 : length(Cond_folders)){
   Folders_list[[folders]] <- Cond_df
   
 }
-Final_Cond <- ldply(Folders_list, data.frame)
+Final_Cond <- ldply(Folders_list, data.frame) %>%
+  mutate(Datetime_PST = as.POSIXct(Datetime_PST, tz="Etc/GMT+8", format = "%m/%d/%y %I:%M:%S %p")) 
 
+Final_Cond$Datetime_UTC <- Final_Cond$Datetime_PST
+attributes(Final_Cond$Datetime_UTC)$tzone <- 'UTC'
+Final_Cond <- dplyr::select(Final_Cond, Datetime_UTC, Temp_C, Cond_uScm, SerialNumber)
 
-Final_Cond$Datetime_UTC <- as.POSIXct(Final_Cond$Datetime_UTC, tz="UTC", format = "%m/%d/%y %I:%M:%S %p")
 
 #Save to file
 write.table(Final_Cond, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_raw.csv'), row.names=F, sep=',')
