@@ -7,10 +7,11 @@ library(ggplot2)
 library(gridExtra)
 library(akima)
 library(stringr)
+library(RColorBrewer)
 
-DO_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_DO_raw.rds'))
-Temp_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_Temp_raw.rds'))
-Cond_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy_Cond_raw.rds'))
+DO_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_raw.rds'))
+Temp_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_raw.rds'))
+Cond_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_raw.rds'))
 
 
 buoy_meta<-read.csv(paste0(box_dir, '/Data/BuoyData/SSCN2 Buoy Information.csv'))
@@ -228,6 +229,17 @@ print(
 dev.off()
 
 
+print(
+  ggplot(aes(x=Datetime_UTC, y=Temp_C, color=Depth, group=Depth), data=Temp_df_clean2[which(Temp_df_clean2$Datetime_UTC<= as.POSIXct('2019-07-07')),]) +
+    geom_vline(xintercept=fert_posix, linetype="dashed", color = "green", size=0.5) + 
+    # geom_point(size = 0.5) +
+    geom_path(size = 1) +
+    scale_colour_manual(values = brewer.pal(10, 'RdYlBu')) + 
+    facet_grid(rows=vars(Site)) + 
+    theme_bw() + 
+    theme(legend.position='bottom') + 
+    guides(color = guide_legend(nrow = 1))
+)
 
 png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/DO/", "DO_AllDepths", ".png"), units = 'in', width=7, height=8, res=200)
 
