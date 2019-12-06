@@ -1,41 +1,43 @@
 library(dplyr)
 library(tidyr)
 
-fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
-
-
-# Phyto_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Phyto_FullRecord_NutExp2.rds'))
+Phyto_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Phyto_FullRecord_NutExp2.rds'))
 
 Zoo_FullRecord <-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Zoo_FullRecord_NutExp2.rds'))
 
 # pico_totals<- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Picos_FullRecord_NutExp2.rds'))
 
 # pico_totals_narrow <- pico_totals %>%
-  dplyr::select(Date, Station, Total_picocyanobacteria, Total_bacteria) %>%
-  group_by(Date, Station) %>%
-  gather(key='Division', value='TOTAL_BV_um3PerLiter', 3:4)
+  # dplyr::select(Date, Station, Total_picocyanobacteria, Total_bacteria) %>%
+  # group_by(Date, Station) %>%
+  # gather(key='Division', value='TOTAL_BV_um3PerLiter', 3:4)
 
 
 #Phyto proessing
 
-# Phyto_totals_genus<- Phyto_FullRecord %>%
-#   dplyr::select(Date, Station, GENUS, TOTAL.BV) %>%
-#   group_by(Date, Station, GENUS) %>%
-#   dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
-# 
-# head(Phyto_totals_genus)
-# 
-# Phyto_totals_division<- Phyto_FullRecord %>%
-#   dplyr::select(Date, Station, DIVISION, TOTAL.BV) %>%
-#   group_by(Date, Station, DIVISION) %>%
-#   dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
-# 
-# head(Phyto_totals_division)
-# 
-# Phyto_totals_all<- Phyto_FullRecord %>%
-#   dplyr::select(Date, Station, TOTAL.BV) %>%
-#   group_by(Date, Station) %>%
-#   dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
+Phyto_totals_genus<- Phyto_FullRecord %>%
+  dplyr::select(Date, Station, GENUS, TOTAL.BV) %>%
+  group_by(Date, Station, GENUS) %>%
+  dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
+
+head(Phyto_totals_genus)
+
+AllgenusPhyto<-table(Phyto_totals_genus$GENUS)
+MajorgenusPhyto<-names(which(AllgenusPhyto>15))
+
+Phyto_totals_majorgenus <- filter(Phyto_totals_genus, GENUS %in% MajorgenusPhyto)
+
+Phyto_totals_division<- Phyto_FullRecord %>%
+  dplyr::select(Date, Station, DIVISION, TOTAL.BV) %>%
+  group_by(Date, Station, DIVISION) %>%
+  dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
+
+head(Phyto_totals_division)
+
+Phyto_totals_all<- Phyto_FullRecord %>%
+  dplyr::select(Date, Station, TOTAL.BV) %>%
+  group_by(Date, Station) %>%
+  dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
 
 
 #Zooplankton processing
@@ -165,45 +167,77 @@ dev.off()
 #Phytoplankton
 
 
-# png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Genus_TimeSeries.png'), units='in', width=12, height=6, res=400, bg='white')
-# 
-# print(
-#   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_genus) + 
-#     geom_point() +
-#     geom_path() + 
-#     facet_wrap(~GENUS) + 
-#     theme_bw() + 
-#     labs(y='Total Biovolume')
-# )
-# 
-# dev.off()
-# 
-# 
-# 
-# png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Division_TimeSeries.png'), units='in', width=6, height=4, res=400, bg='white')
-# 
-# print(
-#   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_division) + 
-#     geom_point() +
-#     geom_path() + 
-#     facet_wrap(~DIVISION) + 
-#     theme_bw() + 
-#     labs(y='Total Biovolume')
-# )
-# 
-# dev.off()
-# 
-# 
-# png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_TotalBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
-# 
-# print(
-#   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_all) + 
-#     geom_point() +
-#     geom_path() + 
-#     theme_bw() + 
-#     labs(y='Total Biovolume')
-# )
-# 
-# dev.off()
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Genus_TimeSeries.png'), units='in', width=12, height=6, res=400, bg='white')
+
+print(
+  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_genus) +
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
+    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    geom_point() +
+    geom_path() +
+    facet_wrap(~GENUS) +
+    theme_bw() +
+    labs(y='Total Biovolume')
+)
+
+dev.off()
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_CommonGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
+
+print(
+  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_majorgenus) +
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
+    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    # geom_path(aes(color=Station), size=1.5) +
+    # geom_point(size=3, aes(fill=Station, shape=Station)) +
+    geom_point() +
+    geom_path() +
+    facet_wrap(~GENUS) + 
+    theme_bw()
+)
+
+dev.off()
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Division_TimeSeries.png'), units='in', width=6, height=4, res=400, bg='white')
+
+print(
+  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_division) +
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
+    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    geom_point() +
+    geom_path() +
+    facet_wrap(~DIVISION) +
+    theme_bw() +
+    labs(y='Total Biovolume')
+)
+
+dev.off()
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_TotalBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
+
+print(
+  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_all) +
+    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
+    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    geom_point() +
+    geom_path() +
+    theme_bw() +
+    labs(y='Total Biovolume')
+)
+
+dev.off()
 
 
