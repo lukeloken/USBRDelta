@@ -64,11 +64,19 @@ source('R/pCO2_computation_script_NutrientExperiment2.R')
 source('R/IncubationMetabolism_SSCN2_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
+#Wind and solar data
+source('R/CleanCIMISWeather.R')
+
+#Oxygen18 metabolism
+source('R/CreateO18InputTable_NutrientExperiment2.R')
+source('R/CalculateO18metabolism_NutrientExperiment2.R')
+source('R/Plot_O18Metabolism_NutrientExperiment2.R')
+
 #Buoy metabolism
-source('R/CleanCIMISWeather.R') #Wind and solar rad data
 source('R/CombineBuoySensorData_SSCN2.R')
 source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
 source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
+
 
 #Plot a bunch of stuff
 source('R/PlotTimeseries_NutrientExperiment2.R')
