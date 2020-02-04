@@ -5,6 +5,7 @@
 
 library(readxl)
 library(plyr)
+library(tidyr)
 library(lubridate)
 
 # #############
@@ -20,8 +21,8 @@ KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTA
 File_i=1
 Phyto_list<-list()
 for (File_i in 1:length(PhytoFiles)){
-  Phyto_list[[File_i]]<-read_excel(paste(google_dir, 'Data', 'NutrientExperiment', 'Phytoplankton', PhytoFiles[File_i], sep='/'), skip=1)
-  PhytoNames<-names(read_excel(paste(google_dir,  'Data', 'NutrientExperiment', 'Phytoplankton', PhytoFiles[File_i], sep='/'), skip=0))
+  Phyto_list[[File_i]]<-read_excel(paste(box_dir, 'Data', 'Phytos', PhytoFiles[File_i], sep='/'), skip=1)
+  PhytoNames<-names(read_excel(paste(box_dir,  'Data', 'Phytos', PhytoFiles[File_i], sep='/'), skip=0))
 
   PhytoNames[which(PhytoNames=="DENSITY (cells/L)")]<-"DENSITY"
   names(Phyto_list[[File_i]])<-PhytoNames
@@ -37,11 +38,16 @@ Phyto_FullRecord<- Phyto_df %>%
   dplyr::rename(bottle.ID = STATION) 
 Phyto_FullRecord <- Phyto_FullRecord %>% 
   mutate(Date=as.Date(SAMPLE), 
-         Station=paste0("EC", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3]))
+         site3=paste0("", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3])) %>%
+  left_join(sitetable) %>%
+  mutate(Station=factor(site1, (sitetable$site1)))
+
+head(Phyto_FullRecord)
 
 #Save files
-write.csv(Phyto_FullRecord, file=paste(google_dir, 'DataOutputs', 'PhytosCountsAll_NutExp1.csv', sep='/'), row.names=F)
-saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_FullRecord_NutExp1.rds'))
+write.csv(Phyto_FullRecord, file=paste(google_dir, 'SSCN2_DataOutputs', 'PhytosCountsAll_NutExp2.csv', sep='/'), row.names=F)
+saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Phyto_FullRecord_NutExp2.rds'))
+
 }
 
 rm(Phyto_list, Phyto_df, PhytoFiles, PhytoNames, KeepNames, File_i)
@@ -151,3 +157,4 @@ saveRDS(pico_totals, file=paste0(dropbox_dir, '/Data/Rdata/Picos_FullRecord_NutE
 }
 
 rm(pico_df2, shortnames, Pico_df, pico_cyano, pico_bact, pico_list, PicoFiles)
+
