@@ -13,6 +13,71 @@ Zoo_FullRecord <-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Zoo_FullRec
   # gather(key='Division', value='TOTAL_BV_um3PerLiter', 3:4)
 
 
+#Zooplankton processing
+
+Zoo_totals_genus<- Zoo_FullRecord %>%
+  distinct() %>%
+  dplyr::select(Date, Station, genus, SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station, genus) %>%
+  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
+
+head(Zoo_totals_genus)
+
+Zoo_totals_species_spread <- Zoo_FullRecord %>%
+  distinct() %>%
+  dplyr::select(Date, Station, genus, species, SpeciesBiomass_ugdwL) %>%
+  replace_na(list(genus = "", species = "")) %>% 
+  unite("genus_species", c("genus","species"), sep='_') %>%
+  spread(key=genus_species, value=SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station)
+  
+
+Zoo_totals_genus_spread <- Zoo_FullRecord %>%
+  distinct() %>%
+  dplyr::select(Date, Station, genus, SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station, genus) %>%
+  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL)) %>%
+  spread(key=genus, value=SpeciesBiomass_ugdwL)
+
+Zoo_totals_division_spread <- Zoo_FullRecord %>%
+  distinct() %>%
+  dplyr::select(Date, Station, division, SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station, division) %>%
+  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL)) %>%
+  spread(key=division, value=SpeciesBiomass_ugdwL)
+
+
+write.csv(Zoo_totals_division_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Division_SSCN2.csv"), row.names=F)
+
+write.csv(Zoo_totals_genus_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Genus_SSCN2.csv"), row.names=F)
+
+write.csv(Zoo_totals_species_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Species_SSCN2.csv"), row.names=F)
+
+#Save R data files
+saveRDS(Zoo_totals_division_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Division_SSCN2.rds'))
+saveRDS(Zoo_totals_genus_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Genus_SSCN2.rds'))
+saveRDS(Zoo_totals_species_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Species_SSCN2.rds'))
+
+
+
+Allgenus<-table(Zoo_totals_genus$genus)
+Majorgenus<-names(which(Allgenus>50))
+
+Zoo_totals_majorgenus <- filter(Zoo_totals_genus, genus %in% Majorgenus)
+
+
+Zoo_totals_division<- Zoo_FullRecord %>%
+  dplyr::select(Date, Station, division, SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station, division) %>%
+  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
+
+
+Zoo_totals_all<- Zoo_FullRecord %>%
+  dplyr::select(Date, Station, SpeciesBiomass_ugdwL) %>%
+  group_by(Date, Station) %>%
+  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
+
+
 #Phyto proessing
 
 Phyto_totals_genus<- Phyto_FullRecord %>%
@@ -37,34 +102,10 @@ head(Phyto_totals_division)
 Phyto_totals_all<- Phyto_FullRecord %>%
   dplyr::select(Date, Station, TOTAL.BV) %>%
   group_by(Date, Station) %>%
-  dplyr::summarize(TOTAL.BV = sum(TOTAL.BV))
+  dplyr::summarize(TOTAL.BV = sum(TOTAL.BV)) %>%
+  mutate(Station = factor(Station, levels(Zoo_FullRecord$Station)))
 
 
-#Zooplankton processing
-
-Zoo_totals_genus<- Zoo_FullRecord %>%
-  dplyr::select(Date, Station, genus, SpeciesBiomass_ugdwL) %>%
-  group_by(Date, Station, genus) %>%
-  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
-
-head(Zoo_totals_genus)
-
-Allgenus<-table(Zoo_totals_genus$genus)
-Majorgenus<-names(which(Allgenus>50))
-
-Zoo_totals_majorgenus <- filter(Zoo_totals_genus, genus %in% Majorgenus)
-  
-
-Zoo_totals_division<- Zoo_FullRecord %>%
-  dplyr::select(Date, Station, division, SpeciesBiomass_ugdwL) %>%
-  group_by(Date, Station, division) %>%
-  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
-
-
-Zoo_totals_all<- Zoo_FullRecord %>%
-  dplyr::select(Date, Station, SpeciesBiomass_ugdwL) %>%
-  group_by(Date, Station) %>%
-  dplyr::summarize(SpeciesBiomass_ugdwL = sum(SpeciesBiomass_ugdwL))
 
 #Plotting
 
@@ -72,13 +113,14 @@ Zoo_totals_all<- Zoo_FullRecord %>%
 #colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(unique(Zoo_totals_genus$Station)))
+shapes<-rep(21:25, 5)
 
 
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Zoops/Zoops_AllGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station, colour=Station, shape=Station, fill=Station), data=Zoo_totals_genus) + 
-    scale_shape_manual(values=rep(21:25, 5))  + 
+    scale_shape_manual(values=shapes)  + 
     scale_fill_manual(values = colors) + 
     scale_colour_manual(values = colors) + 
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
@@ -239,5 +281,50 @@ print(
 )
 
 dev.off()
+
+
+
+
+
+
+
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Timeseries/Phytos_Zoops_TotalBiomass_TimeSeries.png'), units='in', width=4, height=5, res=400, bg='white')
+
+phyto_ts<-  ggplot(aes(x=Date, y=TOTAL.BV/1000000000, group=Station, shape=Station), data=Phyto_totals_all) +
+    scale_shape_manual(values=shapes[c(1,3:5,7)])  + 
+    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
+    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    geom_path(aes(colour=Station)) +
+    geom_point(aes(fill=Station), size=1.5) +
+    theme_bw() +
+    labs(y=expression(paste('Phyto biovolume (10'^'9', ' X ', mu, 'm'^'3', ' L'^'-1', ')'))) +
+  theme(axis.title.x = element_blank()) + 
+  theme(legend.position='none')
+  
+
+
+
+zoo_ts<-  ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station,shape=Station), data=Zoo_totals_all) + 
+    scale_shape_manual(values=shapes)  + 
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) + 
+    geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
+    geom_path(aes(colour=Station)) +
+    geom_point(aes(fill=Station), size=1.5) +
+    theme_bw() +
+    labs(y=expression(paste('Zoo biomass (', mu, 'g d.w. L'^'-1', ')'))) +
+    theme(axis.title.x = element_blank()) + 
+  theme(legend.position='bottom')
+
+# grid.arrange(phyto_ts, zoo_ts)
+
+
+grid.newpage()
+boxes<-grid.draw(rbind(ggplotGrob(phyto_ts), ggplotGrob(zoo_ts), size = "last"))
+
+
+dev.off()
+
 
 
