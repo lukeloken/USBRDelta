@@ -212,7 +212,7 @@ CH4sat_pct= CH4uM/ CH4sat*100
 N2Osat_pct= N2OuM/ N2Osat*100
 
 #Merge calculated concentrations with rest of data
-gas_out<-data.frame(SampleCode=merge_df_gas$SampleCode, CO2uM, CO2sat_pct, CH4uM, CH4sat_pct, N2OuM, N2Osat_pct) 
+gas_out<-data.frame(SampleCode=merge_df_gas$SampleCode, CO2uM, CO2sat_pct, CH4uM, CH4sat_pct, N2OuM, N2Osat_pct, stringsAsFactors=F) 
 merge_df_gascals<-left_join(merge_df, gas_out)
 
 #Save
