@@ -58,6 +58,10 @@ for (filename in filenames){
 
 row.names(YSI_AllDepths)<-NULL
 
+#Calculate mgL saturation because sensor did not log it first few days
+YSI_AllDepths$DO_mgL <- o2.at.sat.base(YSI_AllDepths$Temp_C)*  YSI_AllDepths$DO_perSat /100
+
+
 YSI_AllDepths<-YSI_AllDepths[which(!is.na(YSI_AllDepths$Date)),] %>%
   drop_na(Date, Site, Depth_m) %>%
   arrange(Date, Site) %>%
