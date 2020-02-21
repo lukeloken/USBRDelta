@@ -272,3 +272,78 @@ box(which='plot')
 dev.off()
 
 
+
+
+
+
+
+
+
+
+
+#From 2019 script
+
+#Figure for metabolism paper
+#Important pieces from Huey
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment/Buoys/Huey_MetabPaper_SSCN1.png'), width=6, height=7, units='in', res=200)
+
+par(mar=c(2,4.5,0.5, 0.5), mgp=c(3,0.5,0), tck=-0.02, mfrow=c(4,1), oma=c(1,0,1.5,0))
+
+# #Nitrate
+plot(BuoyData$DateTime.PST, BuoyData$`SUNA NO3 (mg/L)`, xlab='', ylab='', las=1, type='l', lwd=2, xaxt='n', ylim=c(0.05,1.4))
+
+abline(v=ferttime, lty=3, col='green', lwd=2)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='week'), format='%b %d', tck=-.04)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.01)
+
+points(BuoyData$DateTime.PST, BuoyData$`SUNA NO3 (mg/L)`, xlab='', ylab='', las=1, type='l', lwd=2)
+
+mtext(expression(paste(NO[3], ' (mg N L'^'-1', ')')), 2, 2.5)
+box(which='plot')
+
+# #Turbidity
+plot(BuoyData$DateTime.PST, BuoyData$`Turbidity (FNU)`, xlab='', ylab='', las=1, type='l', lwd=2, col='sienna4', xaxt='n', ylim=c(0,60))
+
+abline(v=ferttime, lty=3, col='green', lwd=2)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='week'), format='%b %d', tck=-.04)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.01)
+
+points(BuoyData$DateTime.PST, BuoyData$`Turbidity (FNU)`, xlab='', ylab='', las=1, type='l', lwd=2, col='sienna4')
+ 
+mtext(expression(paste("Turbidity (FNU)")), 2, 2.5)
+box(which='plot')
+
+ 
+# #BGA
+plot(BuoyData$DateTime.PST, BuoyData$`BGA-PC (µg/L)`, xlab='', ylab='', las=1, type='l', lwd=2, col='darkturquoise', xaxt='n', ylim=c(-.5,2))
+
+abline(v=ferttime, lty=3, col='green', lwd=2)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='week'), format='%b %d', tck=-.04)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.01)
+
+points(BuoyData$DateTime.PST, BuoyData$`BGA-PC (µg/L)`, xlab='', ylab='', las=1, type='l', lwd=2, col='darkturquoise')
+ 
+mtext(expression(paste("Blue green algae (", mu, 'g L'^'-1', ')')), 2, 2.5)
+box(which='plot')
+
+
+# #ChlA
+plot(BuoyData$DateTime.PST, BuoyData$`fCHLA (µg/L)`, xlab='', ylab='', las=1, type='l', lwd=2, col='darkgreen', xaxt='n', ylim=c(1,16))
+ 
+abline(v=ferttime, lty=3, col='green', lwd=2)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='week'), format='%b %d', tck=-.04)
+axis.POSIXct(1, at=seq.POSIXt(RangeDates[1], RangeDates[2], by='day'), format='%b %d', labels=NA, tck=-.01)
+
+points(BuoyData$DateTime.PST, BuoyData$`fCHLA (µg/L)`, xlab='', ylab='', las=1, type='l', lwd=2, col='darkgreen')
+ 
+mtext(expression(paste("Chl ", italic(a), " (", mu, 'g L'^'-1', ')')), 2, 2.5)
+box(which='plot')
+
+mtext("2018", 1, 0, outer=T)
+mtext("Experiment 1", 3, 0, outer=T)
+
+
+dev.off()
+
+
+
