@@ -25,7 +25,7 @@ source('R/g_legend.R')
 merge_final<-readRDS(file = paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
 
 
-fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+# fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
 
 
 # flame_metrics<-c('FLAMe_SUNANO3mgL', 'FLAMe_EXOSpCond', 'FLAMe_EXOpH', 'FLAMe_EXOTemp', 'FLAMe_EXODOmgL', 'FLAMe_EXODOSAT', 'FLAMe_EXOTurbFNU', 'FLAMe_EXOfDOMRFU', 'FLAMe_EXOfCHLAugL', 'FLAMe_EXOfBGAPCugL')
@@ -34,7 +34,7 @@ ysi_metrics<-c("YSI_Temp_C", "YSI_DO_perSat", "YSI_DO_mgL", "YSI_SPC_uScm", "YSI
 chem_metrics<-c("PO4_ppm", "TDP_ppm", "TP_ppm", "NH4_ppm", "NO3_ppm", "TDN_ppm", "TN_ppm", "DOC_ppm", "DIN_ppm", "DON_ppm", "TPN_ppm", "TSS", "VSS", "chla_mean", "pheo_mean")
 gas_metrics<-c("CO2uM", "CH4uM", "N2OuM")
 
-other_metrics<-c("kd_meters", "PhoticDepth_m", "PD_est", "SecchiDepth_m")
+other_metrics<-c("SecchiDepth_m")
 
 # metricsMetabolism<-c("gppv",  'nepv', "rv", 'GPP', 'NEP', 'ER', 'GPP_buoy', 'NEP_buoy', 'ER_buoy', 'GPP_inc', 'NEP_inc', 'ER_inc')
 metrics <- c(flame_metrics, ysi_metrics, chem_metrics, gas_metrics, other_metrics)
@@ -78,7 +78,7 @@ uniquesites<-unique(merge_final[c('Site')])
 
 # Loop through metrics and sites and make a gg object
 plot_list<-list()
-ranges<-sapply(metrics, function(x) extendrange(merge_surface[,x], f=0.05))
+ranges<-sapply(metrics[1:28], function(x) extendrange(merge_surface[,x], f=0.05))
 
 plot_nu<-1
 for (plot_nu in 1:length(metrics)){
