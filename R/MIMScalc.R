@@ -79,7 +79,7 @@ MIMScalc<-function(MIMSdata){
   
 
   calmeans_bysamp<-as.data.frame(sapply(calmeans, roll_mean, n=2))
-  calmeans_bysamp$Calibnum<-floor(calmeans_bysamp$Calibnum)
+  # calmeans_bysamp$Calibnum<-floor(calmeans_bysamp$Calibnum)
   
   # Select which calibration ratio to use for each sample (need to change this so it uses both the pre and post cal solution)
   samplesMIMSdata$nar_coef1<-calmeans_bysamp$nar[as.numeric(samplesMIMSdata$Sampnum)]/calmeans_bysamp$narsatv[as.numeric(samplesMIMSdata$Sampnum)]
