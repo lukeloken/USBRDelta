@@ -13,24 +13,10 @@ library(viridis)
 library(lubridate)
 library(LakeMetabolizer)
 
-#choose starting directory
-# setwd("C:/Users/lcloken/Box/SadroLab/Incubation_Experiments")
-
-#Load custom functions
-source('R/g_legend.R')
-
-# # Project folder where outputs are stored
-# results_dir<-c("Results")
-# 
-# #Where data come from
-# data_dir<-c("Delta_NutrientExperiment")
-
-#Dropbox directory
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 
 
 #upload merged data
-merge_df_gascals <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
+merge_df_gascals <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_withGas_Merged.rds'))
 
 #Calculate photic depth (1%) from kd
 # merge_df_gascals$PhoticDepth_m=log(1/100)/(merge_df_gascals$kd_meters*(-1))
@@ -39,7 +25,7 @@ merge_df_gascals <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData
 # merge_df_gascals$PhoticDepth_10per=log(10/100)/(merge_df_gascals$kd_meters*(-1))
 
 #Add photic depth and light extinction
-kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+kd_alldates<-readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SSCN2_Kd.rds'))
 merge_df_gascals<-full_join(merge_df_gascals, kd_alldates)
 
 
@@ -98,7 +84,7 @@ daylength<- as.numeric(sunset-sunrise, unit='hours')
 
 
 #upload hypso data
-Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
+Depth_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'HypsoCurveNL74.rds'))
 plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
@@ -126,9 +112,9 @@ V4 = sapply(d3, function(x) sum(Depth_pred$y[which(Depth_pred$x > x/2)]))
 #Load incubation results
 sitetable$site2<-paste0("site", 1:7)
 
-resultsfiles<-list.files(paste0(dropbox_dir, "/Data/Rdata_SSCN2/IncubationMetabolism"))
+resultsfiles<-list.files(file.path(onedrive_dir, "RData", "NutrientExperiment2", "IncubationMetabolism"))
 
-results_list<-lapply(paste0(dropbox_dir, "/Data/Rdata_SSCN2/IncubationMetabolism/", resultsfiles), readRDS)
+results_list<-lapply(file.path(onedrive_dir, "RData", "NutrientExperiment2", "IncubationMetabolism", resultsfiles), readRDS)
 
 results_df<-ldply(results_list, data.frame) %>%
   group_by(SampleDate, Site, Metric, Treatment) %>%
@@ -214,11 +200,11 @@ merge_df_IncMetab<-left_join(merge_df_gascals, IncMetabDaily)
 
 
 #Save incubation results
-write.csv(merge_df_IncMetab,  file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_withIncMetab_Merged.csv'))
-saveRDS(merge_df_IncMetab, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withIncMetab_Merged.rds'))
+write.csv(merge_df_IncMetab,  file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.csv'))
+saveRDS(merge_df_IncMetab, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
 
-write.csv(results_df, file=paste0(google_dir, '/SSCN2_DataOutputs/IncubationMetabolismSummary.csv'))
-saveRDS(results_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/IncubationMetabolismSummary.rds'))
+write.csv(results_df, file=file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'IncubationMetabolismSummary.csv'))
+saveRDS(results_df, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'IncubationMetabolismSummary.rds'))
 
 
 
@@ -290,7 +276,7 @@ plot3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismTimeseries.png'), width=10, height=8, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismTimeseries.png'), width=10, height=8, units='in', res=200)
 
 grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
 
@@ -335,7 +321,7 @@ plot3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolism_Area_Timeseries.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism_Area_Timeseries.png'), width=5, height=7, units='in', res=200)
 
 grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
 
@@ -370,7 +356,7 @@ NEPbox<-ggplot(aes(x=Date, group=Date, y=NEP_Total_area), data=merge_df_IncMetab
   geom_boxplot(fill='grey30', outlier.size=0.5) 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 
 
 grid.newpage()
@@ -380,7 +366,7 @@ dev.off()
 
 
 #Scatterplot ER vs GPP
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotGPPER.png'), width=4.5, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismScatterplotGPPER.png'), width=4.5, height=4, units='in', res=200)
 
 print(
   ggplot(aes(y=GPP_Total, x=ER_Total*(-1), fill=Site, shape=Site),data=merge_df_IncMetab) +
@@ -504,7 +490,7 @@ plot_withlegend <- p1 +
 mylegend<-g_legend(plot_withlegend)
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismScatterplotDrivers.png'), width=11, height=8.5, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismScatterplotDrivers.png'), width=11, height=8.5, units='in', res=200)
 
 grid.arrange(plot6, mylegend, nrow=2, heights=c(15,1))
 
@@ -549,7 +535,7 @@ p3<-ggplot(aes(y=NEP_Total, x=Site, fill=Site),data=merge_df_IncMetab) +
   theme(legend.position='none', axis.title.x=element_blank())
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismBoxplotBySite.png'), width=4, height=8.5, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismBoxplotBySite.png'), width=4, height=8.5, units='in', res=200)
 
 box3<-grid.arrange(grobs=list(p1, p2, p3), ncol=1, as.table=T)
 
@@ -559,7 +545,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismByChlAJar.png'), width=8.5, height=8, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismByChlAJar.png'), width=8.5, height=8, units='in', res=200)
 
 ggplot(aes(y=MeanValue, x=ChlAJar), data=results_df2) + 
   geom_hline(yintercept=0) + 
@@ -577,7 +563,7 @@ ggplot(aes(y=MeanValue, x=ChlAJar), data=results_df2) +
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/IncubationMetabolismByNO3Jar.png'), width=8.5, height=8, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolismByNO3Jar.png'), width=8.5, height=8, units='in', res=200)
 
 ggplot(aes(y=MeanValue, x=NO3Jar), data=results_df2) + 
   geom_hline(yintercept=0) + 
