@@ -51,7 +51,10 @@ library(wql)
 
 #load field and chem data
 
-SSC_joined_data <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+# SSC_joined_data <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+
+SSC_joined_data <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+
 
 
 #load exetainer gas data for SSCN2
