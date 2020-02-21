@@ -13,15 +13,15 @@ library(riverdist)
 
 
 #Where spatial data are
-Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
-
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-box_dir <- "C:/Users/lcloken/Box/SadroLab/Luke/SSCN2"
+# Arc_dir <- 'C:/Dropbox/ArcGIS/Delta'
+# 
+# # Project folder where outputs are stored
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# 
+# #Where data come from
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+# 
+# box_dir <- "C:/Users/lcloken/Box/SadroLab/Luke/SSCN2"
 
 # ##################################################################################################
 # Google maps
@@ -67,7 +67,7 @@ ggmap(map_test)
 
 #Load other spatial data
 #shapefile outline of north delta major water bodies
-outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
+outline<-readOGR(file.path(onedrive_dir, "SpatialData"), "NorthDeltaOutline_MajorWater")
 
 SSCNetwork_clean <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.rds'))
 
