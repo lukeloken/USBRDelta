@@ -35,13 +35,49 @@ google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 box_dir <- "C:/Users/lcloken/Box/SadroLab/Luke/SSCN2"
 
+# ##################################################################################################
+# Google maps
+# Commented code will load API key on Loken-UC-Davis laptop
+# Download 3 maps from google server
+# As of Oct 2018, this costs money
+# Instead, I saved these maps to the dropbox spatial folder and load them individually
+# If needed you can uncomment and redownload maps, but shouldn't need to do so with ship channel
+# ##################################################################################################
 
 #GoogleKey
-GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
+# GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
 
-register_google(key = as.character(GoogleAPIkey))
+# register_google(key = as.character(GoogleAPIkey))
+
+# Google background map 
+# map<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+
+# Google background map 
+# map2<-GetMap(center=c(38.51, -121.57), size=c(240,480), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
+
+# ggmap
+# map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, scale=2, maptype = "satellite", key=GoogleAPIkey )
+
+#stamenmap
+# map_stamen<-get_stamenmap(bbox=c(left=-121.61, right=-121.53, bottom=38.45, top=38.57), zoom = 12, scale=2, maptype = "terrain-background")
+# ggmap(map_stamen)
+
+#save maps
+# saveRDS(map, file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map1.rds'))
+# saveRDS(map2, file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map2.rds'))
+# saveRDS(map_test, file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_ggmap.rds'))
+
+# As of Nov 2019, load maps from file instead
+#load maps
+map <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map1.rds'))
+map2<- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map2.rds'))
+map_test <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_ggmap.rds'))
+
+ggmap(map_test)
 
 
+
+#Load other spatial data
 #shapefile outline of north delta major water bodies
 outline<-readOGR(Arc_dir, "NorthDeltaOutline_MajorWater")
 
@@ -53,18 +89,9 @@ CloseSites<-SSCSites[SSCSites$Station %in% c('NL 70', 'NL 74', 'NL 76'),]
 #UTM zone 10 for linear reference
 projection = "+init=epsg:26910"
 
-# # Google background map 
-map<-GetMap(center=c(38.5, -121.57), size=c(320,640), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
-
-# # Google background map 
-map2<-GetMap(center=c(38.51, -121.57), size=c(240,480), zoom=12, maptype=c("satellite"), GRAYSCALE=F, API_console_key=GoogleAPIkey)
-
-
-#Experiment with ggmap
-map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, maptype = "satellite", key=GoogleAPIkey )
-
 color.palette = colorRampPalette(c(viridis(6, begin=.1, end=.98), rev(magma(5, begin=.25, end=.98))), bias=1)
-# colours = color.palette(12)
+colours = color.palette(12)
+
 
 
 #Field notes (event)
@@ -182,7 +209,7 @@ dates<-unique(geo$Date)
 
 # dates<-dates[length(dates)] #Just use last date if processing newest file
 event_i<-1
-plot=FALSE
+plot=TRUE
 for (event_i in 1:length(dates)){
   # date<-as.Date(unique(field_df$Date)[event_i])
   date = dates[event_i]
