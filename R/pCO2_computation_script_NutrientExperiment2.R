@@ -50,10 +50,10 @@ library(dplyr)
 library(wql)
 
 #load field and chem data
-merge_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_Merged.rds'))
+merge_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_Merged.rds'))
 
 #load exetainer gas data
-gas_df<-read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_DissolvedGasData.xlsx"), skip=0)
+gas_df<-read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'WaterChemistry', 'SSCN2_DissolvedGasData.xlsx'), skip=0)
 names(gas_df) <- str_replace_all(names(gas_df), c(" " = "" , "," = "" ))
 
 water_df<- gas_df %>%
@@ -216,8 +216,8 @@ gas_out<-data.frame(SampleCode=merge_df_gas$SampleCode, CO2uM, CO2sat_pct, CH4uM
 merge_df_gascals<-left_join(merge_df, gas_out)
 
 #Save
-write.csv(merge_df_gascals, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_withGas_Merged.csv'), row.names=F)
-saveRDS(merge_df_gascals , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
+write.csv(merge_df_gascals, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteData_withGas_Merged.csv'), row.names=F)
+saveRDS(merge_df_gascals , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_withGas_Merged.rds'))
 
 
 
