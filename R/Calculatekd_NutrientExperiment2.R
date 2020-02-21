@@ -11,21 +11,7 @@ library(ggplot2)
 library(gridExtra)
 
 
-source('R/read_excel_allsheets.R')
-source('R/g_legend.R')
-source('R/lightmodel.R')
-
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
-#light<-read.csv(paste0(dropbox_dir, '/Data/NutrientExperiment/LightProfiles/LightProfiles_SSCN_Oct2018.csv'), stringsAsFactors = F)
-
-
-light<-read.csv(paste0(box_dir, '/Data/LightProfiles/SSCN2_LightProfiles.csv'), stringsAsFactors = F)
+light<-read.csv(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'LightProfiles', 'SSCN2_LightProfiles.csv'), stringsAsFactors = F)
 
 # light_df<-light[light$Depth_m>0,]
 light_df<-light
@@ -104,7 +90,7 @@ commonTheme_kd<-list(
 )
 
 
-png(paste0(dropbox_dir,"/Figures/NutrientExperiment2/LightExtinction_SSCN2.png"), width = 12, height = 8, units = "in", res = 250)
+png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LightExtinction_SSCN2.png"), width = 12, height = 8, units = "in", res = 250)
 
 par(mar=c(3.25,3.25,2.5,2.5), mgp=c(3,1,0), tck = -.02)
 
@@ -121,13 +107,8 @@ theme(legend.position = "bottom")
 )
 
 dev.off()
-# ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
-#   geom_path() + 
-#   geom_point() +
-#   theme_bw() + 
-#   labs(y=expression(paste('Photic Depth (m)')))
 
-png(paste0(dropbox_dir,"/Figures/NutrientExperiment2/PhoticDepths_SSCN2_.png"), width = 12, height = 8, units = "in", res = 250)
+png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "PhoticDepths_SSCN2_.png"), width = 12, height = 8, units = "in", res = 250)
 
 print(
   ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
@@ -144,9 +125,9 @@ dev.off()
 
 # plot(kd_alldates$kd_meters, kd_alldates$PhoticDepth_m)
 
-write.csv(kd_alldates, file=paste(google_dir, 'SSCN2_DataOutputs/Kd_NutrientExperiment2.csv', sep='/'), row.names=F)
+write.csv(kd_alldates, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SSCN2_Kd.csv'), row.names=F)
 
-saveRDS(kd_alldates , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+saveRDS(kd_alldates , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SSCN2_Kd.rds'))
 
 
 rm(data_i, commonTheme_kd, kd_alldates, light, light_df, models, out_df, output_list, water_data, colors, dates, day, good_stations, shapes, slopes, stations)
