@@ -46,14 +46,25 @@ if (ncol(time_df) %% 2 == 0){
 } else { extra=0}
 
 #Remove NAs from Jar vector and generate a vector of the Jar reads
-JarSampleOrder<-JarData$Jar__1[!is.na(JarData$Jar__1)]
-Jar<-rep(JarSampleOrder, each=nrow(DO_df)/length(JarSampleOrder))
+JarSampleOrder<- JarData %>%
+  dplyr::select(starts_with("Jar")) %>%
+  dplyr::select(1) 
 
+TreatmentSampleOrder<- JarData %>%
+  dplyr::select(starts_with("Treatment")) %>%
+  dplyr::select(1) 
+
+SiteSampleOrder<- JarData %>%
+  dplyr::select(starts_with("Site")) %>%
+  dplyr::select(1) 
+
+
+Jar<-rep(JarSampleOrder[,1], each=nrow(DO_df)/length(JarSampleOrder[,1]))
 
 #Average multiple observations of the same jar/time
 #Note that these summary tables sort the data based on Jar, so they are no longer in the JarRead order
 DOmean <- data.frame(Jar, DO_df) %>%
-  group_by(Jar) %>%
+  dplyr::group_by(Jar) %>%
   summarize_all(mean, na.rm=T)
 
 DOmedian <- data.frame(Jar, DO_df) %>%
@@ -137,11 +148,12 @@ for (day in 1:((ncol(DOrate_mean)-1)/2)){
 }
 
 #Link Treatments and Sites to Jars
-DOrate_mean$Treatment<-factor(JarData$Treatment__1[match(DOrate_mean$Jar, JarData$Jar__1)])
-DOrate_mean$Site<-JarData$Site__1[match(DOrate_mean$Jar, JarData$Jar__1)]
 
-DOrate_median$Treatment<-JarData$Treatment__1[match(DOrate_median$Jar, JarData$Jar__1)]
-DOrate_median$Site<-JarData$Site__1[match(DOrate_median$Jar, JarData$Jar__1)]
+DOrate_mean$Treatment<-factor(TreatmentSampleOrder[,1][match(DOrate_mean$Jar, JarSampleOrder[,1])])
+DOrate_mean$Site<-SiteSampleOrder[,1][match(DOrate_mean$Jar, JarSampleOrder[,1])]
+
+DOrate_median$Treatment<-factor(TreatmentSampleOrder[,1][match(DOrate_median$Jar, JarSampleOrder[,1])])
+DOrate_median$Site<-SiteSampleOrder[,1][match(DOrate_median$Jar, JarSampleOrder[,1])]
 
 #Format data for ggplot and output csv
 DOrate_mean_long_table<- DOrate_mean %>%
