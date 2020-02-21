@@ -14,6 +14,7 @@ met.final<-drop_na(met.final, d180_02.vs.VSMOW)
 #colors
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(unique(met.final$Site)))
+shapes<-rep(21:25, 5)
 
 # shipdate<-as.Date(c("2018-10-07", "2018-10-06"), format='%Y-%m-%d')
 # fertdate<-as.Date("2018-10-02", format='%Y-%m-%d')
@@ -23,7 +24,7 @@ colors<-color.palette(length(unique(met.final$Site)))
 commonThemePrint<-list(
   scale_colour_manual(values = colors),
   scale_fill_manual(values = colors),
-  scale_shape_manual(values=c(23, 22, 21,21,21, 22, 23)),
+  scale_shape_manual(values=shapes),
   # geom_smooth(method='loess',  se=F),
   # geom_smooth(method='auto', se=T, alpha=.2),
   # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
@@ -198,19 +199,19 @@ grid.arrange(GPPplot, ERplot, NEPplot, nrow=1)
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusTurb.png'), width=4, height=4, units='in', res=200)
+png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusTurb.png'), width=3.5, height=3.5, units='in', res=200)
 
 print(
-ggplot(met.final, aes(x=YSI_Turb_FNU, y=gppv, fill=Site)) +
-  labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
-  # scale_x_log10() +
-  scale_shape_manual(values=rep(21:25, 5))  +
+ggplot(met.final, aes(x=YSI_Turb_FNU, y=gppa)) +
+  labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  # geom_smooth(method='lm', formula= y~x) + 
+  scale_shape_manual(values=shapes)  +
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
   scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
   geom_point(size=2, aes(fill=Site, shape=Site)) +
   theme_bw() +
   theme(plot.title = element_text(hjust=0.5))  +
-  theme(legend.position='bottom')
+  theme(legend.position='none')
 )
 
 dev.off()
@@ -242,10 +243,10 @@ dev.off()
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
 
 print(
-ggplot(met.final, aes(x=YSI_ChlA_ugL, y=gppv, fill=Site)) +
-  labs(x=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+ggplot(met.final, aes(x=YSI_ChlA_ugL, y=gppa, fill=Site)) +
+  labs(x=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
   # scale_x_log10() +
-  scale_shape_manual(values=rep(21:25, 5))  +
+  scale_shape_manual(values=shapes)  +
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
   scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
   geom_point(size=2, aes(fill=Site, shape=Site)) +
@@ -260,10 +261,10 @@ dev.off()
 png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
 
 print(
-ggplot(met.final, aes(x=`NO3-ppm`, y=gppv, fill=Site)) +
-  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) +
+ggplot(met.final, aes(x=`NO3-ppm`, y=gppa, fill=Site)) +
+  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
   # scale_x_log10() +
-  scale_shape_manual(values=rep(21:25, 5))  +
+  scale_shape_manual(values=shapes)  +
   scale_fill_manual(values = color.palette(length(unique(met.final$Site)))) +
   scale_colour_manual(values = color.palette(length(unique(met.final$Site)))) +
   geom_point(size=2, aes(fill=Site, shape=Site)) +
