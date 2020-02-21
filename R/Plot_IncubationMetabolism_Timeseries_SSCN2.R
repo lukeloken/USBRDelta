@@ -103,7 +103,9 @@ plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
 # Depth_df
-Depth_pred <- data.frame(approx(x=Depth_df$Depth_m, y=Depth_df$Volume_m3, xo=seq(0, max(Depth_df$Depth_m), by=0.01)))
+Depth_pred <- data.frame(approx(x=Depth_df$Depth_m, y=Depth_df$Volume_m3, xo=seq(0, max(Depth_df$Depth_m), by=0.01))) %>%
+  mutate(y= y/50)
+ 
 Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
 Surface_area = Depth_df$Area_m2[which(Depth_df$Depth_m==0)]
 Mean_depth <- Total_volume/Surface_area
