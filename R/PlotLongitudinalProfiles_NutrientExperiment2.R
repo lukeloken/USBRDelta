@@ -1,27 +1,15 @@
 
 #Warning this script uses your API key. Do not use this a lot as you can get charged if you go over your monthly allotment. 
 
-library(grid)
+#Load spatial libraries
 library(rgdal)
 # library(gtools)
 library(sp)
 library(RODBC)
 library(RgoogleMaps)
 library(ggmap)
-library(plyr)
-library(dplyr)
-
-library(ggplot2)
-library(gridExtra)
-library(RColorBrewer)
-library(viridis)
-library(stringr)
-
-library(RcppRoll)
-library(ggpubr)
 library(riverdist)
 
-source('R/ImageScale.R')
 
 
 #Where spatial data are
