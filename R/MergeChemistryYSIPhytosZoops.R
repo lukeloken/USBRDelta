@@ -77,7 +77,7 @@ saveRDS(SSC_joined_data , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.
 
 light_data<-SSC_joined_data %>%
   filter(!is.na(kd_meters)) %>%
-  select(Date, Station, Time, LabTurbidity, FieldTurbidity, Secchicm, Turbid..NTU, kd_meters, PhoticDepth_m) %>%
+  dplyr::select(Date, Station, Time, LabTurbidity, FieldTurbidity, Secchicm, Turbid..NTU, kd_meters, PhoticDepth_m) %>%
   rename(LabTurbidity_NTU = LabTurbidity,
          FieldTurbidity_NTU = FieldTurbidity,
          Secchi_cm = Secchicm, 
