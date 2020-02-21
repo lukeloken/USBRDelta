@@ -14,6 +14,8 @@ library(viridis)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
+library(grid)
+library(stringr)
 
 
 # source('R/read_excel_allsheets_skip.R')
@@ -21,14 +23,18 @@ source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 source('R/lightmodel.R')
 
+#As of Feb 2020, new single folder where all data and outputs live
+onddrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSCC'
+
+# Old locations on Loken-UCD-laptop
 # Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
 
 #Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 #Where data come from
-box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
+# box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
 fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
 
