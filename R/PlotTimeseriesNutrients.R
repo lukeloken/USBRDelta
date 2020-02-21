@@ -23,7 +23,7 @@ library(MASS)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
 
 
 
@@ -437,6 +437,76 @@ png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationSummerMonths.png'
 grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 2), top='June through Sept')
 
 dev.off()
+
+
+
+
+# Loop through metrics and make a gg object
+# supp figure for metab paper
+# DWSC sites only, exclude 64
+# NO3, SRP, Secchi
+box_list3<-list()
+variables_print2 <- c("NO3Nppm", "PO4Pppm", "Secchicm")
+variables_print <- c("SpCond.uS", "LabTurbidity", "Secchicm", "NO3Nppm", "NH4Nppm", "PO4Pppm")
+stations_print<- c("56", "62", "66", "70", "74", "76", "84", "WSP" )
+plot_nu<-1
+for (plot_nu in 1:length(variables_print)){
+  # Pick data
+  metric<-variables_print[plot_nu]
+  
+  data_print <- SSC_joined_data[which(SSC_joined_data$Month %in% month.abb[6:9] & SSC_joined_data$Station %in% stations_print),]
+  #Plot
+  box_list3[[plot_nu]] <- ggplot(data_print, aes_string(y = metric, x = 'Station', fill = 'Station')) + 
+    labs(x='Station', y=metric) +
+    commonTheme_boxplot
+
+    if (variables_print[plot_nu ]=="NO3Nppm"){
+      box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+        labs(y=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
+    }
+  
+  if (variables_print[plot_nu ]=="NH4Nppm"){
+    box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+      labs(y=expression(paste(NH[4], ' (mg N L'^'-1', ')')))
+  }
+  
+  
+  if (variables_print[plot_nu ]=="PO4Pppm"){
+    box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+      labs(y=expression(paste('SRP (mg P L'^'-1', ')')))
+  }
+    
+  if (variables_print[plot_nu ]=="Secchicm"){
+    box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+      labs(y=expression(paste('Secchi Depth (cm)')))
+  }
+  
+  if (variables_print[plot_nu ]=="LabTurbidity"){
+    box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+      labs(y=expression(paste('Turbidity (NTU)')))
+  }
+  
+  if (variables_print[plot_nu ]=="SpCond.uS"){
+    box_list3[[plot_nu]]<-   box_list3[[plot_nu]] + 
+      labs(y=expression(paste('SPC (', mu, 'S cm'^'-1', ')')))
+  }
+  
+}
+
+
+#Save
+png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationSummerMonths_6panelprint.png'), width=7, height=6, units='in', res=200)
+
+# arrange plots without legend
+# grid.newpage()
+# 
+# plots<-grid.draw(rbind(ggplotGrob(box_list3[[1]]), ggplotGrob(box_list3[[2]]), ggplotGrob(box_list3[[3]]), size = "last"))
+
+grid.arrange(grobs=box_list3, ncol=2, as.table=F)
+
+
+dev.off()
+
 
 
 
