@@ -10,36 +10,33 @@ rm(list = ls())
 library(readxl)
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(viridis)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
 library(grid)
 library(stringr)
+library(RColorBrewer)
+library(RcppRoll)
+library(ggpubr)
 
-
-# source('R/read_excel_allsheets_skip.R')
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 source('R/lightmodel.R')
+source('R/ImageScale.R')
 
 #As of Feb 2020, new single folder where all data and outputs live
 onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 
 # Old locations on Loken-UCD-laptop
-# Project folder where outputs are stored
 # dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-
-#Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-#Where data come from
 # box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
 fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
 
 fert_posix<-as.POSIXct(c("2019-07-22 08:00", "2019-07-23 08:00","2019-07-24 08:00", "2019-07-25 08:00", "2019-08-05 08:00", "2019-08-06 08:00","2019-08-07 08:00", "2019-08-08 08:00"), format='%Y-%m-%d %H:%M', tz="Etc/GMT+8")
-
 
 #Field data
 source('R/CleanFieldData_NutrientExperiment2.R')
@@ -47,7 +44,7 @@ source('R/CleanFieldData_NutrientExperiment2.R')
 #Longitudinal Data (Script works, but takes a long time)
 # source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
 
-#Vertical profiles (Script works, just takes a long time)
+#Vertical profiles (Scripts works, just take a long time)
 # source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
 # source('R/CompileVerticalProfiles_NutrientExperiment2.R')
 
