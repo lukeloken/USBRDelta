@@ -1,6 +1,33 @@
 
 #Warning this script uses your API key. Do not use this a lot as you can get charged if you go over your monthly allotment. 
 
+library(readxl)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(viridis)
+library(lubridate)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(stringr)
+library(RColorBrewer)
+library(RcppRoll)
+library(ggpubr)
+
+source('R/read_excel_allsheets.R')
+source('R/g_legend.R')
+source('R/lightmodel.R')
+source('R/ImageScale.R')
+
+#As of Feb 2020, new single folder where all data and outputs live
+onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
+
+
+
+
+
+
 #Load spatial libraries
 library(rgdal)
 # library(gtools)
