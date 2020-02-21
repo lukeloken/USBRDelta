@@ -29,6 +29,7 @@ SSCSites<-readOGR(file.path(onedrive_dir, "SpatialData"), "DeltaSites")
 SSCLine_UTM<-spTransform(SSCLine, CRS(projection))
 
 SSCNetwork<-line2network(file.path(onedrive_dir, "SpatialData"), "ShipChannelLine", reproject=projection)
+#Add verticies at 0.5 m. Add route 
 SSCNetwork_clean<-cleanup(SSCNetwork)
 
 plot(SSCNetwork_clean)
