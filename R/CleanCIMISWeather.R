@@ -16,10 +16,11 @@ library(stringr)
 library(openair)
 library(circular)
 
-# source('R/CompilePhytos.R')
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "Wind"), showWarnings = F)
+
 
 #CIMIS data
-weather_df<-read.csv(paste(box_dir, 'Data', 'OtherData', 'CIMIS_weather_hourly.csv', sep='/'), stringsAsFactors = F)
+weather_df<-read.csv(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'OtherData', 'CIMIS_weather_hourly.csv'), stringsAsFactors = F)
 summary(weather_df)
 weather_df$Date<-as.Date(weather_df$Date, format='%m/%d/%Y')
 
@@ -81,21 +82,23 @@ ggplot(wind_df_summary, aes(DateTime, WD_deg)) +
   # geom_line() + 
   scale_y_continuous(limits=c(0,360))
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Wind/AnnualWind_Dixon.png'), width=4, height=4, units='in', res=200)
+
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Wind', 'AnnualWind_Dixon.png'), width=4, height=4, units='in', res=200)
 par(mar = c(0,0.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 
 windRose(wind_df[wind_df$Station == 121,], ws="WS_ms", wd="WD_deg", cols='hue', paddle=F, auto.text=F, border='black', grid.line=list(value=10, lty=5, col="gray"), offset=4, main=paste('2018-2019 average wind: Dixon', sep=""), dig.lab=3, angle.scale=45, key.footer=expression(paste('Wind speed (m s'^'-1', ')')))
 
 dev.off()
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Wind/AnnualWind_Hastings.png'), width=4, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Wind', 'AnnualWind_Hastings.png'), width=4, height=4, units='in', res=200)
 par(mar = c(0,0.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 
 windRose(wind_df[wind_df$Station == 212,], ws="WS_ms", wd="WD_deg", cols='hue', paddle=F, auto.text=F, border='black', grid.line=list(value=10, lty=5, col="gray"), offset=4, main=paste('2018-2019 average wind: Hastings', sep=""), dig.lab=3, angle.scale=45, key.footer=expression(paste('Wind speed (m s'^'-1', ')')))
 
 dev.off()
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Wind/AnnualWind_2StationAverage.png'), width=4, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Wind', 'AnnualWind_2StationAverage.png'), width=4, height=4, units='in', res=200)
 par(mar = c(0,0.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
 
 windRose(wind_df_summary, ws="WS_ms", wd="WD_deg", cols='hue', paddle=F, auto.text=F, border='black', grid.line=list(value=10, lty=5, col="gray"), offset=4, main=paste('2018-2019 average wind: 2 stations', sep=""), dig.lab=3, angle.scale=45, key.footer=expression(paste('Wind speed (m s'^'-1', ')')))
@@ -107,8 +110,8 @@ dev.off()
 wind_df_summary$WS_ms_roll<-roll_mean(wind_df_summary$WS_ms, n=5, fill=NA, align='center')
 
 
-write.csv(wind_df_summary, file=paste0(google_dir, '/SSCN2_DataOutputs/WindDataAvg.csv'), row.names=F)
-saveRDS(wind_df_summary, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/WindDataAvg.rds'))
+write.csv(wind_df_summary, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'WindDataAvg.csv'), row.names=F)
+saveRDS(wind_df_summary, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'WindDataAvg.rds'))
 
 
 rm(weather_df, wind_df, wind_df_summary, wind_dir_mean)
