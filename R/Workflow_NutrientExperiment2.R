@@ -24,7 +24,7 @@ source('R/g_legend.R')
 source('R/lightmodel.R')
 
 #As of Feb 2020, new single folder where all data and outputs live
-onddrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSCC'
+onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 
 # Old locations on Loken-UCD-laptop
 # Project folder where outputs are stored
