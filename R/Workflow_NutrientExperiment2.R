@@ -61,7 +61,7 @@ source('R/pCO2_computation_script_NutrientExperiment2.R')
 
 
 #Incubation data
-source('R/IncubationMetabolism_SSCN2_Workflow.R')
+# source('R/IncubationMetabolism_SSCN2_Workflow.R')
 source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 
 #Wind and solar data
@@ -77,13 +77,16 @@ source('R/CombineBuoySensorData_SSCN2.R')
 source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
 source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 
+#Combine metabolism
+source('R/MergeMetabolism_NutrientExperiment2.R')
+
 
 #Plot a bunch of stuff
 source('R/PlotTimeseries_NutrientExperiment2.R')
 
 #Zooplankton, Phytoplankton, Picoplankton
 source('R/CompilePlankton_NutrientExperiment2.R')
-source('R/PlotZoopsTimeseries_NutrientExperiment.R')
+source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
 
 
 # ######################################################
@@ -92,17 +95,9 @@ source('R/PlotZoopsTimeseries_NutrientExperiment.R')
 
 
 
-#O18 metabolism (still need to add these)
-# source('R/CreateO18InputTable.R')
-# source('R/CalculateO18metabolism_NutrientExperiment.R')
-# source('R/Plot_O18Metabolism.R')
-
 #USGS buoy data
 # source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
 
-#Buoy Metabolism
-# source('R/ModelMetabolismBuoyDO_SSCN1.R')
-# source('R/AggregateBuoyMetabolismByZone_NutrientExperiment.R')
 
 #Merge Buoy metabolism
 # source('R/MergeBuoyMetabolism_NutrientExperiment.R')
