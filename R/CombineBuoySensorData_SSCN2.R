@@ -129,6 +129,7 @@ saveRDS(Final_temp, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_r
 #Conductivity
 Cond_folder_main <-paste0(box_dir,"/Data/BuoyData/Conductivity") 
 Cond_folders<-list.files(Cond_folder_main)
+Cond_folders<-Cond_folders[str_detect(Cond_folders, 'Specific')]
 
 folders = 1
 Folders_list = list()
@@ -149,9 +150,9 @@ for (folders in 1 : length(Cond_folders)){
     
     df_Cond <- read.csv(file = paste(Cond_folder_main, Cond_folder_i, Cond_files[files], sep='/'), skip=1, header=T, sep=",", stringsAsFactors = F)
     
-    df_Cond <- dplyr::select(df_Cond, 2:4)
+    df_Cond <- dplyr::select(df_Cond, 2:5)
     
-    names(df_Cond) <- c("Datetime_PST", "Cond_uScm", "Temp_C")
+    names(df_Cond) <- c("Datetime_PST", "RawCond_uScm", "Temp_C", 'SpecCond_uScm')
     
     SerialNumber <- Cond_files[files]
     SerialNumber <- gsub(".csv", '', SerialNumber)
@@ -172,7 +173,7 @@ Final_Cond <- ldply(Folders_list, data.frame) %>%
 
 Final_Cond$Datetime_UTC <- Final_Cond$Datetime_PST
 attributes(Final_Cond$Datetime_UTC)$tzone <- 'UTC'
-Final_Cond <- dplyr::select(Final_Cond, Datetime_UTC, Temp_C, Cond_uScm, SerialNumber)
+Final_Cond <- dplyr::select(Final_Cond, Datetime_UTC, Temp_C, SpecCond_uScm, RawCond_uScm, SerialNumber)
 
 
 #Save to file
