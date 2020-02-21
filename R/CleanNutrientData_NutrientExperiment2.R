@@ -13,25 +13,15 @@ library(ggplot2)
 library(gridExtra)
 library(stringr)
 
-# source('R/read_excel_allsheets.R')
-# source('R/g_legend.R')
-# 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+nutrient_df<-read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2" ,"WaterChemistry", "SSCN2_NutrientData.xlsx"), skip=1)
 
-
-nutrient_df<-read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_NutrientData.xlsx"), skip=1)
-
-nutrient_df_names<-names(read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_NutrientData.xlsx")))
+nutrient_df_names<-names(read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2" ,"WaterChemistry", "SSCN2_NutrientData.xlsx")))
 
 names(nutrient_df)<-nutrient_df_names
 rm(nutrient_df_names)
 
 #Reduce number of columns and calcuate new ones
-nutrient_df <- dplyr::select(nutrient_df, -starts_with('X__')) %>%
+nutrient_df <- dplyr::select(nutrient_df, -starts_with('...')) %>%
   dplyr::select(-starts_with('Lab')) %>%
   dplyr::select(-starts_with('AnalyteName')) %>%
   drop_na(SampleCode) %>%
@@ -48,9 +38,9 @@ nutrient_df <- dplyr::select(nutrient_df, -starts_with('X__')) %>%
 
 
 #TSS data
-tss_df<-read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_TSSData.xlsx"), skip=1)
+tss_df<-read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "WaterChemistry", "SSCN2_TSSData.xlsx"), skip=1)
 
-tss_df_names<-names(read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_TSSData.xlsx")))
+tss_df_names<-names(read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "WaterChemistry", "SSCN2_TSSData.xlsx")))
 
 names(tss_df)[1:7]<-tss_df_names[1:7]
 rm(tss_df_names)
@@ -60,15 +50,15 @@ tss_df_sub<-tss_df[c("SampleCode", "Date", "Event", "Site", 'SiteCode', 'TSS', '
 
 #ChlA
 
-chla_df<-read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_chla.xlsx"), skip=1)
+chla_df<-read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "WaterChemistry", "SSCN2_chla.xlsx"), skip=1)
 
 
-chla_df_names<-names(read_excel(paste0(box_dir, "/Data/WaterChemistry/SSCN2_chla.xlsx")))
+chla_df_names<-names(read_excel(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "WaterChemistry", "SSCN2_chla.xlsx")))
 
 names(chla_df)<-chla_df_names
 rm(chla_df_names)
 
-chla_df_mean <- dplyr::select(chla_df, -starts_with('X__')) %>%
+chla_df_mean <- dplyr::select(chla_df, -starts_with('...')) %>%
   dplyr::select(-starts_with('Lab')) %>%
   drop_na(SampleCode) %>%
   mutate(SampleCode = gsub("_a", "", SampleCode)) %>%
@@ -84,21 +74,6 @@ chla_df_mean <- dplyr::select(chla_df, -starts_with('X__')) %>%
   dplyr::rename(Site = LocationName)
   
 
-#Oxygen18data
-# O18_batch1<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenSadro_ExetData_decomposed_Bath01.txt"), sep='\t', skip=71, header=T, stringsAsFactors = F)
-# O18_batch2<-read.table(paste0(dropbox_dir,"/Data/NutrientExperiment/Oxygen18/LokenExetainers_Clean_decomposed_Batch02.txt"), sep='\t', skip=76, header=T, stringsAsFactors = F)
-# 
-# O18<-bind_rows(O18_batch1, O18_batch2)
-# 
-# O18$SampleLabel<-sub('_[ab]', '', O18$Group.1 )
-# 
-# O18avg<- O18 %>%
-#   dplyr::select(-Group.1, -flag.smallArea32) %>%
-#   group_by(SampleLabel) %>%
-#   dplyr::summarize_all(mean)
-# 
-
-
 nut_tss_df<-full_join(nutrient_df, tss_df_sub) 
 
 nut_tss_chla_df<-left_join(nut_tss_df, chla_df_mean)
@@ -109,8 +84,8 @@ full_chem_df <- nut_tss_chla_df
 
 head(as.data.frame(full_chem_df))
 
-write.table(full_chem_df, file=paste0(google_dir, '/SSCN2_DataOutputs/AllWaterChemistry.csv'), row.names=F, sep=',')
-saveRDS(full_chem_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/AllWaterChemistry.rds'))
+write.table(full_chem_df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'AllWaterChemistry.csv'), row.names=F, sep=',')
+saveRDS(full_chem_df, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'AllWaterChemistry.rds'))
 
 
 rm(nutrient_df, tss_df, tss_df_sub, nut_tss_df, nut_tss_chla_df, chla_df, chla_df_mean)
