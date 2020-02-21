@@ -1,28 +1,28 @@
 
 
-#Code to process YSI profiles from fixed sites
-
+#Code to process YSI profiles from fixed sites during experiment 2
 library(readxl)
-library(tidyr)
-library(dplyr)
 library(plyr)
+library(dplyr)
+library(tidyr)
 library(viridis)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
+library(grid)
+library(stringr)
+library(RColorBrewer)
+library(RcppRoll)
+library(ggpubr)
 
-source('R/read_excel_allsheets.R')
-source('R/g_legend.R')
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "YSIProfiles"), showWarnings = F)
+dir.create(file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "YSIProfiles"), showWarnings = F)
+dir.create(file.path(onedrive_dir, "RData", "NutrientExperiment2", "YSIProfiles"), showWarnings = F)
 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 # Find all filenames in directory
 # These will be used to loop through all old data
-YSIfilenames<-list.files(paste0(box_dir, "/Data/YSIVerticalProfiles"))
+YSIfilenames<-list.files(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "YSIVerticalProfiles"))
 
 #Exclude non-excel files
 YSIfilenames<-YSIfilenames[grep('.csv', YSIfilenames)]
@@ -35,7 +35,7 @@ if (length(grep('~', YSIfilenames))>0){
 # Loop through filenames and read in data
 i=27
 for (i in 1:length(YSIfilenames)){
-YSI_df_i<-read.csv(paste0(box_dir, "/Data/YSIVerticalProfiles/", YSIfilenames[i]))
+YSI_df_i<-read.csv(file.path(onedrive_dir, "RawData", "NutrientExperiment2", "YSIVerticalProfiles", YSIfilenames[i]))
 
 #Order each sheet by depth
 depth_name<-names(YSI_df_i)[grep('DEP', names(YSI_df_i))]
@@ -111,8 +111,8 @@ if (length(omitrows>0)){
 Date<-median(as.Date(YSI_df_i_ordered$Date), na.rm=T)
 
 
-write.csv(YSI_df_i_cleaned, file=paste0(google_dir, '/SSCN2_DataOutputs/YSIProfiles/VertialProfile_', Date, '.csv'), row.names=F)
-saveRDS(YSI_df_i_cleaned , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSIProfiles/VerticalProfile_', Date, '.rds'))
+write.csv(YSI_df_i_cleaned, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'YSIProfiles', paste0('VertialProfile_', Date, '.csv')), row.names=F)
+saveRDS(YSI_df_i_cleaned , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSIProfiles', paste0('VerticalProfile_', Date, '.rds')))
 
 # ###########
 # plotting
@@ -176,7 +176,7 @@ p2<-grid.arrange(grobs=plot_list, ncol=3, as.table=F)
 p_cleaned<-grid.arrange(grobs=plotcleaned_list, ncol=3, as.table=F)
 
 # arrange multi plot with legend below and save to project folder
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/VerticalProfiles/', Date, '_VerticalProfiles_cleaned.png'), width=10, height=12, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'YSIProfiles', paste0(Date, '_VerticalProfiles_cleaned.png')), width=10, height=12, units='in', res=200)
 
 grid.arrange(p_cleaned, mylegend, nrow=2,heights=c(10, 0.5))
 
@@ -184,7 +184,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/VerticalProfiles/', Date, '_VerticalProfiles_Alldata.png'), width=10, height=12, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'YSIProfiles', paste0(Date, '_VerticalProfiles_Alldata.png')), width=10, height=12, units='in', res=200)
 
 grid.arrange(p2, mylegend, nrow=2,heights=c(10, 0.5))
 
