@@ -13,19 +13,9 @@ library(ggplot2)
 library(gridExtra)
 
 
-source('R/read_excel_allsheets.R')
-source('R/g_legend.R')
-
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
 #Field notes
-site_df<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_FieldData.rds'))
-site_df_withFlame<- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/FlameSiteData.rds'))
+site_df<-readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SSCN2_FieldData.rds'))
+site_df_withFlame<- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'FlameSiteData.rds'))
 
 site_df_deep<-site_df_withFlame %>%
   mutate(DepthCode= "D") %>%
@@ -39,14 +29,14 @@ site_df_twodepths<- site_df_withFlame %>% mutate(DepthCode = "S") %>%
 
 
 #Water chemistry
-full_chem_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/AllWaterChemistry.rds')) %>%
+full_chem_df <- readRDS(file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'AllWaterChemistry.rds')) %>%
   mutate(Site = factor(Site, levels(site_df_withFlame$Site))) %>%
   drop_na(SampleCode) %>%
   dplyr::filter(Date<as.Date("2019-08-27"))
 
 
 #YSI data
-YSI_ThreeDepths <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_ThreeDepths.rds'))
+YSI_ThreeDepths <- readRDS(file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSIProfiles_ThreeDepths.rds'))
 
 names(YSI_ThreeDepths)[-which(names(YSI_ThreeDepths) %in% c("Site", "Date", "DateTime", "AirPressure_mmHg", "DepthStrata"))] <- paste0(
   "YSI_", names(YSI_ThreeDepths)[-which(names(YSI_ThreeDepths) %in% c("Site", "Date", "DateTime", "AirPressure_mmHg", "DepthStrata"))]
@@ -74,7 +64,7 @@ YSI_deep<- YSI_ThreeDepths %>%
 YSI_TwoDepths<- bind_rows(YSI_surf, YSI_deep)
 
 #Vertically weighted average
-YSI_avg_out <- readRDS(paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverage.rds'))
+YSI_avg_out <- readRDS(file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSI_VerticalAverage.rds'))
 
 # incubation metabolism results
 # summary_df<-read.csv(file=paste0(dropbox_dir, '/Data/NutrientExperiment/IncubationMetabolism/', 'LightDarkMetabolism.csv'), header=T, stringsAsFactors = F)
@@ -89,14 +79,14 @@ YSI_avg_out <- readRDS(paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverag
 #          GPP=NEP-ER)
 
 #Light profiles
-kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/kd_alldates.rds'))
+kd_alldates<-readRDS(file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SSCN2_Kd.rds'))
 str(kd_alldates)
 
 
 #O18 results
-O18_files<-list.files(paste0(box_dir, '/Data/Oxygen18/Results'))
+O18_files<-list.files(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Oxygen18', 'Results'))
 
-O18_list<-lapply(paste0(box_dir, '/Data/Oxygen18/Results/', O18_files), read.csv, header=T)
+O18_list<-lapply(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Oxygen18', 'Results', O18_files), read.csv, header=T)
 O18_df <- ldply(O18_list, data.frame) %>%
   dplyr::select(Group.1, d180_02.vs.air, d180_02.vs.VSMOW, d15N_N2.vs.air, d13C.CO2, d13C.TotalDIC) %>%
   rename(SampleCode = Group.1) %>%
@@ -108,7 +98,7 @@ O18_df <- ldply(O18_list, data.frame) %>%
   summarize_all(mean)
 
 #Water Isotopes
-H2O_18<- read_excel_allsheets(paste0(box_dir, '/Data/WaterChemistry/SSCN2_WaterIsotopes.xlsx'))[[2]]
+H2O_18<- read_excel_allsheets(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'WaterChemistry', 'SSCN2_WaterIsotopes.xlsx'))[[2]]
 
 Code_String <- H2O_18$`Sample ID`
 Code1<-gsub(" EV", "_", Code_String)
@@ -142,8 +132,8 @@ merge4 <- left_join(merge3, H2O_18_SSCN2)
 #Merge water chemistry data
 merge_df<-merge4
 
-saveRDS(merge_df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_Merged.rds'))
-write.csv(merge_df, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteData_Merged.csv'))
+saveRDS(merge_df, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_Merged.rds'))
+write.csv(merge_df, file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteData_Merged.csv'))
 
 
 rm(YSI_surf, merge1, merge2, merge3, merge4, Code_String, Code1, H2O_18_SSCN2, H2O_18, O18_df, O18_list, O18_files)
