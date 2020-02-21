@@ -33,8 +33,8 @@ library(riverdist)
 # ##################################################################################################
 
 #GoogleKey
-# GoogleAPIkey<-unlist(read.delim("C:/Users/lcloken/Documents/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
-
+# GoogleAPIkey<-unlist(read.delim("H:/Private/Google/LokenAPIKey2.txt", stringsAsFactor=F, check.names = FALSE, header=F))
+# 
 # register_google(key = as.character(GoogleAPIkey))
 
 # Google background map 
@@ -45,6 +45,7 @@ library(riverdist)
 
 # ggmap
 # map_test<-get_googlemap(center=c(-121.57,38.51), size=c(250, 500), zoom = 12, scale=2, maptype = "satellite", key=GoogleAPIkey )
+
 
 #stamenmap
 # map_stamen<-get_stamenmap(bbox=c(left=-121.61, right=-121.53, bottom=38.45, top=38.57), zoom = 12, scale=2, maptype = "terrain-background")
@@ -57,10 +58,11 @@ library(riverdist)
 
 # As of Nov 2019, load maps from file instead
 #load maps
-map <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map1.rds'))
-map2<- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_map2.rds'))
-map_test <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/UpperShipChannel_ggmap.rds'))
+map <- readRDS(file=file.path(onedrive_dir, 'SpatialData', 'UpperShipChannel_map1.rds'))
+map2<- readRDS(file=file.path(onedrive_dir, 'SpatialData', 'UpperShipChannel_map2.rds'))
+map_test <- readRDS(file=file.path(onedrive_dir, 'SpatialData', 'UpperShipChannel_ggmap.rds'))
 
+#In Feb 2020 this map has an error. Two images plot side by side. 
 ggmap(map_test)
 
 
@@ -69,9 +71,9 @@ ggmap(map_test)
 #shapefile outline of north delta major water bodies
 outline<-readOGR(file.path(onedrive_dir, "SpatialData"), "NorthDeltaOutline_MajorWater")
 
-SSCNetwork_clean <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/ShipChannelNetwork.rds'))
+SSCNetwork_clean <- readRDS(file.path(onedrive_dir, "SpatialData", 'ShipChannelNetwork.rds'))
 
-SSCSites <- readRDS(file=paste0(dropbox_dir, '/Data/SpatialData/SSCSites.rds'))
+SSCSites <- readRDS(file.path(onedrive_dir, "SpatialData", 'SSCSites.rds'))
 CloseSites<-SSCSites[SSCSites$Station %in% c('NL 70', 'NL 74', 'NL 76'),]
 
 #UTM zone 10 for linear reference
@@ -83,22 +85,22 @@ colours = color.palette(12)
 
 
 #Field notes (event)
-event_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_EventData.rds'))
+event_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SSCN2_EventData.rds'))
 fls_dates<-unique(event_df$Date[!is.na(event_df$Date)])
 
 #Site notes (site)
-site_df<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SSCN2_FieldData.rds'))
+site_df<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SSCN2_FieldData.rds'))
 
 
 #List of spatial files in google drive folder
-spatialfiles<-list.files(paste0(box_dir, "/Data/LongitudinalProfiles"))
+spatialfiles<-list.files(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'LongitudinalProfiles'))
 # SUNAfiles<-spatialfiles[grep('SUNA', spatialfiles)]
 RTMCfiles<-spatialfiles[grep('raw', spatialfiles)]
 
 
 #Process RTMC (FLAME) data
 #Make one big file with everything. 
-RTMCfileslong<-paste0(paste0(box_dir, "/Data/LongitudinalProfiles/", RTMCfiles))
+RTMCfileslong<-file.path(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'LongitudinalProfiles'), RTMCfiles)
 RTMC_list<-lapply(RTMCfileslong, function (l) read.csv(l, header=F, skip=4, stringsAsFactors = F))
 
 RTMC_names<-names(read.csv(RTMCfileslong[1], header=T, skip=1))
@@ -152,39 +154,47 @@ geo_UTM<-spTransform(geo, CRS(projection))
 geo_snapped<-xy2segvert(x=coordinates(geo_UTM)[,1], y=coordinates(geo_UTM)[,2], rivers=SSCNetwork_clean)
 geo$LinearDist<-unlist(SSCNetwork_clean$cumuldist)[geo_snapped$vert]
 geo$LinearDist_km<-geo$LinearDist/1000
+attributes(geo$TIMESTAMP)$tzone <- 'America/Los_Angeles'
 
 #Plot two variables to visualize linear reference
-plot(geo$LinearDist, geo$EXOSpCn)
-plot(geo$LinearDist, geo$NO3_uM, pch=16)
+plot(geo$LinearDist, geo$EXOSpCn, type='l')
+plot(geo$LinearDist_km, geo$NO3_uM, pch=16)
 
+row=15
+median_list <- list()
+geo_points <- list()
+geo_datacoords <- bind_cols (geo@data, data.frame(geo@coords))
+for (row in 1:nrow(site_df)){
+  
+  median_list[[row]] <- filter(geo_datacoords, TIMESTAMP > site_df$DateTime_start[row] &
+                    TIMESTAMP < site_df$DateTime_end[row]) %>%
+    summarize_all(.funs=median, na.rm=T)
+  
+}
 
-geo_list<-apply(site_df[c('DateTime_start', 'DateTime_end')], 1, function (x) geo@data[geo$TIMESTAMP>x[1] & geo$TIMESTAMP<x[2],])
- 
-site_medians<-lapply(geo_list, summarize_all, .funs=median, na.rm=T)
-
- 
-site_medians_df<-ldply(site_medians, data.frame) %>%
-  select(-Date)
+site_medians_df<-ldply(median_list, data.frame) %>%
+  dplyr::select(-Date, -Latitude, -Longitude) 
 names(site_medians_df)<-paste0("FLAMe_", names(site_medians_df))
 
-geo_points<-apply(site_df[c('DateTime_start', 'DateTime_end')], 1, function (x) data.frame(geo@coords)[geo$TIMESTAMP>x[1] & geo$TIMESTAMP<x[2],])
 
-site_points<-lapply(geo_points, summarize_all, .funs=median, na.rm=T)
-site_points_df<-ldply(site_points, data.frame)
+site_points_df <- ldply(median_list, data.frame) %>%
+  dplyr::select(Latitude, Longitude) 
 
-site_df_withFlame<-cbind(site_df, site_points_df, site_medians_df)   
+site_df_withFlame<-bind_cols(site_df, site_points_df) %>%
+  bind_cols(site_medians_df)   
 
 SiteLocations<- site_df_withFlame %>% 
   group_by(Site) %>%
-  summarize(LinearDist = mean(FLAMe_LinearDist, na.rm=T),
-            Latitude = mean(Latitude, na.rm=T),
-            Longitude = mean(Longitude, na.rm=T))
+  summarize(LinearDist = median(FLAMe_LinearDist, na.rm=T),
+            Latitude = median(Latitude, na.rm=T),
+            Longitude = median(Longitude, na.rm=T))
 
-write.table(site_df_withFlame, file=paste0(google_dir, '/SSCN2_DataOutputs/FlameSiteData.csv'), row.names=F, sep=',')
-saveRDS(site_df_withFlame , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/FlameSiteData.rds'))
+#Save
+write.table(site_df_withFlame, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'FlameSiteData.csv'), row.names=F, sep=',')
+saveRDS(site_df_withFlame , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'FlameSiteData.rds'))
 
-write.table(SiteLocations, file=paste0(google_dir, '/SSCN2_DataOutputs/SiteLocations.csv'), row.names=F, sep=',')
-saveRDS(SiteLocations , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteLocations.rds'))
+write.table(SiteLocations, file =file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteLocations.csv'), row.names=F, sep=',')
+saveRDS(SiteLocations , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteLocations.rds'))
 
 
 
@@ -198,6 +208,20 @@ dates<-unique(geo$Date)
 # dates<-dates[length(dates)] #Just use last date if processing newest file
 event_i<-1
 plot=TRUE
+
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfiles"), showWarnings = F)
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfilesTwoPanels"), showWarnings = F)
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfilesTwoPanels_ggmap"), showWarnings = F)
+
+dir.create(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LinearDistance"), showWarnings = F)
+
+dir.create(file.path(onedrive_dir, "Rdata", "NutrientExperiment2", "LongitudinalProfiles"), showWarnings = F)
+
+dir.create(file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfiles"), showWarnings = F)
+
+dir.create(file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfilesCSV"), showWarnings = F)
+
+
 for (event_i in 1:length(dates)){
   # date<-as.Date(unique(field_df$Date)[event_i])
   date = dates[event_i]
@@ -261,17 +285,18 @@ for (event_i in 1:length(dates)){
   
 
   #Save shapefile
-  saveRDS(geo_i, paste0(dropbox_dir, "/Data/Rdata_SSCN2/LongitudinalProfiles/LongitudinalProfile_", date, ".rds"))
+  saveRDS(geo_i, file.path(onedrive_dir, "Rdata", "NutrientExperiment2", "LongitudinalProfiles", paste0("LongitudinalProfile_", date, ".rds")))
   
-  writeOGR(geo_am_clip, dsn=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_am"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  writeOGR(geo_am_clip, dsn=file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_am"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
   
-  writeOGR(geo_pm_clip, dsn=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_pm"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
+  writeOGR(geo_pm_clip, dsn=file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfiles"), layer=paste0("LongitudinalProfile_", date, "_pm"), overwrite_layer=T, verbose=F, driver='ESRI Shapefile')
   
   df_am_clip<-data.frame(coordinates(geo_am_clip), geo_am_clip@data)
   df_pm_clip<-data.frame(coordinates(geo_pm_clip), geo_pm_clip@data)
   
-  write.csv(df_am_clip, file=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfilesCSV/LongituidnalProfile_", date, "_am.csv"), row.names = F)
-  write.csv(df_pm_clip, file=paste0(google_dir, "/SSCN2_DataOutputs/LongitudinalProfilesCSV/LongituidnalProfile_", date, "_pm.csv"), row.names = F)
+  write.csv(df_am_clip, file=file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfilesCSV", paste0("LongituidnalProfile_", date, "_am.csv")), row.names = F)
+  
+  write.csv(df_pm_clip, file=file.path(onedrive_dir, "OutputData", "NutrientExperiment2", "LongitudinalProfilesCSV", paste0("LongituidnalProfile_", date, "_pm.csv")), row.names = F)
   
 
   
@@ -309,7 +334,7 @@ for (event_i in 1:length(dates)){
         if (plot==TRUE){
 
         #Plot single image of all data
-        png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LongitudinalProfiles/", date, '_', name, ".png", sep=""), res=300, width=4,height=9, units="in")
+        png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfiles", paste(date, '_', name, ".png", sep="")), res=300, width=4,height=9, units="in")
 
         layout(matrix(c(1,2), nrow=2, ncol=1), widths=c(4), heights=c(8,1))
 
@@ -330,7 +355,7 @@ for (event_i in 1:length(dates)){
         dev.off()
 
         #Side by Side plots for AM and PM longitudinal profiles
-        png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LongitudinalProfilesTwoPanels/", date, '_', name, ".png", sep=""), res=300, width=8,height=9.25, units="in")
+        png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfilesTwoPanels", paste(date, '_', name, ".png", sep="")), res=300, width=8,height=9.25, units="in")
 
         # layout(matrix(c(1,2,3,3), nrow=2, ncol=2, byrow=TRUE), widths=c(4,4), heights=c(10,1))
 
@@ -360,7 +385,7 @@ for (event_i in 1:length(dates)){
         dev.off()
 
         #GGMAP side by side, better quality
-        png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LongitudinalProfilesTwoPanels_ggmap/", date, '_', name, ".png", sep=""), res=300, width=8,height=8, units="in")
+        png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LongitudinalProfilesTwoPanels_ggmap", paste(date, '_', name, ".png", sep="")), res=300, width=8,height=8, units="in")
 
         commonTheme_map<-list(
           theme(axis.text.x=element_blank(), axis.text.y=element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank(), axis.ticks=element_blank(), plot.margin = unit(c(0, 0, 0, 0), "cm")),
@@ -391,7 +416,7 @@ for (event_i in 1:length(dates)){
         }
 
         #Linear Distance
-        png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/LinearDistance/", date, '_', name, ".png", sep=""), res=300, width=6,height=4, units="in")
+        png(file.path(onedrive_dir, "Figures", "NutrientExperiment2", "LinearDistance", paste(date, '_', name, ".png", sep="")), res=300, width=6,height=4, units="in")
 
         layout(matrix(c(1), 1, 1, byrow=T))
         par(mar=c(4,4,1,1))
