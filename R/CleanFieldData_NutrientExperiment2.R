@@ -62,3 +62,12 @@ write.table(event_df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperi
 
 rm(field_list)
 
+
+if(nrow(event_df) >0 & nrow(site_df) > 0) {
+  message(paste0("Field note processing is complete. Data saved in: ", toString(onedrive_dir), "(RData and OutputData subfolders)"))
+  message(paste0(toString(nrow(event_df)), " events and ", toString(nrow(site_df)), " sites" ))
+} else {
+  stop("Something went wrong with processing field notes. To debug, see code in gitrepo 'R/CleanFieldData_NutrientExperiment2.R'")
+}
+
+
