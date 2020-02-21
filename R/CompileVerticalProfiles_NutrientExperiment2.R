@@ -1,6 +1,4 @@
 
-
-
 # Code to extract surface, middle, and deep water measurements from profile data at fixed sites
 # Export 4 files, all data merged, surface, middle, and deep
 
@@ -14,25 +12,18 @@ library(ggplot2)
 library(gridExtra)
 library(gtools)
 library(rLakeAnalyzer)
+library(LakeMetabolizer)
 library(wql)
 
-# source('R/read_excel_allsheets.R')
-# source('R/g_legend.R')
-# 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 #Hypso curve
-Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
+Depth_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'HypsoCurveNL74.rds'))
 
 # Find all filenames in directory
 # These will be used to loop through all old data
 
 
-ysi_directory<-paste0(dropbox_dir, "/Data/Rdata_SSCN2/YSIProfiles")
+ysi_directory<-file.path(onedrive_dir, "RData", "NutrientExperiment2", "YSIProfiles")
 
 filenames<-list.files(ysi_directory)
 
@@ -93,12 +84,11 @@ YSI_ThreeDepths<-bind_rows(YSI_surf, YSI_mid, YSI_deep) %>%
   dplyr::arrange(Date, Site, Depth_m)
 
 
-write.csv(YSI_AllDepths, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSNC2Sites_AllDepths.csv'), row.names=F)
-saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_AllDepths.rds'))
+write.csv(YSI_AllDepths, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'YSIProfiles_AllDepths.csv'), row.names=F)
+saveRDS(YSI_AllDepths , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSIProfiles_AllDepths.rds'))
 
-write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2Sites_ThreeDepths.csv'), row.names=F)
-saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_ThreeDepths.rds'))
-
+write.csv(YSI_ThreeDepths, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'YSIProfiles_ThreeDepths.csv'), row.names=F)
+saveRDS(YSI_ThreeDepths , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSIProfiles_ThreeDepths.rds'))
 
 #Calculate volume weighted averages and Schmidt Stability
 
@@ -147,6 +137,10 @@ YSI_avg_out <- ldply(avg_list, data.frame)
 
 write.csv(YSI_avg_out, file=paste0(google_dir, '/SSCN2_DataOutputs/YSISSCN2_VerticalAverage.csv'), row.names=F)
 saveRDS(YSI_avg_out , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/YSI_VerticalAverage.rds'))
+
+
+write.csv(YSI_avg_out, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'YSI_VerticalAverage.csv'), row.names=F)
+saveRDS(YSI_avg_out , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'YSI_VerticalAverage.rds'))
 
 
 rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory, avg_list, avg_df2, site,avg_vars, var_avg, Depth_df, Depth_df2, YSI_everydepth,YSI_i_j,Depth_closest, YSI_i, avg_df, Schmidt, day, Salinity, Sites_i, var, YSI_dates)
