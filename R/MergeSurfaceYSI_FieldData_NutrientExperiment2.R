@@ -104,11 +104,13 @@ Code_String <- H2O_18$`Sample ID`
 Code1<-gsub(" EV", "_", Code_String)
 H2O_18$SampleCode<-gsub(" Site ", "_0", Code1)
 
+#Change name of deltas
+names(H2O_18)[grep('2HVSMOW', names(H2O_18))] <- "d2HVSMOW"
+names(H2O_18)[grep('18OVSMOW', names(H2O_18))] <- "d18OVSMOW"
+
 H2O_18_SSCN2 <- H2O_18 %>%
   filter(str_detect(SampleCode, "SSCN2")) %>%
   mutate(SampleCode = paste0(SampleCode, '_S')) %>%
-  rename(d2HVSMOW = `d2HVSMOW (‰)`,
-         d18OVSMOW = `d18OVSMOW (‰)`) %>%
   dplyr::select(SampleCode, d18OVSMOW, d2HVSMOW) %>%
   group_by(SampleCode) %>%
   summarize_all(mean, na.rm=T)
