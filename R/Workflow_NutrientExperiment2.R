@@ -70,6 +70,10 @@ source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
 #Wind and solar data
 source('R/CleanCIMISWeather.R')
 
+##############################################
+# updated to onedrive above
+# ############################################
+
 #Oxygen18 metabolism
 source('R/CreateO18InputTable_NutrientExperiment2.R')
 source('R/CalculateO18metabolism_NutrientExperiment2.R')
