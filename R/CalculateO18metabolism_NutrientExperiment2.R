@@ -17,11 +17,11 @@ library(lubridate)
 library(RColorBrewer)
 library(RcppRoll)
 
-merge_df_wind <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/InputTermsO18Metabolism_SSCN2.rds'))
+merge_df_wind <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'InputTermsO18Metabolism_SSCN2.rds'))
 
 
 #load hypso data
-Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
+Depth_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'HypsoCurveNL74.rds'))
 # plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
@@ -36,9 +36,6 @@ lake.area.km2<-0.153
 zmix.m <- Mean_depth
 wind.height.ms <- 10
 
-# met = read.csv("Data/aklakes_met_input_terms.csv", 
-#                header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE, stringsAsFactors = F)
-summary(merge_df_wind)
 
 
 #notes:
@@ -124,7 +121,7 @@ met.final <- cbind(merge_df_wind, met.result)
 
 
 #exporting metabolism data as csv file#####
-saveRDS(met.final, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/merge_df_O18.rds'))
-write.csv(met.final, file=paste0(google_dir, '/SSCN2_DataOutputs/merge_df_O18.csv'), row.names=F)
+saveRDS(met.final, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'merge_df_O18.rds'))
+write.csv(met.final, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'merge_df_O18.csv'), row.names=F)
 
 
