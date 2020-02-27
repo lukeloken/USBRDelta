@@ -7,25 +7,8 @@ library(gridExtra)
 library(ggplot2)
 library(dplyr)
 
-# # Project folder where outputs are stored
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# 
-# #Where data come from
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
-source('R/read_excel_allsheets.R')
-source('R/g_legend.R')
-
-# setwd("C:/Users/Luke/Dropbox/USBR Delta Project")
-# 
-# source("R/ReadInMasterData.R")
-
 #New data input (after O18 metabolism)
-merge_final<-readRDS(file = paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withGas_Merged.rds'))
-
-
-# fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+merge_final<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withGas_Merged.rds'))
 
 
 # flame_metrics<-c('FLAMe_SUNANO3mgL', 'FLAMe_EXOSpCond', 'FLAMe_EXOpH', 'FLAMe_EXOTemp', 'FLAMe_EXODOmgL', 'FLAMe_EXODOSAT', 'FLAMe_EXOTurbFNU', 'FLAMe_EXOfDOMRFU', 'FLAMe_EXOfCHLAugL', 'FLAMe_EXOfBGAPCugL')
@@ -97,7 +80,7 @@ for (plot_nu in 1:length(metrics)){
     theme(legend.position="bottom", legend.title= element_blank()) +
     guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
   
-  png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Timeseries/', metric, '.png'), width=5, height=3, units='in', res=200)
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Timeseries', paste0(metric, '.png')), width=5, height=3, units='in', res=200)
   
   print(plot_print)
   
@@ -119,7 +102,7 @@ p2<-grid.arrange(grobs=plot_list2, ncol=4, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/EcosystemResponseTimeSeries_AllMeasurements.png'), width=20, height=16, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'EcosystemResponseTimeSeries_AllMeasurements.png'), width=20, height=16, units='in', res=200)
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(15,1))
 
