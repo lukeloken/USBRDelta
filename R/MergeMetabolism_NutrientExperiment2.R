@@ -4,11 +4,11 @@ library(tidyr)
 
 
 #load water chem with incubation and O18 results
-met.final<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/merge_df_O18.rds'))
+met.final<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'merge_df_O18.rds'))
 
 
 #Buoy metabolism
-metab.df<- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/BuoyMetabolism.rds')) %>%
+metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
   dplyr::select(Date, Site, GPP_roll, ER_roll, NEP_roll) %>%
   dplyr::rename(GPP_buoy_area = GPP_roll,
                 ER_buoy_area = ER_roll,
@@ -104,7 +104,7 @@ GPPCompare <- grid.arrange(grobs=list(GPP_Buoy_Inc, GPP_Buoy_O18, GPP_Inc_O18), 
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/GPPCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPPCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(GPPCompare, mylegend, nrow=2, heights=c(4,.25))
 
@@ -154,7 +154,7 @@ ERCompare <- grid.arrange(grobs=list(ER_Buoy_Inc, ER_Buoy_O18, ER_Inc_O18), ncol
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/ERCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'ERCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(ERCompare, mylegend, nrow=2, heights=c(4,.25))
 
@@ -216,7 +216,7 @@ NEPCompare <- grid.arrange(grobs=list(NEP_Buoy_Inc, NEP_Buoy_O18, NEP_Inc_O18), 
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/NEPCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEPCompare_3methods.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(NEPCompare, mylegend, nrow=2, heights=c(4,.25))
 
@@ -268,7 +268,7 @@ GPP_Inc_O18_sum <- ggplot(metab_summary, aes(x=GPP_Inc_area, y=GPP_O18_area)) +
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/GPPCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPPCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(grobs=list(GPP_Buoy_Inc_sum, GPP_Buoy_O18_sum, GPP_Inc_O18_sum), ncol=3)
 
@@ -313,7 +313,7 @@ ER_Inc_O18_sum <- ggplot(metab_summary, aes(x=ER_Inc_area, y=ER_O18_area)) +
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/ERCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'ERCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(grobs=list(ER_Buoy_Inc_sum, ER_Buoy_O18_sum, ER_Inc_O18_sum), ncol=3)
 
@@ -358,7 +358,7 @@ NEP_Inc_O18_sum <- ggplot(metab_summary, aes(x=NEP_Inc_area, y=NEP_O18_area)) +
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/NEPCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEPCompare_3methods_sum.png'), width=12, height=4.25, units='in', res=200)
 
 grid.arrange(grobs=list(NEP_Buoy_Inc_sum, NEP_Buoy_O18_sum, NEP_Inc_O18_sum), ncol=3)
 
@@ -431,25 +431,17 @@ NEPbox_O18 <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=NEP_O18_area))
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/GPP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(GPPbox_buoy, GPPbox_Inc, GPPbox_O18), ncol=1)
 dev.off()
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/ER_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'ER_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(ERbox_buoy, ERbox_Inc, ERbox_O18), ncol=1)
 dev.off()
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/NEP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(NEPbox_buoy, NEPbox_Inc, NEPbox_O18), ncol=1)
 dev.off()
-
-
-ggplot(merge_df_allmetab, aes(x=YSI_Turb_FNU, y=GPP_buoy_area))+
-  geom_point()
-
-
-
-
 
 
 
@@ -502,7 +494,7 @@ ggplot(metab_summary, aes(x=NEP_buoy_area, y=NEP_Inc_area)) +
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/BuoyVsInc_GPP.png'), width=5, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'BuoyVsInc_GPP.png'), width=5, height=4, units='in', res=200)
 
 print(
 ggplot(merge_df_allmetab, aes(x=GPP_buoy_area, y=GPP_Inc_area, group=Site, fill=Site, shape=Site)) +
@@ -528,7 +520,7 @@ ggplot(merge_df_allmetab, aes(x=ER_buoy_area, y=ER_Inc_area, group=Site, fill=Si
   scale_shape_manual(values=rep(21:25, 5)) 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/BuoyVsInc_ER.png'), width=5, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'BuoyVsInc_ER.png'), width=5, height=4, units='in', res=200)
 
 print(
 ggplot(merge_df_allmetab, aes(x=ER_buoy_area, y=ER_Inc_area, group=Site, fill=Site, shape=Site)) +
@@ -555,7 +547,7 @@ ggplot(merge_df_allmetab, aes(x=NEP_buoy_area, y=NEP_Inc_area, group=Site, fill=
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/BuoyVsInc_NEP.png'), width=5, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'BuoyVsInc_NEP.png'), width=5, height=4, units='in', res=200)
 
 print(
 ggplot(merge_df_allmetab, aes(x=NEP_buoy_area, y=NEP_Inc_area, group=Site, fill=Site, shape=Site)) +
