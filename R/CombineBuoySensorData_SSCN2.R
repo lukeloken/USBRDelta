@@ -20,18 +20,18 @@ library(ggplot2)
 library(gridExtra)
 library(akima)
 
-# box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
-
-#Identify folder where DO data are
-DO_folder <-paste0(box_dir,"/Data/BuoyData/DO/9-30-19_Download/DO_9-30-19")
-DO_files <- list.files(DO_folder)
-
+#Identify folder where DO, temp, and cond data are
+DO_folder <-paste0(onedrive_dir, "/RawData/NutrientExperiment2/BuoyData/DO/9-30-19_Download/DO_9-30-19")
+Temp_folder_main <-paste0(onedrive_dir, "/RawData/NutrientExperiment2/BuoyData/Temperature") 
+Cond_folder_main <-paste0(onedrive_dir, "/RawData/NutrientExperiment2/BuoyData/Conductivity") 
 
 #Read in each file, change header names, 
 #attach serial number, change column formats
 
 #DO
+DO_files <- list.files(DO_folder)
+
 file_nu=1
 DO_list <- list()
 for (file_nu in 1: length(DO_files)){
@@ -65,13 +65,12 @@ DO_df_clean$Datetime_UTC <- as.POSIXct(DO_df_clean$Datetime_UTC, tz="UTC", forma
 head(DO_df_clean)
 
 #Save to file
-write.table(DO_df_clean, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_DO_raw.csv'), row.names=F, sep=',')
+write.table(DO_df_clean, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_raw.csv'), row.names=F, sep=',')
 
-saveRDS(DO_df_clean, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_raw.rds'))
+saveRDS(DO_df_clean, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_raw.rds'))
 
 
 #Temperature
-Temp_folder_main <-paste0(box_dir,"/Data/BuoyData/Temperature") 
 
 Temp_folders<-list.files(Temp_folder_main)
 
@@ -121,13 +120,13 @@ Final_temp <- dplyr::select(Final_temp, Datetime_UTC, Temp_C, SerialNumber)
 
 
 #Save to file
-write.table(Final_temp, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_raw.csv'), row.names=F, sep=',')
+write.table(Final_temp, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_raw.csv'), row.names=F, sep=',')
 
-saveRDS(Final_temp, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_raw.rds'))
+saveRDS(Final_temp, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_raw.rds'))
+
 
 
 #Conductivity
-Cond_folder_main <-paste0(box_dir,"/Data/BuoyData/Conductivity") 
 Cond_folders<-list.files(Cond_folder_main)
 Cond_folders<-Cond_folders[str_detect(Cond_folders, 'Specific')]
 
@@ -177,9 +176,9 @@ Final_Cond <- dplyr::select(Final_Cond, Datetime_UTC, Temp_C, SpecCond_uScm, Raw
 
 
 #Save to file
-write.table(Final_Cond, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_raw.csv'), row.names=F, sep=',')
+write.table(Final_Cond, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_raw.csv'), row.names=F, sep=',')
 
-saveRDS(Final_Cond, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_raw.rds'))
+saveRDS(Final_Cond, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_raw.rds'))
 
 
 rm(Cond_df, Conductivity_list, df_Cond, df_i, df_names, df_temp, DO_df, DO_df_clean, DO_list, Final_Cond, Final_temp, Folder_list, Folders_list, Temp_df, Temperature_list, Cond_files, Cond_folder_i, Cond_folder_main, Cond_folders, DO_files, DO_folder, file, file_nu, files, folder, folders, temp_files, Temp_folder_i, Temp_folder_main, Temp_folders, SerialNumber)
