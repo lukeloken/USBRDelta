@@ -84,11 +84,6 @@ source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 #Combine metabolism
 source('R/MergeMetabolism_NutrientExperiment2.R')
 
-##############################################
-# updated to onedrive above
-# ############################################
-
-
 #Plot a bunch of stuff
 source('R/PlotTimeseries_NutrientExperiment2.R')
 
@@ -98,17 +93,14 @@ source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
 
 
 # ######################################################
-# All code above is functioning (Oct 29, 2019, Luke Loken)
+# All code above is functioning (Feb 27, 2019, Luke Loken)
+# updated to onedrive above
 # ######################################################
 
 
 
 #USGS buoy data
 # source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
-
-
-#Merge Buoy metabolism
-# source('R/MergeBuoyMetabolism_NutrientExperiment.R')
 
 
 # source('R/.R')
