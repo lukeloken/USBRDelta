@@ -1,9 +1,9 @@
 library(dplyr)
 library(tidyr)
 
-Phyto_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Phyto_FullRecord_NutExp2.rds'))
+Phyto_FullRecord <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Phytos', 'Phyto_FullRecord_NutExp2.rds'))
 
-Zoo_FullRecord <-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Zoo_FullRecord_NutExp2.rds'))
+Zoo_FullRecord <-readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Zoops', 'Zoo_FullRecord_NutExp2.rds'))
 
 # pico_totals<- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Picos_FullRecord_NutExp2.rds'))
 
@@ -47,16 +47,16 @@ Zoo_totals_division_spread <- Zoo_FullRecord %>%
   spread(key=division, value=SpeciesBiomass_ugdwL)
 
 
-write.csv(Zoo_totals_division_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Division_SSCN2.csv"), row.names=F)
+write.csv(Zoo_totals_division_spread, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Zoops', "Zooplankton_Division_SSCN2.csv"), row.names=F)
 
-write.csv(Zoo_totals_genus_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Genus_SSCN2.csv"), row.names=F)
+write.csv(Zoo_totals_genus_spread, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Zoops', "Zooplankton_Genus_SSCN2.csv"), row.names=F)
 
-write.csv(Zoo_totals_species_spread, file=file.path(google_dir, "SSCN2_DataOutputs", "Zooplankton_Species_SSCN2.csv"), row.names=F)
+write.csv(Zoo_totals_species_spread, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Zoops', "Zooplankton_Species_SSCN2.csv"), row.names=F)
 
 #Save R data files
-saveRDS(Zoo_totals_division_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Division_SSCN2.rds'))
-saveRDS(Zoo_totals_genus_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Genus_SSCN2.rds'))
-saveRDS(Zoo_totals_species_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zooplankton_Species_SSCN2.rds'))
+saveRDS(Zoo_totals_division_spread , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Zoops', 'Zooplankton_Division_SSCN2.rds'))
+saveRDS(Zoo_totals_genus_spread , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Zoops', 'Zooplankton_Genus_SSCN2.rds'))
+saveRDS(Zoo_totals_species_spread , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Zoops', 'Zooplankton_Species_SSCN2.rds'))
 
 
 
@@ -116,7 +116,7 @@ colors<-color.palette(length(unique(Zoo_totals_genus$Station)))
 shapes<-rep(21:25, 5)
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Zoops/Zoops_AllGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Zoops', 'Zoops_AllGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station, colour=Station, shape=Station, fill=Station), data=Zoo_totals_genus) + 
@@ -135,7 +135,7 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Zoops/Zoops_CommonGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Zoops', 'Zoops_CommonGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station, colour=Station, shape=Station, fill=Station), data=Zoo_totals_majorgenus) + 
@@ -154,7 +154,7 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Zoops/Zoops_Totals_Division_TimeSeries.png'), units='in', width=8, height=3, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Zoops', 'Zoops_Totals_Division_TimeSeries.png'), units='in', width=8, height=3, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station, colour=Station, fill=Station, shape=Station), data=Zoo_totals_division) + 
@@ -171,7 +171,7 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Zoops/Zoops_TotalsBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Zoops', 'Zoops_TotalsBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=SpeciesBiomass_ugdwL, group=Station, colour=Station, fill=Station, shape=Station), data=Zoo_totals_all) + 
@@ -209,7 +209,7 @@ dev.off()
 #Phytoplankton
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Genus_TimeSeries.png'), units='in', width=12, height=6, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_Totals_Genus_TimeSeries.png'), units='in', width=12, height=6, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_genus) +
@@ -228,7 +228,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_CommonGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_CommonGenus_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_majorgenus) +
@@ -248,7 +248,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_Totals_Division_TimeSeries.png'), units='in', width=6, height=4, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_Totals_Division_TimeSeries.png'), units='in', width=6, height=4, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_division) +
@@ -266,7 +266,7 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Phytos/Phytos_TotalBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_TotalBiomass_TimeSeries.png'), units='in', width=5, height=3, res=400, bg='white')
 
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_all) +
@@ -288,7 +288,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Timeseries/Phytos_Zoops_TotalBiomass_TimeSeries.png'), units='in', width=4, height=5, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Timeseries', 'Phytos_Zoops_TotalBiomass_TimeSeries.png'), units='in', width=4, height=5, res=400, bg='white')
 
 phyto_ts<-  ggplot(aes(x=Date, y=TOTAL.BV/1000000000, group=Station, shape=Station), data=Phyto_totals_all) +
     scale_shape_manual(values=shapes[c(1,3:5,7)])  + 
