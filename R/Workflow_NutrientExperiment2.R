@@ -75,10 +75,6 @@ source('R/CreateO18InputTable_NutrientExperiment2.R')
 source('R/CalculateO18metabolism_NutrientExperiment2.R')
 source('R/Plot_O18Metabolism_NutrientExperiment2.R')
 
-##############################################
-# updated to onedrive above
-# ############################################
-
 
 #Buoy metabolism
 source('R/CombineBuoySensorData_SSCN2.R')
@@ -87,6 +83,10 @@ source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 
 #Combine metabolism
 source('R/MergeMetabolism_NutrientExperiment2.R')
+
+##############################################
+# updated to onedrive above
+# ############################################
 
 
 #Plot a bunch of stuff
