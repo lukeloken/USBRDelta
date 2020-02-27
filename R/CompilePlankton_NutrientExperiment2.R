@@ -12,8 +12,8 @@ library(lubridate)
 # Phytoplankton
 # #############
 
-PhytoFiles<-list.files(paste(box_dir, 'Data', 'Phytos', sep='/'))
-PhytoFiles<-PhytoFiles[grep('.xls', PhytoFiles)]
+PhytoFiles<-list.files(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Phytos'))
+PhytoFiles<-PhytoFiles[grepl('.xls', PhytoFiles)]
 
 if (length(PhytoFiles)>0){
 KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTAL BV', 'DENSITY (cells/L)', 'NOTES')
@@ -21,8 +21,8 @@ KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTA
 File_i=1
 Phyto_list<-list()
 for (File_i in 1:length(PhytoFiles)){
-  Phyto_list[[File_i]]<-read_excel(paste(box_dir, 'Data', 'Phytos', PhytoFiles[File_i], sep='/'), skip=1)
-  PhytoNames<-names(read_excel(paste(box_dir,  'Data', 'Phytos', PhytoFiles[File_i], sep='/'), skip=0))
+  Phyto_list[[File_i]]<-read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Phytos', PhytoFiles[File_i]), skip=1)
+  PhytoNames<-names(read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Phytos', PhytoFiles[File_i]), skip=0))
 
   PhytoNames[which(PhytoNames=="DENSITY (cells/L)")]<-"DENSITY"
   names(Phyto_list[[File_i]])<-PhytoNames
@@ -45,8 +45,8 @@ Phyto_FullRecord <- Phyto_FullRecord %>%
 head(Phyto_FullRecord)
 
 #Save files
-write.csv(Phyto_FullRecord, file=paste(google_dir, 'SSCN2_DataOutputs', 'PhytosCountsAll_NutExp2.csv', sep='/'), row.names=F)
-saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Phyto_FullRecord_NutExp2.rds'))
+write.csv(Phyto_FullRecord, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Phytos', 'PhytosCountsAll_NutExp2.csv'), row.names=F)
+saveRDS(Phyto_FullRecord , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Phytos', 'Phyto_FullRecord_NutExp2.rds'))
 
 }
 
@@ -56,7 +56,7 @@ rm(Phyto_list, Phyto_df, PhytoFiles, PhytoNames, KeepNames, File_i)
 # Zooplankton
 # ###########
 
-ZooFiles<-list.files(paste(box_dir, 'Data', 'Zoops', sep='/'))
+ZooFiles<-list.files(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Zoops'))
 ZooFiles<-ZooFiles[grep('.xls', ZooFiles)]
 
 if(length(ZooFiles)>0){
@@ -64,13 +64,13 @@ if(length(ZooFiles)>0){
 File_i=1
 Zoo_list<-list()
 for (File_i in 1:length(ZooFiles)){
-  col1<-read_excel(paste(box_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=0)[,1]
+  col1<-read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Zoops', ZooFiles[File_i]), skip=0)[,1]
   
   headerrow<-which(col1=='sample code')
   if(length(headerrow)==0){
-    zoo_i<-read_excel(paste(box_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'))
+    zoo_i<-read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Zoops', ZooFiles[File_i]))
   } else if (length(headerrow)>0){
-    zoo_i<-read_excel(paste(box_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=(headerrow))
+    zoo_i<-read_excel(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Zoops', ZooFiles[File_i]), skip=(headerrow))
   }
   
   
@@ -107,8 +107,8 @@ Zoo_FullRecord <- Zoo_df %>%
 
 Zoo_FullRecord$Station<-factor(Zoo_FullRecord$Site, sitetable$site1)
 
-write.csv(Zoo_FullRecord, file=paste(google_dir, 'SSCN2_DataOutputs', 'ZoopsCountsAll_NutExp2.csv', sep='/'), row.names=F)
-saveRDS(Zoo_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Zoo_FullRecord_NutExp2.rds'))
+write.csv(Zoo_FullRecord, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Zoops', 'ZoopsCountsAll_NutExp2.csv'), row.names=F)
+saveRDS(Zoo_FullRecord , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Zoops', 'Zoo_FullRecord_NutExp2.rds'))
 
 }
 
@@ -119,42 +119,3 @@ rm(Zoo_list, Zoo_df, zoo_i, File_i, headerrow, ZooKeepNames, ZooFiles, col1)
 # Picoplankton
 # One excel sheet with pico on sheet 1, bacteria on sheet 2
 # #########################################################
-
-PicoFiles<-list.files(paste(google_dir, 'Data', 'NutrientExperiment', 'Picoplankton', sep='/'))
-PicoFiles<-PicoFiles[grep('.xls', PicoFiles)]
-
-if (length(PicoFiles)>0){
-
-pico_list<-read_excel_allsheets(paste(google_dir, 'Data', 'NutrientExperiment', 'Picoplankton', PicoFiles[1], sep='/'))
-
-pico_cyano<-pico_list[[1]]
-pico_bact<-pico_list[[2]]
-
-Pico_df<-ldply(pico_list, data.frame)
-
-
-pico_df2 <- Pico_df %>%
-  dplyr::select('STATION', 'DATE', 'CATEGORY', 'DIVISION', 'TALLY', "DENSITY_CellsPerLiter", "TOTAL_BV_um3PerLiter") %>%
-  filter(!is.na(DATE))
-
-shortnames <- substr(pico_df2$STATION, 1, 5)
-pico_df2$Station<- gsub(' #', '', shortnames)
-
-pico_totals <- dplyr::select(pico_df2, DATE, Station, CATEGORY, TOTAL_BV_um3PerLiter, -STATION) %>%
-  spread(key=CATEGORY, value='TOTAL_BV_um3PerLiter') %>%
-  mutate(
-    Station = factor(Station, sitetable$site1),
-    Date = DATE,
-    Total_picocyanobacteria = `PC - rich Picocyanobacteria` + `PE - rich Picocyanobacteria`,
-    Total_bacteria = `Cocci shaped bacteria` + `Rod shaped bacteria`
-  ) %>%
-  dplyr::select(-DATE)
-
-
-write.csv(pico_totals, file=paste(google_dir, 'DataOutputs', 'PicosCountsAll_NutExp1.csv', sep='/'), row.names=F)
-saveRDS(pico_totals, file=paste0(dropbox_dir, '/Data/Rdata/Picos_FullRecord_NutExp1.rds'))
-
-}
-
-rm(pico_df2, shortnames, Pico_df, pico_cyano, pico_bact, pico_list, PicoFiles)
-
