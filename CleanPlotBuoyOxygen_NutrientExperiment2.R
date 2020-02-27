@@ -9,14 +9,14 @@ library(akima)
 library(stringr)
 library(RColorBrewer)
 
-DO_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_raw.rds'))
-Temp_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_raw.rds'))
-Cond_df_clean <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_raw.rds'))
+DO_df_clean <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_raw.rds'))
+Temp_df_clean <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_raw.rds'))
+Cond_df_clean <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_raw.rds'))
 
 
-buoy_meta<-read.csv(paste0(box_dir, '/Data/BuoyData/SSCN2 Buoy Information.csv'))
-buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')]<-str_pad(buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')], 6, pad='0')
-buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')]<-paste0("7450-", buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')])
+buoy_meta<-read.csv(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'BuoyData', 'SSCN2 Buoy Information.csv'), stringsAsFactors = F)
+# buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')]<-str_pad(buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')], 6, pad='0')
+# buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')]<-paste0("7450-", buoy_meta$Serial[which(buoy_meta$Type=='Dissolved Oxygen')])
 
 
 
@@ -42,8 +42,8 @@ Cond_df_clean2 <- Cond_df_clean %>%
          Depth = as.character(buoy_meta$Depth_m[match(SerialNumber, buoy_meta$Serial)])) %>%
   dplyr::arrange(Site, Depth)
 
-Cond_df_clean2$Cond_uScm[which(Cond_df_clean2$Cond_uScm>1200)]  <- NA
-Cond_df_clean2$Cond_uScm[which(Cond_df_clean2$Cond_uScm<650)]  <- NA
+Cond_df_clean2$SpecCond_uScm[which(Cond_df_clean2$SpecCond_uScm>1200)]  <- NA
+Cond_df_clean2$SpecCond_uScm[which(Cond_df_clean2$SpecCond_uScm<650)]  <- NA
 
 #Clean and match Temp data
 Temp_df_clean2 <- Temp_df_clean %>%
@@ -52,20 +52,20 @@ Temp_df_clean2 <- Temp_df_clean %>%
   mutate(Site = factor(buoy_meta$Site[match(SerialNumber, buoy_meta$Serial)], sitetable$site1),
          Depth = as.character(buoy_meta$Depth_m[match(SerialNumber, buoy_meta$Serial)])) %>%
   bind_rows(Cond_df_clean2, DO_df_clean2) %>%
-  dplyr::select(-Cond_uScm, -DO_mgL, -DO_PerSat) %>%
+  dplyr::select(-SpecCond_uScm, -RawCond_uScm, -DO_mgL, -DO_PerSat) %>%
   dplyr::arrange(Site, Depth)
 
 Temp_df_clean2$Temp_C[which(Temp_df_clean2$Temp_C>30)]  <- NA
 Temp_df_clean2$Temp_C[which(Temp_df_clean2$Temp_C<22.5)]  <- NA
 
 
-saveRDS(Temp_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_cleaned.rds'))
-saveRDS(Cond_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_cleaned.rds'))
-saveRDS(DO_df_clean2, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_cleaned.rds'))
+saveRDS(Temp_df_clean2, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_cleaned.rds'))
+saveRDS(Cond_df_clean2, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_cleaned.rds'))
+saveRDS(DO_df_clean2, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_cleaned.rds'))
 
-write.table(Temp_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Temp_cleaned.csv'), row.names=F, sep=',')
-write.table(Cond_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_Cond_cleaned.csv'), row.names=F, sep=',')
-write.table(DO_df_clean2, file=paste0(google_dir, '/SSCN2_DataOutputs/Buoy/Buoy_DO_cleaned.csv'), row.names=F, sep=',')
+write.table(Temp_df_clean2, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_cleaned.csv'), row.names=F, sep=',')
+write.table(Cond_df_clean2, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', '/Buoy_Cond_cleaned.csv'), row.names=F, sep=',')
+write.table(DO_df_clean2, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_cleaned.csv'), row.names=F, sep=',')
 
 
 # ######################
@@ -79,7 +79,7 @@ for( i in 1: length(DO_SerialNumbers)){
   DO_data <- DO_df_clean2 %>%
     dplyr::filter(SerialNumber == DO_SerialNumbers[i])
   
-  png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/DO/", DO_SerialNumbers[i], ".png"), units = 'in', width=10, height=5, res=200)
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', paste0(DO_SerialNumbers[i], ".png")), units = 'in', width=10, height=5, res=200)
   
   print(
     ggplot(aes(x=Datetime_UTC, y=DO_mgL), data=DO_data) +
@@ -102,14 +102,14 @@ for( i in 1: length(Cond_SerialNumbers)){
   Cond_data <- Cond_df_clean2 %>%
     dplyr::filter(SerialNumber == Cond_SerialNumbers[i])
   
-  png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Cond/", Cond_SerialNumbers[i], ".png"), units = 'in', width=10, height=5, res=200)
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Cond', paste0(Cond_SerialNumbers[i], ".png")), units = 'in', width=10, height=5, res=200)
   
   print(
-    ggplot(aes(x=Datetime_UTC, y=Cond_uScm), data=Cond_data) +
+    ggplot(aes(x=Datetime_UTC, y=SpecCond_uScm ), data=Cond_data) +
       geom_point(size = 0.5, colour="purple") +
       geom_path( colour="purple") +
       theme_bw() +
-      labs(x="", y="(uS/cm)") +
+      labs(x="", y="SPC (uS/cm)") +
       ggtitle(Cond_SerialNumbers[i])
   )
   
@@ -128,7 +128,7 @@ for( i in 1: length(Temp_SerialNumbers)){
     dplyr::filter(SerialNumber == Temp_SerialNumbers[i])
   
   
-  png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", Temp_SerialNumbers[i], ".png"), units = 'in', width=10, height=5, res=200)
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Temp', paste0(Temp_SerialNumbers[i], ".png")), units = 'in', width=10, height=5, res=200)
   
   print(
     ggplot(aes(x=Datetime_UTC, y=Temp_C), data=Temp_data) +
@@ -145,7 +145,7 @@ for( i in 1: length(Temp_SerialNumbers)){
 
 #Grid plots
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/DO/", "DO_GridPlot1", ".png"), units = 'in', width=20, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 'DO_GridPlot1.png'), units = 'in', width=20, height=8, res=200)
 
 print(
   ggplot(aes(x=Datetime_UTC, y=DO_mgL, color=Depth), data=DO_df_clean2) +
@@ -161,10 +161,10 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Cond/", "Cond_GridPlot1", ".png"), units = 'in', width=20, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Cond', 'Cond_GridPlot1.png'), units = 'in', width=20, height=8, res=200)
 
 print(
-  ggplot(aes(x=Datetime_UTC, y=Cond_uScm, color=Depth), data=Cond_df_clean2) +
+  ggplot(aes(x=Datetime_UTC, y=SpecCond_uScm, color=Depth), data=Cond_df_clean2) +
     geom_vline(xintercept=fert_posix, linetype="dashed", color = "green", size=0.5) + 
     geom_point(size = 0.5) +
     geom_path(size = 0.5) +
@@ -179,7 +179,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", "Temp_GridPlot1", ".png"), units = 'in', width=20, height=16, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Temp', 'Temp_GridPlot1.png'), units = 'in', width=20, height=16, res=200)
 
 print(
   ggplot(aes(x=Datetime_UTC, y=Temp_C, color=Depth), data=Temp_df_clean2) +
@@ -195,7 +195,7 @@ print(
 dev.off()
 
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", "Temp_SurfBot", ".png"), units = 'in', width=7, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Temp', 'Temp_SurfBot.png'), units = 'in', width=7, height=8, res=200)
 
 print(
   ggplot(aes(x=Datetime_UTC, y=Temp_C, color=Depth, group=Depth), data=Temp_df_clean2[which(Temp_df_clean2$Depth %in% c('0.5', '4.5')),]) +
@@ -212,7 +212,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Temp/", "Temp_AllDepths", ".png"), units = 'in', width=7, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Temp', 'Temp_AllDepths.png'), units = 'in', width=7, height=8, res=200)
 
 print(
   ggplot(aes(x=Datetime_UTC, y=Temp_C, color=Depth, group=Depth), data=Temp_df_clean2) +
@@ -241,7 +241,7 @@ print(
     guides(color = guide_legend(nrow = 1))
 )
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/DO/", "DO_AllDepths", ".png"), units = 'in', width=7, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 'DO_AllDepths.png'), units = 'in', width=7, height=8, res=200)
 
 print(
   ggplot(aes(x=Datetime_UTC, y=DO_mgL, color=Depth, group=Depth), data=DO_df_clean2) +
@@ -257,10 +257,10 @@ print(
 
 dev.off()
 
-png(paste0(dropbox_dir, "/Figures/NutrientExperiment2/Buoys/Cond/", "Cond_AllDepths", ".png"), units = 'in', width=7, height=8, res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Cond', 'Cond_AllDepths.png'), units = 'in', width=7, height=8, res=200)
 
 print(
-  ggplot(aes(x=Datetime_UTC, y=Cond_uScm, color=Depth, group=Depth), data=Cond_df_clean2) +
+  ggplot(aes(x=Datetime_UTC, y=SpecCond_uScm, color=Depth, group=Depth), data=Cond_df_clean2) +
     geom_vline(xintercept=fert_posix, linetype="dashed", color = "green", size=0.5) + 
     # geom_point(size = 0.5) +
     geom_path(size = 1) +
