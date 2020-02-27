@@ -12,16 +12,8 @@ library(lubridate)
 library(RColorBrewer)
 library(RcppRoll)
 
-# source('R/CompilePhytos.R')
+wind_df_summary <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'WindDataAvg.rds'))
 
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-
-
-wind_df_summary <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/WindDataAvg.rds'))
 
 wind_avg <- wind_df_summary %>%
   mutate(Date = as.Date(DateTime, tz="Etc/GMT+8")) %>%
@@ -38,7 +30,7 @@ wind_avg$wind.height.ms=10
 
 
 #Big data frame
-merge_df_IncMetab <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/SiteData_withIncMetab_Merged.rds'))
+merge_df_IncMetab <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
 
 
 merge_df_wind <- left_join(merge_df_IncMetab, wind_avg)
@@ -51,6 +43,6 @@ waterO18table <- merge_df_wind %>%
 
 merge_df_wind <- left_join(merge_df_wind, waterO18table)
 
-saveRDS(merge_df_wind, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/InputTermsO18Metabolism_SSCN2.rds'))
-write.csv(merge_df_wind, file=paste0(google_dir, '/SSCN2_DataOutputs/InputTermsO18Metabolism_SSCN2.csv'), row.names=F)
+saveRDS(merge_df_wind, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'InputTermsO18Metabolism_SSCN2.rds'))
+write.csv(merge_df_wind, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'InputTermsO18Metabolism_SSCN2.csv'), row.names=F)
 
