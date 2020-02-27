@@ -5,9 +5,9 @@ library(LakeMetabolizer)
 library(akima)
 library(zoo)
 
-Temp_df_clean2 <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Temp_cleaned.rds'))
-Cond_df_clean2 <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_Cond_cleaned.rds'))
-DO_df_clean2   <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/Buoy/Buoy_DO_cleaned.rds'))
+Temp_df_clean2 <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_cleaned.rds'))
+Cond_df_clean2 <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_cleaned.rds'))
+DO_df_clean2   <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_cleaned.rds'))
 
 #Prep Temp data
 Temp_df_clean2 <- Temp_df_clean2 %>%
@@ -26,7 +26,7 @@ attributes(DO_df_clean2$Datetime_PDT)$tzone = 'America/Los_Angeles'
 DO_df_clean2$Datetime_PDT_round = round_date(DO_df_clean2$Datetime_PDT, unit="5 minutes")
 
 #wind and solar raddata
-wind_df_summary <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/WindDataAvg.rds'))
+wind_df_summary <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'WindDataAvg.rds'))
 
 wind_pred <- data.frame(approx(x=wind_df_summary$DateTime, y=wind_df_summary$WS_ms_roll, xo=seq.POSIXt(min(DO_df_clean2$Datetime_PDT_round), max(DO_df_clean2$Datetime_PDT_round), by="5 mins")))
 names(wind_pred)<-c("Datetime_PDT_round", "WS_ms")
@@ -35,7 +35,7 @@ wind_pred$SolRad_Wsqm <- approx(x=wind_df_summary$DateTime, y=wind_df_summary$So
 
 
 #load hypso data
-Depth_df <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/HypsoCurveNL74.rds'))
+Depth_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'HypsoCurveNL74.rds'))
 # plot(Depth_df$Area_m2, Depth_df$Depth_m, ylim=c(12,0), type='o', pch=16)
 
 #Approximate volume by depth
@@ -263,7 +263,7 @@ for (buoy_nu in 1:length(buoy_names)){
   metab.list[[buoy_nu]]<-metab.out2
   
   
-  png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism/Metabolism_', site_name, '_TS.png'), width=5, height=4, units='in', res=200)
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Metabolism', paste('Metabolism_', site_name, '_TS.png')), width=5, height=4, units='in', res=200)
   par(mar=c(3,3,1.5,.5), mgp=c(3,.5,0), tck=-0.02)
   
   plot(metab.out2$Date, metab.out2$NEP, type='l', ylim=range(metab.out[,3:5], na.rm=T), lwd=.5, xlab='', ylab='', las=1)
@@ -294,9 +294,9 @@ for (buoy_nu in 1:length(buoy_names)){
 metab.df<-ldply(metab.list, data.frame)
 
 #Save to file
-write.table(metab.df, file=paste0(google_dir, '/SSCN2_DataOutputs/BuoyMetabolism.csv'), row.names=F, sep=',')
+write.table(metab.df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'BuoyMetabolism.csv'), row.names=F, sep=',')
 
-saveRDS(metab.df, file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/BuoyMetabolism.rds'))
+saveRDS(metab.df, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'BuoyMetabolism.rds'))
 
 
 
@@ -359,7 +359,7 @@ grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1.5))
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Metabolism_TS.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(NEPplot), ggplotGrob(GPPplot),  ggplotGrob(p1), size = "first"))
@@ -401,7 +401,7 @@ grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1.5))
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_Rollmean_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Metabolism_Rollmean_TS.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(NEPplot), ggplotGrob(GPPplot),  ggplotGrob(p1), size = "first"))
@@ -437,7 +437,7 @@ NEPbox<-ggplot(metab.df, aes(x=Date, group=Date, y=NEP_roll)) +
   geom_boxplot(fill='grey30', outlier.size=0.5) 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/Buoys/Metabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Metabolism_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 
 
 grid.newpage()
