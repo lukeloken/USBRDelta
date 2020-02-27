@@ -138,10 +138,10 @@ sunrise<-xticks + 60*60*8
 filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)")
 
 # plot with thermocline 
-filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],m.d.top.roll, lwd=2, col='black')})
+# filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],m.d.top.roll, lwd=2, col='black')})
 
 # plot with mixed layer depth and 5pm lines
-filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],m.d.top.roll, lwd=2, col='black'); axis(1, at=sunset, labels=NA, tck=50, col='white', lwd=2, lty=2); axis(1, at=sunrise, labels=NA, tck=50, col='red', lwd=2, lty=2)})
+# filled.contour(x=Temp_Est[[1]], y=Temp_Est[[2]], z=Temp_Est[[3]], ylim=c(max(depths), min(depths)), nlevels = 40, color.palette = colorRampPalette(c('navy', "blue", "cyan", "green3", "yellow", "orange", "red"), bias = 1, space = "rgb"), ylab="Depth (m)", plot.axes = { axis(1, at=xticks, labels=xlabels, tck=-0.02); axis(2);lines(wrt3[,1],m.d.top.roll, lwd=2, col='black'); axis(1, at=sunset, labels=NA, tck=50, col='white', lwd=2, lty=2); axis(1, at=sunrise, labels=NA, tck=50, col='red', lwd=2, lty=2)})
 
 
 mtext(expression(paste("Water temperature (", degree, "C)", sep="")), 4, -6)
