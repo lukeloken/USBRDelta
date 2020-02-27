@@ -6,7 +6,7 @@ source('R/g_legend.R')
 
 
 #Plot O18 metabolism data
-met.final<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata_SSCN2/merge_df_O18.rds'))
+met.final<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'merge_df_O18.rds'))
 
 met.final<-drop_na(met.final, d180_02.vs.VSMOW)
 
@@ -59,7 +59,7 @@ ER_O18_withLegened <- ER_O18 +
   guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/NEPGPPER_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'NEPGPPER_TS.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(NEP_O18), ggplotGrob(GPP_O18), ggplotGrob(ER_O18_withLegened), size = "first"))
@@ -92,7 +92,7 @@ ER_O18area_withLegened <- ER_O18_area +
   guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/NEPGPPER_area_TS.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'NEPGPPER_area_TS.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(NEP_O18_area), ggplotGrob(GPP_O18_area), ggplotGrob(ER_O18area_withLegened), size = "first"))
@@ -153,7 +153,7 @@ mylegend<-g_legend(plot_withlegend)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 # arrange multi plot with legend below and save to project folder
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_ER_NEP_O18.png'), width=5, height=7, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_ER_NEP_O18.png'), width=5, height=7, units='in', res=200)
 
 grid.arrange(p2, mylegend, nrow=2,heights=c(10, 1))
 
@@ -162,7 +162,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_ER_NEP_IncubationVersusO18.png'), width=12, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_ER_NEP_IncubationVersusO18.png'), width=12, height=4, units='in', res=200)
 
 GPPplot<-ggplot(met.final, aes(x=GPP_Total, y=gppv, fill=Site)) + 
   labs(x=expression(paste('Incubation GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
@@ -199,7 +199,7 @@ grid.arrange(GPPplot, ERplot, NEPplot, nrow=1)
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusTurb.png'), width=3.5, height=3.5, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusTurb.png'), width=3.5, height=3.5, units='in', res=200)
 
 print(
 ggplot(met.final, aes(x=YSI_Turb_FNU, y=gppa)) +
@@ -240,7 +240,7 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
 
 print(
 ggplot(met.final, aes(x=YSI_ChlA_ugL, y=gppa, fill=Site)) +
@@ -258,7 +258,7 @@ ggplot(met.final, aes(x=YSI_ChlA_ugL, y=gppa, fill=Site)) +
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/NutrientExperiment2/O18Metabolism/GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
 
 print(
 ggplot(met.final, aes(x=`NO3-ppm`, y=gppa, fill=Site)) +
