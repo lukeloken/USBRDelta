@@ -49,7 +49,7 @@ Vol_top <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[1:2]))],
 Vol_mid <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top
 Vol_bot <- sum(Depth_pred25$y[which(Depth_pred25$x >= mean(DO_depths_num[2:3]))], na.rm=T)
 
-
+Volume_static <- data.frame(Vol_top, Vol_mid, Vol_bot)
 #constants
 #these might not be useful or accurate
 z.mean<-8
