@@ -5,9 +5,14 @@ library(LakeMetabolizer)
 library(akima)
 library(zoo)
 
+
+
+#Load buoy data
 Temp_df_clean2 <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_cleaned.rds'))
 Cond_df_clean2 <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Cond_cleaned.rds'))
 DO_df_clean2   <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_cleaned.rds'))
+
+
 
 #Prep Temp data
 Temp_df_clean2 <- Temp_df_clean2 %>%
@@ -25,6 +30,19 @@ DO_df_clean2 <- DO_df_clean2 %>%
 attributes(DO_df_clean2$Datetime_PDT)$tzone = 'America/Los_Angeles'
 DO_df_clean2$Datetime_PDT_round = round_date(DO_df_clean2$Datetime_PDT, unit="5 minutes")
 
+#Load gage data for water level
+GageData <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'USGSGageData.rds')) %>%
+  filter(site_no == '11455095') %>%
+  select_if(not_all_na) %>%
+  select(dateTime, Wtemp_Inst, Turb_Inst, Flow_Inst, GH_Inst, SpecCond_Inst, DO_Inst, pH_Inst,  X_32316_Inst) %>%
+  rename(Datetime_PDT_round =dateTime) %>%
+  mutate(GH_Inst = approx(x=Datetime_PDT_round, y=GH_Inst, xo=Datetime_PDT_round)$y) %>%
+  mutate(Flow_Inst = approx(x=Datetime_PDT_round, y=Flow_Inst, xo=Datetime_PDT_round)$y) %>%
+  mutate(GH_m = round(GH_Inst*0.3048, 2)) %>%
+  drop_na(GH_Inst)
+
+
+
 #wind and solar raddata
 wind_df_summary <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'WindDataAvg.rds'))
 
@@ -33,6 +51,7 @@ names(wind_pred)<-c("Datetime_PDT_round", "WS_ms")
 
 wind_pred$SolRad_Wsqm <- approx(x=wind_df_summary$DateTime, y=wind_df_summary$SolRad_Wsqm, xo=seq.POSIXt(min(DO_df_clean2$Datetime_PDT_round), max(DO_df_clean2$Datetime_PDT_round), by="5 mins"))$y
 
+attributes(wind_pred$Datetime_PDT_round)$tzone
 
 #load hypso data
 Depth_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'HypsoCurveNL74.rds'))
@@ -41,15 +60,72 @@ Depth_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'HypsoCurveNL74.rds'))
 #Approximate volume by depth
 Depth_pred25 <- data.frame(approx(x=Depth_df$Depth_m, y=.5*(Depth_df$Volume_m3), xo=seq(0, max(Depth_df$Depth_m), by=0.25)))
 Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
+# Total_volume = sum(Depth_pred25$y, na.rm=T)
 Surface_area = Depth_df$Area_m2[which(Depth_df$Depth_m==0)]
 Mean_depth <- Total_volume/Surface_area
 
-#Volumes of three depth strata
-Vol_top <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[1:2]))], na.rm=T)
-Vol_mid <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top
-Vol_bot <- sum(Depth_pred25$y[which(Depth_pred25$x >= mean(DO_depths_num[2:3]))], na.rm=T)
+Depth_pred100 <- data.frame(approx(x=Depth_df$Depth_m, y=(Depth_df$Area_m2), 
+                                   xo=seq(0, max(Depth_df$Depth_m), by=0.01))) %>%
+  mutate(Volume_m3 = y*.01) %>%
+  rename(Area_m2 = y)
 
-Volume_static <- data.frame(Vol_top, Vol_mid, Vol_bot)
+
+
+#New code to include variation in depth through time
+WL_times <- GageData$Datetime_PDT_round
+WL_z <- GageData$GH_m
+range_z <- range(WL_z, na.rm=T)
+
+Depth_pred100 <- Depth_pred100 %>%
+  mutate(GH_m = range_z[2] - x) 
+
+x <- Depth_pred100$GH_m[1]
+Vol_top <- sapply(Depth_pred100$GH_m, function (x) 
+  sum(Depth_pred100$Volume_m3[match(x, Depth_pred100$GH_m):
+                        (match(x, Depth_pred100$GH_m)+100*mean(DO_depths_num[1:2])-1)
+                      ]))
+
+Vol_mid <- sapply(Depth_pred100$GH_m, function (x) 
+  sum(Depth_pred100$Volume_m3[(match(x, Depth_pred100$GH_m)+100*mean(DO_depths_num[1:2])):
+                        (match(x, Depth_pred100$GH_m)+100*mean(DO_depths_num[2:3])-1)
+                      ]))
+
+Vol_bot <- sapply(Depth_pred100$GH_m, function (x) 
+  sum(Depth_pred100$Volume_m3[(match(x, Depth_pred100$GH_m)+100*mean(DO_depths_num[2:3])):
+                        nrow(Depth_pred100)
+                      ]))
+
+#Table includes WL (gage height) and three columns with volumes associated with the three DO sensors
+Volume_table <- Depth_pred100 %>%
+  dplyr::select(GH_m, Area_m2) %>%
+  bind_cols(data.frame(Vol_top = Vol_top, 
+                       Vol_mid = Vol_mid, 
+                       Vol_bot = Vol_bot)) %>%
+  mutate(Vol_sum = Vol_top + Vol_mid + Vol_bot) %>%
+  mutate(GH_m = factor(round(GH_m, 2), seq(range_z[1], range_z[2], by=.01)))
+
+GageData <- GageData %>%
+  drop_na(GH_m) %>%
+  mutate(GH_m = factor(round(GH_m, 2), seq(range_z[1], range_z[2], by=.01))) %>%
+  left_join(Volume_table)
+
+
+#Volumes of three depth strata
+Vol_top_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[1:2]))], na.rm=T)
+Vol_mid_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top
+Vol_bot_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x >= mean(DO_depths_num[2:3]))], na.rm=T)
+
+
+# Vol_top <- sum(Depth_pred100$y[which(Depth_pred100$x < mean(DO_depths_num[1:2]))], na.rm=T)
+# Vol_mid <- sum(Depth_pred100$y[which(Depth_pred100$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top
+# Vol_bot <- sum(Depth_pred100$y[which(Depth_pred100$x >= mean(DO_depths_num[2:3]))], na.rm=T)
+# 
+# data.frame(Vol_top, Vol_mid, Vol_bot)
+
+#Allow volume to vary
+
+
+
 #constants
 #these might not be useful or accurate
 z.mean<-8
@@ -146,39 +222,63 @@ for (buoy_nu in 1:length(buoy_names)){
   
   DO_spread_mgL_join <- bind_cols(DO_spread_mgL, data.frame(DO_spread_mgL_roll))
   
+  DO_spread_mgL_join <- GageData  %>% 
+    select(Datetime_PDT_round, GH_m, Vol_top, Vol_mid, Vol_bot, Vol_sum, Area_m2) %>%
+    right_join(DO_spread_mgL_join) %>%
+    drop_na(Vol_top) %>%
+    left_join(wind_pred)
+  
   head(DO_spread_mgL_join)
   
   
   #whole lake depth integrated DO concentration
-  DO_spread_mgL_join$DO_WLDI <- (DO_spread_mgL_join$roll_1   * Vol_top +
-                                   DO_spread_mgL_join$`roll_2.5` * Vol_mid +
-                                   DO_spread_mgL_join$roll_4   * Vol_bot) / Total_volume
+  DO_spread_mgL_join$DO_WLDI_v1 <- (DO_spread_mgL_join$roll_1   * Vol_top_v1 +
+                                   DO_spread_mgL_join$`roll_2.5` * Vol_mid_v1 +
+                                   DO_spread_mgL_join$roll_4   * Vol_bot_v1) / Total_volume
+  
+  # whole lake depth integrated DO concentration
+  #allow volume to vary based on water level
+  DO_spread_mgL_join$DO_WLDI <- (DO_spread_mgL_join$roll_1   * DO_spread_mgL_join$Vol_top +
+                                   DO_spread_mgL_join$`roll_2.5` * DO_spread_mgL_join$Vol_mid +
+                                   DO_spread_mgL_join$roll_4   * DO_spread_mgL_join$Vol_bot) / 
+    DO_spread_mgL_join$Vol_sum
   
   DO_spread_mgL_join <- DO_spread_mgL_join %>%
     tidyr::fill(DO_WLDI, .direction='down') %>%
-    tidyr::fill(DO_WLDI, .direction='up')
+    tidyr::fill(DO_WLDI, .direction='up') %>%
+    tidyr::fill(DO_WLDI_v1, .direction='down') %>%
+    tidyr::fill(DO_WLDI_v1, .direction='up')
   
-  
+  head(DO_spread_mgL_join)
   
   #Look at daily Whole Water Column DO curves
-  # ggplot(aes(x=Datetime_PDT_round, y=DO_WLDI), data=DO_spread_mgL_join) +
-  #   geom_vline(xintercept=fert_posix, col='green', linetype='dashed') + 
-  #   geom_path() + 
-  #   theme_bw() + 
-  #   facet_wrap(~Date_metab, scales="free")
-  # 
+  DO_curves <- ggplot(aes(x=Datetime_PDT_round, y=DO_WLDI), data=DO_spread_mgL_join) +
+    geom_vline(xintercept=DO_spread_mgL_join$Datetime_PDT_round[which(DO_spread_mgL_join$SolRad_Wsqm<50)], col='grey', size=.9) + 
+    geom_vline(xintercept=fert_posix, col='green', linetype='solid', size=2) +
+    geom_path() +
+    theme_bw() +
+    scale_x_datetime(date_breaks = '6 hours', date_labels = "%H") + 
+    facet_wrap(~Date_metab, scales="free", ncol=9) +
+    labs(x='Hour', y='Whole water column DO (mg/L)')
+    # geom_point(inherit.aes=F, data=DO_spread_mgL_join[which(DO_spread_mgL_join$SolRad_Wsqm<50),], 
+              # aes(x=Datetime_PDT_round, y=6), col='black', size=2)
+  print(DO_curves)
 
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', paste0('WholeWaterColumnDOCurves_', site_name, '.png')), DO_curves, width=14, height=10, units='in')
   
+
+
   input_df<-left_join(DO_spread_mgL_join, wind_pred) 
   
   input_df <- DO_buoy %>% filter(Depth==1) %>%
     dplyr::select(Datetime_PDT_round, Temp_C) %>%
-    right_join(input_df)
+    right_join(input_df) %>%
+    distinct()
   
   
   #Loop through each day
   metab.dates<-unique(input_df$Date_metab)
-  metab.out <-data.frame(Date = metab.dates, Site = rep(site_name, length(metab.dates)), GPP=NA, ER=NA, NEP=NA)
+  metab.out <-data.frame(Date = metab.dates, Site = rep(site_name, length(metab.dates)), GPP=NA, ER=NA, NEP=NA, GPP_v1=NA, ER_v1=NA, NEP_v1=NA)
   
   m=2
   for (m in 1:length(metab.dates)){
@@ -187,6 +287,9 @@ for (buoy_nu in 1:length(buoy_names)){
     
   #inputs for metabolism model
   datetime <-  input_df$Datetime_PDT_round[index]
+  
+  Vol_sum <-  input_df$Vol_sum[index]
+  Area_m2 <- input_df$Area_m2[index]
   
   #Only calculate metabolism if sampling was at least most of the day
   if (sum(as.numeric(diff(datetime), units='days'))>.8){
@@ -197,6 +300,7 @@ for (buoy_nu in 1:length(buoy_names)){
   
   do_surf <- input_df$`1`[index]
   do_wldi <- input_df$DO_WLDI[index]
+  do_wldi_v1 <- input_df$DO_WLDI_v1[index]
   
   do_surf_sat<- o2.at.sat.base(wtr, altitude=0)
   
@@ -226,36 +330,55 @@ for (buoy_nu in 1:length(buoy_names)){
   #Model metabolism
   delta.do <- diff(do_wldi)
   miss.delta <- sum(is.na(delta.do))
+  delta.do_v1 <- diff(do_wldi_v1)
+  miss.delta_v1 <- sum(is.na(delta.do_v1))
   if (miss.delta != 0) {
     warning(paste(miss.delta, " missing values (", miss.delta/length(delta.do), 
                   "%) in diff(do.obs)", sep = ""))
   }
   
   #flux in g O2 per day for whole channel. Big volume and area
-  gas.flux <- ((do_surf_sat - do_surf) * k_buoy * Surface_area)[-length(datetime)]
+  gas.flux <- ((do_surf_sat - do_surf) * k_buoy * Area_m2)[-length(datetime)]
+  gas.flux_v1 <- ((do_surf_sat - do_surf) * k_buoy * Surface_area)[-length(datetime)]
+  
   
   #metab is in g O2 per day for whole channel
-  delta.do.metab <- (delta.do*freq*Total_volume) - gas.flux 
+  delta.do.metab <- (delta.do*freq*Vol_sum[-length(datetime)]) - gas.flux 
+  
+  delta.do.metab_v1 <- (delta.do_v1*freq*Vol_sum[-length(datetime)]) - gas.flux 
+  
   
   #Convert to area and summarize by day/night (g O2 per m2 per day)
-  delta.do.metab.area <- delta.do.metab/Surface_area  
+  delta.do.metab.area <- delta.do.metab/Area_m2[-length(datetime)]
+  delta.do.metab.area_v1 <- delta.do.metab_v1/Surface_area  
+  
   
   nep.day <- delta.do.metab.area[isday]
   nep.night <- delta.do.metab.area[isnight]
   ER <- mean(nep.night, na.rm = TRUE)
   NEP <- mean(delta.do.metab.area, na.rm = TRUE)
   GPP <- mean(nep.day, na.rm = TRUE) - ER
+  
+  nep.day_v1 <- delta.do.metab.area_v1[isday]
+  nep.night_v1 <- delta.do.metab.area_v1[isnight]
+  ER_v1 <- mean(nep.night_v1, na.rm = TRUE)
+  NEP_v1 <- mean(delta.do.metab.area_v1, na.rm = TRUE)
+  GPP_v1 <- mean(nep.day_v1, na.rm = TRUE) - ER
   # metab <- data.frame(GPP = GPP, R = R, NEP = NEP)
   
   metab.out$GPP[m]<-GPP
   metab.out$ER[m]<-ER
   metab.out$NEP[m]<-NEP
+  
+  metab.out$GPP_v1[m]<-GPP_v1
+  metab.out$ER_v1[m]<-ER_v1
+  metab.out$NEP_v1[m]<-NEP_v1
   }
   }
   
 
   
-  metab.roll <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 3, mean, align='center', fill=NA)
+  metab.roll <- rollapply(metab.out[c('GPP', 'ER', 'NEP', 'GPP_v1', 'ER_v1', 'NEP_v1')], 3, mean, align='center', fill=NA)
   colnames(metab.roll)<-paste0(colnames(metab.roll), '_roll')
   
   metab.out2 <- bind_cols(metab.out, data.frame(metab.roll))
@@ -274,6 +397,30 @@ for (buoy_nu in 1:length(buoy_names)){
   points(metab.out2$Date, metab.out2$NEP_roll, type='l', lwd=2)
   points(metab.out2$Date, metab.out2$GPP_roll, type='l', lwd=2, col='darkgreen')
   points(metab.out2$Date, metab.out2$ER_roll, type='l', lwd=2, col='sienna4')
+  
+  # points(metab.out$Date, roll_mean(metab.out$NEP, 5, fill=NA), type='l', lwd=3)
+  # points(metab.out$Date, roll_mean(metab.out$GPP, 5, fill=NA), type='l', lwd=3, col='darkgreen')
+  # points(metab.out$Date, roll_mean(metab.out$ER, 5, fill=NA), type='l', lwd=3, col='sienna4')
+  
+  
+  mtext(expression(paste('g ', O[2], ' m'^'-2', ' d'^'-1')), 2, 1.5)
+  mtext(site_name, 3, 0.1)
+  
+  legend('topright', inset=0.02, c('GPP', 'NEP', 'ER'), text.col=c('darkgreen', 'black', 'sienna4'), lty=0, bty='n')
+  
+  dev.off()  
+  
+  png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'Metabolism', paste('Metabolism_', site_name, '_TS_v1.png')), width=5, height=4, units='in', res=200)
+  par(mar=c(3,3,1.5,.5), mgp=c(3,.5,0), tck=-0.02)
+  
+  plot(metab.out2$Date, metab.out2$NEP_v1, type='l', ylim=range(metab.out[,6:8], na.rm=T), lwd=.5, xlab='', ylab='', las=1)
+  abline(h=0, lty=3, lwd=.5)
+  points(metab.out2$Date, metab.out2$GPP_v1, type='l', col='darkgreen', lwd=.5)
+  points(metab.out2$Date, metab.out2$ER_v1, type='l', col='sienna4', lwd=.5)
+  
+  points(metab.out2$Date, metab.out2$NEP_v1_roll, type='l', lwd=2)
+  points(metab.out2$Date, metab.out2$GPP_v1_roll, type='l', lwd=2, col='darkgreen')
+  points(metab.out2$Date, metab.out2$ER_v1_roll, type='l', lwd=2, col='sienna4')
   
   # points(metab.out$Date, roll_mean(metab.out$NEP, 5, fill=NA), type='l', lwd=3)
   # points(metab.out$Date, roll_mean(metab.out$GPP, 5, fill=NA), type='l', lwd=3, col='darkgreen')
