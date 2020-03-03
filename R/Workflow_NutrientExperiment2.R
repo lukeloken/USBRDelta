@@ -25,6 +25,7 @@ source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 source('R/lightmodel.R')
 source('R/ImageScale.R')
+source('R/not_all_na.R')
 
 #As of Feb 2020, new single folder where all data and outputs live
 onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
