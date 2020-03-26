@@ -7,6 +7,36 @@ library(tidyr)
 met.final<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'merge_df_O18.rds'))
 
 
+#Stratification data
+duration <- read.csv(file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'DWSC_CM74_Duration_Stratification.csv'))
+strength <- read.csv(file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'DWSC_CM74_Strength_Stratification.csv'))
+
+duration <- duration %>%
+  mutate(Date = mdy(Timestamp..PST.)) %>%
+  rename(StratificationDuration = Duration.of.Stratification..hours.) %>%
+  select(Date, StratificationDuration)
+
+strength <- strength %>%
+  mutate(DateTime = as.POSIXct(Timestamp..PST., format='%m/%d/%Y %H:%M', tz="Etc/GMT+8")) %>%
+  rename(StratificationStrength = Strength.of.Stratification..deg.C.m.) %>%
+  select(DateTime, StratificationStrength) %>%
+  mutate(Date = as.Date(DateTime, tz="Etc/GMT+8"))
+
+stratification <- strength %>%
+  group_by(Date) %>%
+  dplyr::summarize(Strength_mean = mean(StratificationStrength, na.rm=T),
+                   Strength_median = median(StratificationStrength, na.rm=T),
+                   Strength_min = min(StratificationStrength, na.rm=T),
+                   Strength_max = max(StratificationStrength, na.rm=T),
+                   n=n()) %>%
+  filter(n>20) %>%
+  select(-n) %>%
+  full_join(duration)
+
+
+met.final <- met.final %>%
+  left_join(stratification)
+
 #Buoy metabolism
 metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
   dplyr::select(Date, Site, GPP_roll, ER_roll, NEP_roll) %>%
