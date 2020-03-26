@@ -80,6 +80,7 @@ source('R/Plot_O18Metabolism_NutrientExperiment2.R')
 #Buoy metabolism
 source('R/CombineBuoySensorData_SSCN2.R')
 source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
+source('R/CalculateSchmidtStability_NutrientExperiment2.R')
 source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
 
 #Combine metabolism
