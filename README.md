@@ -10,13 +10,11 @@ Each data group contains a single workflow script that sources a variety of data
 
 These scripts are entitled:
 
-Workflow_MonthlySampling.R
+1. Workflow_MonthlySampling.R
+2. Workflow_NutrientExperiment.R
+3. Workflow_NutrientExeperiment2.R
 
-Workflow_NutrientExperiment.R
-
-Workflow_NutrientExeperiment2.R
-
-Each Script begins by loading a handful of libraries, custom functions, and a character string noting the data directory. As of Feb 2020, data are being moved to a OneDrive folder entitled "USBR_DWSC"
+Each script begins by loading a handful of libraries, custom functions, and a character string noting the data directory. As of Feb 2020, data are being moved to a OneDrive folder entitled "USBR_DWSC"
 
 ```
 library(readxl)
@@ -50,11 +48,12 @@ For the scripts to run, the object `onedrive_dir` needs to match your computer.
 
 The workflow script calls a number of scripts that each complete a set of tasks. 
 These generally follow the order:
-1)load data
-2)process data
-3)combine data
-4)analyze data
-5)plot data
+
+1. load data
+2. process data
+3. combine data
+4. analyze data
+5. plot data
 
 I apologize but many scripts are lengthy, but I am trying to be better of making each script shorter and only exectue one task. 
 
