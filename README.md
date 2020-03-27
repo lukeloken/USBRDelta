@@ -9,8 +9,11 @@ Data are grouped into 3 classes: Monthly, Experiment 1, and Experiment 2
 Each data group contains a single workflow script that sources a variety of data cleaning, merging, analyzing, and plotting scripts. 
 
 These scripts are entitled:
+
 Workflow_MonthlySampling.R
+
 Workflow_NutrientExperiment.R
+
 Workflow_NutrientExeperiment2.R
 
 Each Script begins by loading a handful of libraries, custom functions, and a character string noting the data directory. As of Feb 2020, data are being moved to a OneDrive folder entitled "USBR_DWSC"
