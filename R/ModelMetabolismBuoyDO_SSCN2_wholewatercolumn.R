@@ -162,7 +162,7 @@ for (buoy_nu in 1:length(buoy_names)){
   wrt1<-spread(temp_buoy[c('Datetime_PDT_round', 'Depth', 'Temp_C')], key=Depth, value=Temp_C, fill=NA )
   wrt3<-wrt1[which(!is.na(rowSums(wrt1[,2:10]))),]
   
-  # Calculating rolloing thermocline depth
+  # Calculating rolling thermocline depth
   t.d<-apply(wrt3[,2:10], 1, function (x) thermo.depth(x, depths=as.numeric(names(wrt3[,2:10])), mixed.cutoff = 0.2)[1])
   
   #Calculate upper mixed layer depth (top of metalimnion)
