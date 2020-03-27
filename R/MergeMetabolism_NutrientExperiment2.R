@@ -6,8 +6,22 @@ library(tidyr)
 #load water chem with incubation and O18 results
 met.final<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'merge_df_O18.rds'))
 
+# Gage Data water level
+RawData <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'USGSGageData.rds'))
 
-#Stratification data
+DailyGage <- RawData %>%
+  select(dateTime, GH_Inst) %>%
+  mutate(Date = as.Date(dateTime, tz='America/Los_Angeles')) %>%
+  group_by(Date) %>%
+  summarize(GH_max = max(GH_Inst, na.rm=T),
+            GH_min = min(GH_Inst, na.rm=T),
+            n = n()) %>%
+  mutate(GH_range = GH_max - GH_min) %>%
+  filter(n>460)
+
+# plot(DailyGage$Date, DailyGage$GH_range, type='l')
+
+#Stratification data from Paul
 duration <- read.csv(file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'DWSC_CM74_Duration_Stratification.csv'))
 strength <- read.csv(file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'DWSC_CM74_Strength_Stratification.csv'))
 
@@ -33,16 +47,35 @@ stratification <- strength %>%
   select(-n) %>%
   full_join(duration)
 
+#SchmidtStability
+strat_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Schmidt_Stability.rds'))
 
-met.final <- met.final %>%
-  left_join(stratification)
+strat_df_daily <- strat_df %>%
+  mutate(Date = as.Date(Datetime_PDT_round, tz='America/Los_Angeles')) %>%
+  group_by(Site, Date) %>%
+  summarize_at("Schmidt", .funs=c(min, mean, max, median))
 
+names(strat_df_daily)[3:6] <- paste0('Schmidt_', c('min', 'mean', 'max', 'median'))
+
+
+# ###########################################
 #Buoy metabolism
+# ############################################
 metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
   dplyr::select(Date, Site, GPP_roll, ER_roll, NEP_roll) %>%
   dplyr::rename(GPP_buoy_area = GPP_roll,
                 ER_buoy_area = ER_roll,
                 NEP_buoy_area = NEP_roll)
+
+
+metab.df <- metab.df %>%
+  left_join(stratification) %>%
+  left_join(strat_df_daily) %>%
+  mutate(Site = factor(Site, sitetable$site1))
+
+metab.buoy.dailymean <- metab.df %>%
+  group_by(Date) %>%
+  summarize_at(vars(GPP_buoy_area:Schmidt_median), .funs=mean, na.rm=T)
 
 
 merge_df_all <- full_join(met.final, metab.df)
@@ -401,6 +434,9 @@ dev.off()
 # Timeseries boxplots
 # ###################
 
+xlim<-range(metab.df$Date[which(is.finite(metab.df$NEP))], na.rm=T)
+
+
 commonBox<-list(
   geom_vline(xintercept=fert_dates, color='green', linetype=2, size=1),
   geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
@@ -428,20 +464,33 @@ NEPbox_Inc <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=NEP_Inc_area))
 
 
 #Buoy
-GPPbox_buoy <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=GPP_buoy_area)) + 
+GPPbox_buoy <- ggplot(merge_df_allmetab, aes(x=Date, y=GPP_buoy_area)) + 
   commonBox +
   labs(x='Date', y=GPPbuoyexp) +
-  geom_boxplot(fill='darkgreen', outlier.size=0.5) 
+  geom_boxplot(aes(group=Date), fill='darkgreen', outlier.size=0.5)  
+
+GPP_box_buoy_withWL <- GPPbox_buoy + 
+  geom_point(data=DailyGage, aes(x=Date, y=2*(GH_range-mean(GH_range))), col='darkblue', size=2)
+
+GPP_box_buoy_withSchmidt <- GPPbox_buoy + 
+  geom_path(data=metab.buoy.dailymean, aes(x=Date, y=Schmidt_mean), col='darkblue', size=2, alpha=.5)
+
+# GPP_box_buoy_withSchmidt
 
 ERbox_buoy <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=ER_buoy_area)) + 
   commonBox +
   labs(x='Date', y=ERbuoyexp) +
   geom_boxplot(fill='sienna4', outlier.size=0.5) 
 
-NEPbox_buoy <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=NEP_buoy_area)) + 
+NEPbox_buoy <- ggplot(merge_df_allmetab, aes(x=Date, y=NEP_buoy_area)) + 
   commonBox +
   labs(x='Date', y=NEPbuoyexp) +
-  geom_boxplot(fill='grey30', outlier.size=0.5) 
+  geom_boxplot(aes(group=Date), fill='grey30', outlier.size=0.5) 
+
+NEP_box_buoy_withSchmidt <- NEPbox_buoy + 
+  geom_path(data=metab.buoy.dailymean, aes(x=Date, y=Schmidt_mean/4), col='darkblue', size=2, alpha=.5)
+
+NEP_box_buoy_withSchmidt
 
 #O18
 GPPbox_O18 <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=GPP_O18_area)) + 
@@ -454,16 +503,29 @@ ERbox_O18 <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=ER_O18_area)) +
   labs(x='Date', y=ERO18exp) +
   geom_boxplot(fill='sienna4', outlier.size=0.5) 
 
-NEPbox_O18 <- ggplot(merge_df_allmetab, aes(x=Date, group=Date, y=NEP_O18_area)) + 
+NEPbox_O18 <- ggplot(merge_df_allmetab, aes(x=Date, y=NEP_O18_area)) + 
   commonBox +
   labs(x='Date', y=NEPO18exp) +
-  geom_boxplot(fill='grey30', outlier.size=0.5) 
+  geom_boxplot(aes(group=Date), fill='grey30', outlier.size=0.5) 
 
+NEPbox_O18_withSchmidt <- NEPbox_O18 + 
+  geom_path(data=metab.buoy.dailymean, aes(x=Date, y=Schmidt_mean/4), col='darkblue', size=2, alpha=.5)
+
+NEPbox_O18_withSchmidt
 
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(GPPbox_buoy, GPPbox_Inc, GPPbox_O18), ncol=1)
 dev.off()
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_withWL_TS.png'), width=5, height=7, units='in', res=200)
+grid.arrange(grobs=list(GPP_box_buoy_withWL, GPPbox_Inc, GPPbox_O18), ncol=1)
+dev.off()
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_withSchmidt_TS.png'), width=5, height=7, units='in', res=200)
+grid.arrange(grobs=list(GPP_box_buoy_withSchmidt, GPPbox_Inc, GPPbox_O18), ncol=1)
+dev.off()
+
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'ER_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(ERbox_buoy, ERbox_Inc, ERbox_O18), ncol=1)
@@ -471,6 +533,10 @@ dev.off()
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
 grid.arrange(grobs=list(NEPbox_buoy, NEPbox_Inc, NEPbox_O18), ncol=1)
+dev.off()
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEP_Boxplot_withSchmidt_TS.png'), width=5, height=7, units='in', res=200)
+grid.arrange(grobs=list(NEP_box_buoy_withSchmidt, NEPbox_Inc, NEPbox_O18), ncol=1)
 dev.off()
 
 
@@ -594,6 +660,316 @@ dev.off()
 
 
 
+
+
+
+#Plot against drivers
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusTurb.png'), width=3.5, height=3.5, units='in', res=200)
+
+print(
+  ggplot(merge_df_allmetab[which(!is.na(merge_df_allmetab$GPP_O18_area)),], aes(x=YSI_Turb_FNU, y=GPP_O18_area)) +
+    labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # geom_smooth(method='lm', formula= y~x) + 
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='none')
+)
+
+dev.off()
+
+# ggplot(merge_df_allmetab, aes(x=EXOTurbFNU, y=ER_O18_area, fill=Site)) + 
+#   labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' ER (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+#   # scale_x_log10() + 
+#   scale_shape_manual(values=rep(21:25, 5))  + 
+#   scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) + 
+#   scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+#   geom_point(size=2, aes(fill=Site, shape=Site)) + 
+#   theme_bw() +
+#   theme(plot.title = element_text(hjust=0.5))  +
+#   theme(legend.position='bottom')
+# 
+# ggplot(merge_df_allmetab, aes(x=EXOTurbFNU, y=nepv, fill=Site)) + 
+#   labs(x=expression(paste('Turbidity (FNU)')), y=expression(paste(delta^'18', "O-", O[2], ' NEP (mg ', O[2], ' L'^'-1', ' d'^'-1', ')'))) + 
+#   # scale_x_log10() + 
+#   scale_shape_manual(values=rep(21:25, 5))  + 
+#   scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) + 
+#   scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+#   geom_point(size=2, aes(fill=Site, shape=Site)) + 
+#   theme_bw() +
+#   theme(plot.title = element_text(hjust=0.5))  +
+#   theme(legend.position='bottom')
+
+
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusChlA.png'), width=4, height=4, units='in', res=200)
+
+print(
+  ggplot(merge_df_allmetab[which(!is.na(merge_df_allmetab$GPP_O18_area)),], aes(x=YSI_ChlA_ugL, y=GPP_O18_area, fill=Site)) +
+    labs(x=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom')
+)
+
+dev.off()
+
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusNO3.png'), width=4, height=4, units='in', res=200)
+
+print(
+  ggplot(merge_df_allmetab[which(!is.na(merge_df_allmetab$GPP_O18_area)),], aes(x=`NO3-ppm`, y=GPP_O18_area, fill=Site)) +
+    labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom')
+)
+
+dev.off()
+
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'GPP_VersusStratification.png'), width=4, height=4, units='in', res=200)
+
+print(
+  ggplot(merge_df_allmetab[which(!is.na(merge_df_allmetab$GPP_O18_area)),], aes(x=StratificationDuration, y=GPP_O18_area, fill=Site)) +
+    labs(x=expression(paste('Stratification duration')), y=expression(paste(delta^'18', "O-", O[2], ' GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom')
+)
+
+dev.off()
+
+
+# png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'BuoyGPP_VersusStratification.png'), width=4, height=4, units='in', res=200)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Schmidt_mean, y=NEP_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Schmidt max (unit)')), y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    geom_smooth(aes(colour=Site), method='lm', se=F) +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom')
+)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Strength_max, y=GPP_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Stratification max')), y=expression(paste('Buoy GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_linetype(guide=F) + 
+    # geom_smooth(aes(colour=Site), method='lm', se=F) +
+    geom_point(size=2, aes(fill=Site, shape=Site), col='black') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    guides(colour = guide_legend(override.aes = list(colour = NULL)))
+)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Strength_max, y=NEP_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Stratification max')), y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_linetype(guide=F) + 
+    # geom_smooth(aes(colour=Site), method='lm', se=F) +
+    geom_point(size=2, aes(fill=Site, shape=Site), col='black') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    guides(colour = guide_legend(override.aes = list(colour = NULL)))
+)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Strength_mean, y=NEP_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Stratification mean')), y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_linetype(guide=F) + 
+    # geom_smooth(aes(colour=Site), method='lm', se=F) +
+    geom_point(size=2, aes(fill=Site, shape=Site), col='black') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    guides(colour = guide_legend(override.aes = list(colour = NULL)))
+)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Strength_max, y=ER_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Stratification max')), y=expression(paste('Buoy ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_linetype(guide=F) + 
+    # geom_smooth(aes(colour=Site), method='lm', se=F) +
+    geom_point(size=2, aes(fill=Site, shape=Site), col='black') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    guides(colour = guide_legend(override.aes = list(colour = NULL)))
+)
+
+print(
+  ggplot(merge_df_allmetab, aes(x=Strength_mean, y=ER_buoy_area, fill=Site)) +
+    labs(x=expression(paste('Stratification mean')), y=expression(paste('Buoy ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_linetype(guide=F) + 
+    # geom_smooth(aes(colour=Site), method='lm', se=F) +
+    geom_point(size=2, aes(fill=Site, shape=Site), col='black') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom') +
+    guides(colour = guide_legend(override.aes = list(colour = NULL)))
+)
+
+#Spatial averages
+#GPP
+Daily_GPP_StratMax <- ggplot(metab.buoy.dailymean, aes(x=Strength_max, y=GPP_buoy_area)) +
+    labs(x=expression(paste('Max daily stratification strength (', degree, 'C m'^'-1', ')')), 
+         y=expression(paste('Buoy GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    geom_point(size=2, col='darkgreen') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_GPP_StratMean <- ggplot(metab.buoy.dailymean, aes(x=Strength_mean, y=GPP_buoy_area)) +
+    labs(x=expression(paste('Mean daily stratification strength (', degree, 'C m'^'-1', ')')), 
+         y=expression(paste('Buoy GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    geom_point(size=2, col='darkgreen') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_GPP_StratDur <- ggplot(metab.buoy.dailymean, aes(x=StratificationDuration, y=GPP_buoy_area)) +
+    labs(x=expression(paste('Daily stratification duration (hr)')), 
+         y=expression(paste('Buoy GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+    geom_point(size=2, col='darkgreen') +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))
+
+
+GPP_startgrid <- grid.arrange(grobs=list(Daily_GPP_StratMax, Daily_GPP_StratMean, Daily_GPP_StratDur), ncol=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyGPP_Versus_Stratification.png'), plot=GPP_startgrid, height=10, width=4, dpi=300, units='in')
+
+#ER
+Daily_ER_StratMax <- ggplot(metab.buoy.dailymean, aes(x=Strength_max, y=ER_buoy_area)) +
+  labs(x=expression(paste('Max daily stratification strength (', degree, 'C m'^'-1', ')')), 
+       y=expression(paste('Buoy ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='sienna4') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_ER_StratMean <- ggplot(metab.buoy.dailymean, aes(x=Strength_mean, y=ER_buoy_area)) +
+  labs(x=expression(paste('Mean daily stratification strength (', degree, 'C m'^'-1', ')')), 
+       y=expression(paste('Buoy ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='sienna4') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_ER_StratDur <- ggplot(metab.buoy.dailymean, aes(x=StratificationDuration, y=ER_buoy_area)) +
+  labs(x=expression(paste('Daily stratification duration (hr)')), 
+       y=expression(paste('Buoy ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='sienna4') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+ER_startgrid <- grid.arrange(grobs=list(Daily_ER_StratMax, Daily_ER_StratMean, Daily_ER_StratDur), ncol=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyER_Versus_Stratification.png'), plot=ER_startgrid, height=10, width=4, dpi=300, units='in')
+
+
+
+
+#NEP
+Daily_NEP_StratMax <- ggplot(metab.buoy.dailymean, aes(x=Strength_max, y=NEP_buoy_area)) +
+  labs(x=expression(paste('Max daily stratification strength (', degree, 'C m'^'-1', ')')), 
+       y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='grey30') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_NEP_StratMean <- ggplot(metab.buoy.dailymean, aes(x=Strength_mean, y=NEP_buoy_area)) +
+  labs(x=expression(paste('Mean daily stratification strength (', degree, 'C m'^'-1', ')')), 
+       y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='grey30') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_NEP_StratDur <- ggplot(metab.buoy.dailymean, aes(x=StratificationDuration, y=NEP_buoy_area)) +
+  labs(x=expression(paste('Daily stratification duration (hr)')), 
+       y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='grey30') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+NEP_startgrid <- grid.arrange(grobs=list(Daily_NEP_StratMax, Daily_NEP_StratMean, Daily_NEP_StratDur), ncol=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyNEP_Versus_Stratification.png'), plot=NEP_startgrid, height=10, width=4, dpi=300, units='in')
+
+
+
+#NEP
+Daily_NEP_SchmidtMax <- ggplot(metab.buoy.dailymean, aes(x=Schmidt_max, y=NEP_buoy_area)) +
+  labs(x=expression(paste('Max daily Schmidt stability (unit)')), 
+       y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='grey30') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+Daily_NEP_SchmidtMean <- ggplot(metab.buoy.dailymean, aes(x=Schmidt_mean, y=NEP_buoy_area)) +
+  labs(x=expression(paste('Mean daily Schmidt stability (unit)')), 
+       y=expression(paste('Buoy NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  geom_point(size=2, col='grey30') +
+  theme_bw() +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+
+NEP_schmidtgrid <- grid.arrange(grobs=list(Daily_NEP_SchmidtMax, Daily_NEP_SchmidtMean), ncol=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyNEP_Versus_Schmidt.png'), plot=NEP_schmidtgrid, height=7, width=4, dpi=300, units='in')
 
 
 
