@@ -57,7 +57,7 @@ for (buoy_nu in 1:length(buoy_names)){
   # depths=as.numeric(names(wrt3[,c(2,10)])),
   # bthA=bthA, bthD=bthD))
   
-  strat_df <-data.frame(Datetime_UTC_round = wrt3[,1],
+  strat_df <-data.frame(Datetime_PDT_round = wrt3[,1],
                         Schmidt = sta)%>%
     # arrange(Datetime_UTC_round) %>%
     filter(!is.na(Schmidt))
