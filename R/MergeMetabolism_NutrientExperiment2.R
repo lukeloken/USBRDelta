@@ -1,4 +1,6 @@
 
+library(randomForest)
+library(bestGLM)
 library(tidyr)
 #Combine buoy metabolism with bigger dataset
 
@@ -972,5 +974,37 @@ NEP_schmidtgrid <- grid.arrange(grobs=list(Daily_NEP_SchmidtMax, Daily_NEP_Schmi
 ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyNEP_Versus_Schmidt.png'), plot=NEP_schmidtgrid, height=7, width=4, dpi=300, units='in')
 
 
+predict_vars <- c("SecchiDepth_m", "YSI_SPC_uScm", "YSI_Turb_FNU", 
+                  "PO4-ppm", "TDP-ppm", "TP-ppm", "NH4-ppm", "NO3-ppm", "TDN-ppm",
+                  "TN-ppm", "DOC-ppm", "DIN-ppm", "DON-ppm", "TPN-ppm", "TSS", 
+                  "chla_mean", "pheo_mean", "Strength_mean", "Strength_median",
+                  "Strength_min", "Strength_max", "StratificationDuration", "Schmidt_min",
+                  "Schmidt_mean", "Schmidt_max", "Schmidt_median" )
 
 
+GPP_buoy_data <- merge_df_allmetab %>%
+  select(predict_vars, GPP_buoy_area) 
+
+names(GPP_buoy_data) <- gsub('-', '', names(GPP_buoy_data) )
+predict_vars2 <- gsub('-', '', predict_vars)
+
+GPP_buoy_data_complete <- GPP_buoy_data[complete.cases(GPP_buoy_data),]
+
+
+GPP_glm <- bestglm(GPP_buoy_data_complete,  family=gaussian, IC='BIC', nvmax=5)
+summary(GPP_glm)
+GPP_glm
+
+
+
+mod.equation <- as.formula(paste('GPP_buoy_area', paste(predict_vars2[which(predict_vars2 !='chla_mean')], collapse = " + "), sep = " ~ "))
+
+mod <- randomForest(mod.equation, data = GPP_buoy_data, importance = T, na.action = na.omit, ntree = 1000)
+
+summary(mod)
+
+print(randomForest::varImpPlot(mod))
+
+
+ggplot(data=merge_df_allmetab, aes(x=Site, y=Schmidt_max)) +
+  geom_boxplot(aes(fill=Site))
