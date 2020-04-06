@@ -112,7 +112,7 @@ GageData <- GageData %>%
 
 #Volumes of three depth strata
 Vol_top_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[1:2]))], na.rm=T)
-Vol_mid_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top
+Vol_mid_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x < mean(DO_depths_num[2:3]))], na.rm=T) - Vol_top_v1
 Vol_bot_v1 <- sum(Depth_pred25$y[which(Depth_pred25$x >= mean(DO_depths_num[2:3]))], na.rm=T)
 
 
@@ -357,13 +357,16 @@ ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 
   nep.night <- delta.do.metab.area[isnight]
   ER <- mean(nep.night, na.rm = TRUE)
   NEP <- mean(delta.do.metab.area, na.rm = TRUE)
-  GPP <- mean(nep.day, na.rm = TRUE) - ER
+  # GPP <- mean(nep.day, na.rm = TRUE) - ER
+  GPP <- sum((nep.day - ER)/freq[isday], na.rm=T)
   
   nep.day_v1 <- delta.do.metab.area_v1[isday]
   nep.night_v1 <- delta.do.metab.area_v1[isnight]
   ER_v1 <- mean(nep.night_v1, na.rm = TRUE)
   NEP_v1 <- mean(delta.do.metab.area_v1, na.rm = TRUE)
-  GPP_v1 <- mean(nep.day_v1, na.rm = TRUE) - ER
+  # GPP_v1 <- mean(nep.day_v1, na.rm = TRUE) - ER
+  GPP_v1 <- sum((nep.day_v1 - ER_v1)/freq[isday], na.rm=T)
+  
   # metab <- data.frame(GPP = GPP, R = R, NEP = NEP)
   
   metab.out$GPP[m]<-GPP
