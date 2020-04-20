@@ -48,15 +48,15 @@ if (ncol(time_df) %% 2 == 0){
 #Remove NAs from Jar vector and generate a vector of the Jar reads
 JarSampleOrder<- JarData %>%
   dplyr::select(starts_with("Jar")) %>%
-  dplyr::select(1) 
+  dplyr::select(2) 
 
 TreatmentSampleOrder<- JarData %>%
   dplyr::select(starts_with("Treatment")) %>%
-  dplyr::select(1) 
+  dplyr::select(2) 
 
 SiteSampleOrder<- JarData %>%
   dplyr::select(starts_with("Site")) %>%
-  dplyr::select(1) 
+  dplyr::select(2) 
 
 
 Jar<-rep(JarSampleOrder[,1], each=nrow(DO_df)/length(JarSampleOrder[,1]))
