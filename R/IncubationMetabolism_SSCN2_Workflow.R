@@ -72,6 +72,13 @@ for (file_nu in 1:length(files)){
     write.csv(DOrate_mean_long_table, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'IncubationMetabolism', paste('IncubationMetabolism_', Date_ymd, '.csv')), row.names=F)
     saveRDS(DOrate_mean_long_table , file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'IncubationMetabolism', paste('IncubationMetabolism_', Date_ymd, '.rds')))
 
+    #Looking for bugs
+    (DOrate_mean_long_table) %>%
+      filter(Site == 'site3', Metric=='GPP') %>%
+      arrange(Treatment)
+      
+    
+    
     
     IncubationMetabolism_summary <- DOrate_mean_long_table %>%
       dplyr::select(-Jar, -Day) %>%
