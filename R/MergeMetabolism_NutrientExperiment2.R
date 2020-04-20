@@ -1,6 +1,6 @@
 
 library(randomForest)
-library(bestGLM)
+library(bestglm)
 library(tidyr)
 #Combine buoy metabolism with bigger dataset
 
@@ -972,6 +972,22 @@ Daily_NEP_SchmidtMean <- ggplot(metab.buoy.dailymean, aes(x=Schmidt_mean, y=NEP_
 NEP_schmidtgrid <- grid.arrange(grobs=list(Daily_NEP_SchmidtMax, Daily_NEP_SchmidtMean), ncol=1)
 
 ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailyNEP_Versus_Schmidt.png'), plot=NEP_schmidtgrid, height=7, width=4, dpi=300, units='in')
+
+
+
+print(
+  ggplot(merge_df_allmetab[which(!is.na(merge_df_allmetab$GPP_O18_area)),], aes(x=Schmidt_mean, y=YSI_ChlA_ugL, fill=Site)) +
+    labs(y=expression(paste('Chl a (', mu, 'g L'^'-1', ')')), x=expression(paste('Schmidt mean'))) +
+    # scale_x_log10() +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) +
+    geom_point(size=2, aes(fill=Site, shape=Site)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  +
+    theme(legend.position='bottom')
+)
+
 
 
 predict_vars <- c("SecchiDepth_m", "YSI_SPC_uScm", "YSI_Turb_FNU", 
