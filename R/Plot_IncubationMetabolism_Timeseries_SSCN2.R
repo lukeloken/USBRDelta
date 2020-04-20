@@ -147,8 +147,17 @@ ERTable<- results_df %>%
   tidyr::spread(key=Treatment, value = MeanValue)
 
 
+results_df3 <- results_df2 %>%
+  select(-SDValue) %>%
+  spread(Metric, MeanValue)
 
+ggplot(results_df3, aes(y=NEP, x=ER*-1)) +
+  geom_point(aes(col=Treatment)) +
+  geom_abline() +
+  geom_abline(intercept=0, slope=3.56)
 
+summary(lm(results_df3$GPP ~ (results_df3$ER)))
+summary(lm(results_df3$NEP ~ (results_df3$ER)))
 
 #Loop through tables and sum daily metabolism for each depth layer
 i=1
