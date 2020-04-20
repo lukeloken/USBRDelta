@@ -13,12 +13,25 @@ library(viridis)
 library(lubridate)
 library(LakeMetabolizer)
 
+#DO data from buoy
+DO_df_clean2   <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_DO_cleaned.rds'))
+
+#Prep DO data
+DO_depths<-unique(DO_df_clean2$Depth)
+DO_depths_num<-as.numeric(DO_depths[order(DO_depths)])
+
+DO_df_clean2 <- DO_df_clean2 %>%
+  mutate(Datetime_PDT = Datetime_UTC)
+attributes(DO_df_clean2$Datetime_PDT)$tzone = 'America/Los_Angeles'
+DO_df_clean2$Datetime_PDT_round = round_date(DO_df_clean2$Datetime_PDT, unit="5 minutes")
 
 
 #upload merged data
 merge_df_IncMetab <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
 
 results_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'IncubationMetabolismSummary.rds'))
+
+TreatmentLevels <- rev(as.numeric(levels(results_df$Treatment))[order(as.numeric(levels(results_df$Treatment)))])
 
 
 # #######################################################################
@@ -38,6 +51,8 @@ attributes(wind_pred$Datetime_PDT_round)$tzone
 
 wind_pred$Date <- as.Date(wind_pred$Datetime_PDT_round, tz='America/Los_Angeles')
 
+wind_pred$PAR = sw.to.par.base(wind_pred$SolRad_Wsqm)
+
 Inc_dates <- unique(results_df$Date)
 
 #Estimate day length
@@ -46,7 +61,9 @@ sunset<-sun.rise.set(wind_pred$Datetime_PDT_round, lat=38.5064)[,2]
 daylength<- as.numeric(sunset-sunrise, unit='hours')
 
 
-lights <- c(1000, 300, 100)
+lights <- c(500, 100, 20)
+
+MergeTreat <- data.frame(lights, TreatmentLevels)
 
 #upload hypso data
 Depth_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'HypsoCurveNL74.rds'))
@@ -56,8 +73,11 @@ Depth_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'HypsoCurveNL74.rds'))
 Depth_pred <- data.frame(approx(x=Depth_df$Depth_m, y=Depth_df$Volume_m3, xo=seq(0, max(Depth_df$Depth_m), by=0.01))) %>%
   mutate(y= y/50)
  
-Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
+# Total_volume = sum(Depth_df$Volume_m3, na.rm=T)
+Total_volume = sum(Depth_pred$y, na.rm=T)
+
 Surface_area = Depth_df$Area_m2[which(Depth_df$Depth_m==0)]
+
 Mean_depth <- Total_volume/Surface_area
 
 day_i <- 2
@@ -68,15 +88,14 @@ for (day_i in 1:length(Inc_dates)) {
 
   results_i <- filter(results_df, Date==date_i)
 
-  wind_i <- filter(wind_pred, Date == date_i) %>%
-    mutate(PAR = sw.to.par.base(SolRad_Wsqm) )
+  wind_i <- filter(wind_pred, Date == date_i) 
   
   freq_i <- 1/as.numeric((diff(wind_i$Datetime_PDT_round)), units='days')
   
   wind_i$freq <- c(freq_i[1], freq_i)
   
-  sunrise_i = head(wind_i$Datetime_PDT_round[wind_i$SolRad_Wsqm>20], 1)
-  sunset_i = tail(wind_i$Datetime_PDT_round[wind_i$SolRad_Wsqm>20], 1)
+  sunrise_i = head(wind_i$Datetime_PDT_round[wind_i$PAR>20], 1)
+  sunset_i = tail(wind_i$Datetime_PDT_round[wind_i$PAR>20], 1)
   
   merge_df_i <- filter (merge_df_IncMetab, Date==date_i, DepthCode == "S") %>%
     select(Site, Date, SampleCode, kd_meters, PhoticDepth_m,   PD_est,   Kd_est, PD01_est, chla_mean)
@@ -135,7 +154,7 @@ for (day_i in 1:length(Inc_dates)) {
       
       volumes_df_t <- data.frame(site=merge_df_i$Site, 
                                  light = rep(0, nrow(merge_df_i)),
-                                 volume = rep(sum(Depth_i2$y), nrow(merge_df_i)),
+                                 volume = rep(sum(Depth_i$y), nrow(merge_df_i)),
                                  Datetime_PDT_round=rep(time_t, nrow(merge_df_i)))
       
     }
@@ -153,18 +172,81 @@ for (day_i in 1:length(Inc_dates)) {
   volume_summary_list[[day_i]] <- volume_summary
 }
 
-volume_summary_df <- ldply(volume_summary_list, data.frame) 
+volume_summary_df <- ldply(volume_summary_list, data.frame) %>%
+  left_join(MergeTreat, by = c("light" = "lights"))  %>%
+  mutate(Treatment = as.character(TreatmentLevels)) %>%
+  select(-TreatmentLevels)
 
-
+volume_summary_df$Treatment[which(volume_summary_df$light==0)] <- 0
 ggplot(volume_summary_df, aes(x=Date, y=volume_day, group=site, col=site)) +
   geom_point() +
   geom_path() +
   facet_grid(rows=vars(light), scales='free_y')
 
-  # plot(wind_i$Datetime_PDT_round, wind_i$SolRad_Wsqm)
+
+#Check volume totals
+#Should all be the same
+# test_volume <- volume_summary_df %>%
+#   group_by(site, Date) %>%
+#   summarize(volume_day_total = sum(volume_day))
+
+
+head(volume_summary_df)
+head(results_df)
+
+merge_inc <- results_df %>%
+  select(-SDValue ) %>%
+  spread(key=Metric, value=MeanValue) %>%
+  rename(site = Site ) %>%
+  mutate(Treatment = as.character(Treatment)) %>%
+  full_join(volume_summary_df)
+
+PhoticVolumes <- merge_inc %>%
+  filter(Treatment %in% TreatmentLevels) %>%
+  group_by(Date, site) %>%
+  dplyr::summarize(PhoticTotal = sum(volume_day))
+
+IncMet_bydaysite <- merge_inc %>%
+  filter(Treatment %in% TreatmentLevels) %>%
+  group_by(Date, site) %>%
+  dplyr::summarize(GPP_total = sum(GPP*volume_day, na.rm=T),
+                   ER_photic = 2*sum(ER*volume_day, na.rm=T)) %>%
+  left_join(PhoticVolumes)
+
+FullMetab <- merge_inc %>%
+  filter(Treatment == min(TreatmentLevels)) %>%
+  select(Date, ER) %>%
+  full_join(PhoticVolumes) %>%
+  mutate(DarkVolumes = Total_volume-(2*PhoticTotal)) %>%
+  group_by(Date, site) %>%
+  mutate(ER_dark = DarkVolumes*ER) %>%
+  full_join(IncMet_bydaysite) %>%
+  # mutate(Volume_test = 2*PhoticTotal + DarkVolumes) %>%
+  mutate(ER_total = ER_photic + ER_dark,
+         NEP_total = GPP_total + ER_total) %>%
+  mutate(ER_area = 24*ER_total/Surface_area,
+         GPP_area = 24*GPP_total/Surface_area,
+         NEP_area = 24*NEP_total/Surface_area) %>%
+  select(-ER, -PhoticTotal, -DarkVolumes, -ER_dark, -ER_photic)
+
+
+ggplot(FullMetab, aes(x=Date, y=GPP_area, color=site)) +
+  geom_point() +
+  geom_path()
+
+ggplot(FullMetab, aes(x=Date, y=ER_area, color=site)) +
+  geom_point() +
+  geom_path()
+
+ggplot(FullMetab, aes(x=Date, y=NEP_area, color=site)) +
+  geom_point() +
+  geom_path()
+
+
+# plot(wind_i$Datetime_PDT_round, wind_i$SolRad_Wsqm)
   # abline(h=20)
   
-  
+
   
 # Old for refenrece
 # 
