@@ -61,7 +61,7 @@ sunset<-sun.rise.set(wind_pred$Datetime_PDT_round, lat=38.5064)[,2]
 daylength<- as.numeric(sunset-sunrise, unit='hours')
 
 
-lights <- c(500, 100, 20)
+lights <- c(600, 200, 20)
 
 MergeTreat <- data.frame(lights, TreatmentLevels)
 
@@ -224,23 +224,102 @@ FullMetab <- merge_inc %>%
   # mutate(Volume_test = 2*PhoticTotal + DarkVolumes) %>%
   mutate(ER_total = ER_photic + ER_dark,
          NEP_total = GPP_total + ER_total) %>%
-  mutate(ER_area = 24*ER_total/Surface_area,
-         GPP_area = 24*GPP_total/Surface_area,
-         NEP_area = 24*NEP_total/Surface_area) %>%
-  select(-ER, -PhoticTotal, -DarkVolumes, -ER_dark, -ER_photic)
+  mutate(ER_Inc_area = 24*ER_total/Surface_area,
+         GPP_Inc_area = 24*GPP_total/Surface_area,
+         NEP_Inc_area = 24*NEP_total/Surface_area) %>%
+  select(-ER, -PhoticTotal, -DarkVolumes, -ER_dark, -ER_photic, -GPP_total, -ER_total, -NEP_total)
 
+FullMetab
 
-ggplot(FullMetab, aes(x=Date, y=GPP_area, color=site)) +
+ggplot(FullMetab, aes(x=Date, y=GPP_Inc_area, color=site)) +
   geom_point() +
   geom_path()
 
-ggplot(FullMetab, aes(x=Date, y=ER_area, color=site)) +
+ggplot(FullMetab, aes(x=Date, y=ER_Inc_area, color=site)) +
   geom_point() +
   geom_path()
 
-ggplot(FullMetab, aes(x=Date, y=NEP_area, color=site)) +
+ggplot(FullMetab, aes(x=Date, y=NEP_Inc_area, color=site)) +
   geom_point() +
   geom_path()
+
+
+FullMetab_out <- data.frame(FullMetab) %>%
+  rename(Site = site) 
+
+merge_df_IncMetab2 <-  left_join(merge_df_IncMetab, FullMetab_out) 
+
+
+write.csv(merge_df_IncMetab2, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.csv'), row.names=F)
+saveRDS(merge_df_IncMetab2, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
+
+
+#Plot timeseries
+
+#Common theme for all metabolism timeseries panels
+commonTheme_metab<-list(
+  scale_colour_manual(values = colors),
+  scale_fill_manual(values = colors),
+  scale_shape_manual(values=rep(21:25, 5)),
+  # geom_smooth(method='loess',  se=F),
+  # geom_smooth(method='auto', se=T, alpha=.2),
+  # geom_jitter(size=2, width=jitterwidth, height=0, aes(fill=Site, shape=Site)),
+  # geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5),
+  geom_vline(xintercept=(fert_dates), linetype="dashed", color = "green", size=1),
+  geom_hline(yintercept=0, color='lightgrey', linetype=1.5, size=1), 
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5), legend.position="bottom", axis.title.x=element_blank())
+)
+
+
+#Timeseries areal rate
+p1<-ggplot(aes(x=Date, y=GPP_Inc_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab2[which(!is.na(merge_df_IncMetab2$GPP_Inc_area)),]) + 
+  commonTheme_metab + 
+  # geom_hline(yintercept=0) +   
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(colour='black', size=2) + 
+  # geom_path() + 
+  theme(legend.position='none') + 
+  labs(y=expression(paste('Inc GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+p2<-ggplot(aes(x=Date, y=ER_Inc_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab2[which(!is.na(merge_df_IncMetab2$GPP_Inc_area)),]) + 
+  commonTheme_metab + 
+  # geom_hline(yintercept=0) + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +  
+  geom_point(colour='black', size=2) + 
+  # geom_path() + 
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+p3<-ggplot(aes(x=Date, y=NEP_Inc_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab2[which(!is.na(merge_df_IncMetab2$GPP_Inc_area)),]) + 
+  commonTheme_metab + 
+  # geom_hline(yintercept=0) + 
+  geom_line(size=1, aes(colour=Site,  group=Site)) +    
+  geom_point(colour='black', size=2) + 
+  # geom_path() + 
+  theme(legend.position='none')+ 
+  labs(y=expression(paste('Inc NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+
+plot_withlegend <- p2 + 
+  theme(legend.position="bottom", legend.title=element_blank()) +
+  guides(color = guide_legend(nrow = 2))
+
+mylegend<-g_legend(plot_withlegend)
+
+
+plot3<-grid.arrange(grobs=list(p3, p1, p2), ncol=1, as.table=F)
+
+
+#Add legend to bottom of figure and save
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism_Area_VariableLight_Timeseries.png'), width=5, height=7, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(p3), ggplotGrob(p1), ggplotGrob(plot_withlegend), size = "first"))
+
+# grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
+
+dev.off()
 
 
 # plot(wind_i$Datetime_PDT_round, wind_i$SolRad_Wsqm)
