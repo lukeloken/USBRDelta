@@ -9,6 +9,7 @@ library(viridis)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
+library(anytime)
 
 
 light<-read.csv(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'LightProfiles', 'SSCN2_LightProfiles.csv'), stringsAsFactors = F)
@@ -16,7 +17,9 @@ light<-read.csv(file.path(onedrive_dir, 'RawData', 'NutrientExperiment2', 'Light
 # light_df<-light[light$Depth_m>0,]
 light_df<-light
 light_df$PAR_umol<-as.numeric(light_df$PAR_umol)
-light_df$Date<-as.Date(light_df$Date, format='%Y-%m-%d')
+# light_df$Date<-as.Date(light_df$Date, format='%Y-%m-%d')
+light_df$Date<-anydate(light_df$Date)
+
 light_df<-light_df[which(light_df$Date > as.Date('2019-07-08') & light_df$Date < as.Date('2019-08-27')),]
 
 light_df$Site[which(light_df$Site=="Site1")]<-"NL70"
