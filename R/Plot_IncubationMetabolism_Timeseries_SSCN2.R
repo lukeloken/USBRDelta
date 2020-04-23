@@ -12,6 +12,7 @@ library(viridis)
 
 library(lubridate)
 library(LakeMetabolizer)
+library(drc)
 
 
 
@@ -216,6 +217,21 @@ write.csv(results_df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperi
 saveRDS(results_df, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'IncubationMetabolismSummary.rds'))
 
 
+PI_data <- results_df %>%
+  filter(Site=='Site5', Metric=='GPP', Date==unique(results_df$Date)[[1]]) %>%
+  mutate(Treatment = as.numeric(as.character(Treatment))) %>%
+  bind_rows(data.frame(Treatment=0, MeanValue=0))
+
+# PI_data$Treatment2 = as.numeric(as.character(PI_data$Treatment))*rnorm(42, mean=1, sd=.05)
+
+m1 <- drm(MeanValue ~ Treatment, data = PI_data, fct = MM.2())
+summary(m1)
+m1
+plot(m1, log='')
+coef(m1)
+
+
+
 
 
 
@@ -225,10 +241,70 @@ saveRDS(results_df, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2',
 # 2) Boxplot of metric by site
 # #######################################
 
+#Light Treatment Figure
+#colors
 
 color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
 colors<-color.palette(length(levels(merge_df_IncMetab$Site)))
 shapes<-rep(21:25, 5)
+
+
+
+
+metrics<-c("GPP", "ER", "NEP")
+
+  # Pick data
+  box_table<-filter(results_df, !is.na(Site)) %>%
+    group_by() %>%
+    mutate(Metric = factor(Metric, metrics),
+           Treatment = as.numeric(as.character(Treatment))) 
+
+    #Plot
+    michelismentenplot_bysite <- ggplot(box_table, aes(Treatment, MeanValue, fill=Site)) +
+    labs(x='Light (%)',y=expression(paste('mg ', O[2], ' L'^'-1', ' hr'^'-1'))) +
+    scale_shape_manual(values=shapes)  +
+    scale_fill_manual(values = colors) +
+    scale_colour_manual(values = colors) +
+    # geom_smooth(aes(group=Date), color='grey', method='nls', 
+    #             formula = y ~ Vmax * x/(Km+x), se=F) +
+      geom_smooth(aes(group=Site, color=Site), method='nls',
+                  formula = y ~ Vmax * x/(Km+x), se=F) +
+    geom_smooth(aes(x=Treatment, y=MeanValue), method='nls', 
+                  formula = y ~ Vmax * x/(Km+x), se=F, col='black', inherit.aes=F, size=2, linetype='dashed') + 
+    geom_jitter(size=3, width=1, height=0, aes(group=Site, fill=Site, shape=Site)) + 
+    theme_bw() +
+    theme(plot.title = element_text(hjust=0.5))  + 
+    theme(legend.position='bottom') +
+    facet_wrap(~Metric, ncol=1, scales='free_y')
+
+    ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism', 'LightResponse.png'), 
+           michelismentenplot_bysite, width=4, height=10, units='in')    
+
+    
+    #Plot
+    michelismentenplot_bydate <- ggplot(box_table, aes(Treatment, MeanValue, color=factor(Date), group=factor(Date))) +
+      labs(x='Light (%)',y=expression(paste('mg ', O[2], ' L'^'-1', ' hr'^'-1')), color="Date") +
+      # scale_shape_manual(values=rep(21:25, 5))  +
+      # scale_fill_manual(values = colors) +
+      # scale_colour_manual(values = colors) +
+      geom_smooth(method='nls', 
+                  formula = y ~ Vmax * x/(Km+x), se=F) +
+      # geom_smooth(aes(group=Site, color=Site), method='nls', 
+      #             formula = y ~ Vmax * x/(Km+x), se=F) +
+      geom_smooth(aes(x=Treatment, y=MeanValue), method='nls', 
+                  formula = y ~ Vmax * x/(Km+x), se=F, col='black', inherit.aes=F, size=2, linetype='dashed') + 
+      geom_jitter(size=3, width=3, height=0, alpha=.5) + 
+      theme_bw() +
+      theme(plot.title = element_text(hjust=0.5))  + 
+      theme(legend.position='right', legend.title=element_blank()) +
+      facet_wrap(~Metric, ncol=1, scales='free_y')
+    
+
+    ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism', 'LightResponse_ByDate.png'), 
+           michelismentenplot_bydate, width=5, height=10, units='in')    
+    
+    
+
 
 
 #Common theme for all metabolism timeseries panels
