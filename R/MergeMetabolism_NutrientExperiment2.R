@@ -81,12 +81,18 @@ metab.buoy.dailymean <- metab.df %>%
 
 
 merge_df_all <- full_join(met.final, metab.df)
+# merge_df_allmetab <- merge_df_all %>%
+#   # drop_na(GPP_Total_area, GPP_buoy_area) %>%
+#   dplyr::rename(GPP_Inc_area = GPP_Total_area,
+#                 ER_Inc_area = ER_Total_area,
+#                 NEP_Inc_area = NEP_Total_area,
+#                 GPP_O18_area = gppa,
+#                 ER_O18_area =  ra,
+#                 NEP_O18_area = nepa)
+
 merge_df_allmetab <- merge_df_all %>%
   # drop_na(GPP_Total_area, GPP_buoy_area) %>%
-  dplyr::rename(GPP_Inc_area = GPP_Total_area,
-                ER_Inc_area = ER_Total_area,
-                NEP_Inc_area = NEP_Total_area,
-                GPP_O18_area = gppa,
+  dplyr::rename(GPP_O18_area = gppa,
                 ER_O18_area =  ra,
                 NEP_O18_area = nepa)
 
@@ -97,6 +103,16 @@ head(merge_df_all)
 metab_summary<-merge_df_allmetab %>%
   group_by(Date) %>%
   summarize_all(mean, na.rm=T)
+
+# plot(merge_df_allmetab$GPP_Inc_area, merge_df_allmetab$GPP_Total_area)
+# abline(0,1)
+# 
+# plot(merge_df_allmetab$ER_Inc_area, merge_df_allmetab$ER_Total_area)
+# abline(0,1)
+# 
+# plot(merge_df_allmetab$NEP_Inc_area, merge_df_allmetab$NEP_Total_area)
+# abline(0,1)
+
 
 #Axis titles
 GPPbuoyexp<-expression(paste('Buoy-GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))
@@ -517,7 +533,10 @@ NEPbox_O18_withSchmidt
 
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
-grid.arrange(grobs=list(GPPbox_buoy, GPPbox_Inc, GPPbox_O18), ncol=1)
+# grid.arrange(grobs=list(GPPbox_buoy, GPPbox_Inc, GPPbox_O18), ncol=1)
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(GPPbox_buoy), ggplotGrob(GPPbox_Inc), ggplotGrob(GPPbox_O18), size = "first"))
+
 dev.off()
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Boxplot_withWL_TS.png'), width=5, height=7, units='in', res=200)
@@ -530,11 +549,15 @@ dev.off()
 
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'ER_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
-grid.arrange(grobs=list(ERbox_buoy, ERbox_Inc, ERbox_O18), ncol=1)
+# grid.arrange(grobs=list(ERbox_buoy, ERbox_Inc, ERbox_O18), ncol=1)
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(ERbox_buoy), ggplotGrob(ERbox_Inc), ggplotGrob(ERbox_O18), size = "first"))
 dev.off()
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEP_Boxplot_TS.png'), width=5, height=7, units='in', res=200)
-grid.arrange(grobs=list(NEPbox_buoy, NEPbox_Inc, NEPbox_O18), ncol=1)
+# grid.arrange(grobs=list(NEPbox_buoy, NEPbox_Inc, NEPbox_O18), ncol=1)
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(NEPbox_buoy), ggplotGrob(NEPbox_Inc), ggplotGrob(NEPbox_O18), size = "first"))
 dev.off()
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'NEP_Boxplot_withSchmidt_TS.png'), width=5, height=7, units='in', res=200)
