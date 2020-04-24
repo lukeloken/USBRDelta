@@ -3,6 +3,10 @@
 #Use temperature data to calculate schmidt stability
 library(rLakeAnalyzer)
 
+#Huey buoy data
+huey_df_distinct <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'USGSBuoys', 'Huey_cleaned.rds'))
+
+
 Temp_df_clean2 <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'Buoy', 'Buoy_Temp_cleaned.rds'))
 
 #Prep Temp data
@@ -84,3 +88,62 @@ strat_df <- ldply(strat.list, data.frame, .id='Site')
 saveRDS(strat_df, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'Buoy', 'Schmidt_Stability.rds'))
 
 write.table(strat_df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'Buoy', 'Schmidt_Stability.csv'), row.names=F, sep=',')
+
+
+
+attributes(huey_df_distinct$DateTime)$tzone <- 'America/Los_Angeles'
+
+huey_withstrat <- strat_df %>%
+  filter(Site == 'NL74') %>%
+  rename(DateTime = Datetime_PDT_round) %>%
+  full_join(huey_df_distinct) %>%
+  arrange(DateTime) %>%
+  mutate(Date = as.Date(DateTime, tz='America/Los_Angeles'))
+
+head(huey_withstrat)
+
+huey_daily <- huey_withstrat %>%
+  group_by(Date) %>%
+  filter(!is.na(Primary.Power)) %>%
+  summarize_at(vars(Temperature:ODO, Turbidity., Chlorophyll.ug.L, 
+                    BGA.PC.ug.L, Nitrate.uM, Schmidt), 
+               list(mean=mean, max=max,
+                    Q3 = quantile), probs = 0.75, na.rm=T)
+
+Q3_plot <- ggplot(huey_daily, aes(x=Schmidt_Q3, y=Chlorophyll.ug.L_Q3)) +
+  geom_point(size=2, col='darkgreen') +
+  theme_bw() +
+  labs(x="Schmidt stability (Q3)",
+       y="Chl a (Q3)") +
+  ggtitle ('Daily 75% quantile')
+
+print(Q3_plot)
+
+mean_plot <- ggplot(huey_daily, aes(x=Schmidt_mean, y=Chlorophyll.ug.L_mean)) +
+  geom_point(size=2, col='darkgreen') +
+  theme_bw() +
+  labs(x="Schmidt stability (mean)",
+       y="Chl a (mean)") +
+  ggtitle ('Daily mean')
+
+print(mean_plot)
+
+
+max_plot <- ggplot(huey_daily, aes(x=Schmidt_max, y=Chlorophyll.ug.L_max)) +
+  geom_point(size=2, col='darkgreen') +
+  theme_bw() +
+  labs(x="Schmidt stability (max)",
+       y="Chl a (max)") +
+  ggtitle ('Daily max')
+
+print(max_plot)
+
+
+
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DailySchmidt_DailyChla_NL74.png'), width=3, height=9, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(mean_plot), ggplotGrob(max_plot), ggplotGrob(Q3_plot), size = "last"))
+
+dev.off()
