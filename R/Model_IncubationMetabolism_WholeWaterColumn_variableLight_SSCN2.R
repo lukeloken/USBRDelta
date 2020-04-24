@@ -98,7 +98,7 @@ for (day_i in 1:length(Inc_dates)) {
   sunset_i = tail(wind_i$Datetime_PDT_round[wind_i$PAR>20], 1)
   
   merge_df_i <- filter (merge_df_IncMetab, Date==date_i, DepthCode == "S") %>%
-    select(Site, Date, SampleCode, kd_meters, PhoticDepth_m,   PD_est,   Kd_est, PD01_est, chla_mean)
+    dplyr::select(Site, Date, SampleCode, kd_meters, PhoticDepth_m,   PD_est,   Kd_est, PD01_est, chla_mean)
   
   Depth_i <- Depth_pred
   
@@ -175,7 +175,7 @@ for (day_i in 1:length(Inc_dates)) {
 volume_summary_df <- ldply(volume_summary_list, data.frame) %>%
   left_join(MergeTreat, by = c("light" = "lights"))  %>%
   mutate(Treatment = as.character(TreatmentLevels)) %>%
-  select(-TreatmentLevels)
+  dplyr::select(-TreatmentLevels)
 
 volume_summary_df$Treatment[which(volume_summary_df$light==0)] <- 0
 ggplot(volume_summary_df, aes(x=Date, y=volume_day, group=site, col=site)) +
@@ -195,7 +195,7 @@ head(volume_summary_df)
 head(results_df)
 
 merge_inc <- results_df %>%
-  select(-SDValue ) %>%
+  dplyr::select(-SDValue ) %>%
   spread(key=Metric, value=MeanValue) %>%
   rename(site = Site ) %>%
   mutate(Treatment = as.character(Treatment)) %>%
@@ -215,7 +215,7 @@ IncMet_bydaysite <- merge_inc %>%
 
 FullMetab <- merge_inc %>%
   filter(Treatment == min(TreatmentLevels)) %>%
-  select(Date, ER) %>%
+  dplyr::select(Date, ER) %>%
   full_join(PhoticVolumes) %>%
   mutate(DarkVolumes = Total_volume-(2*PhoticTotal)) %>%
   group_by(Date, site) %>%
@@ -227,7 +227,7 @@ FullMetab <- merge_inc %>%
   mutate(ER_Inc_area = 24*ER_total/Surface_area,
          GPP_Inc_area = 24*GPP_total/Surface_area,
          NEP_Inc_area = 24*NEP_total/Surface_area) %>%
-  select(-ER, -PhoticTotal, -DarkVolumes, -ER_dark, -ER_photic, -GPP_total, -ER_total, -NEP_total)
+  dplyr::select(-ER, -PhoticTotal, -DarkVolumes, -ER_dark, -ER_photic, -GPP_total, -ER_total, -NEP_total)
 
 FullMetab
 
