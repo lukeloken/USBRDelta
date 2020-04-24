@@ -104,6 +104,16 @@ metab_summary<-merge_df_allmetab %>%
   group_by(Date) %>%
   summarize_all(mean, na.rm=T)
 
+metab_summary_all <- metab_summary %>%
+  group_by() %>%
+  summarize_at(vars(c(GPP_O18_area, ER_O18_area, NEP_O18_area,
+                      GPP_buoy_area, ER_buoy_area, NEP_buoy_area,
+                      GPP_Inc_area, ER_Inc_area, NEP_Inc_area)), 
+               list(mean=mean, min=min, max=max), na.rm=T)
+
+
+
+
 # plot(merge_df_allmetab$GPP_Inc_area, merge_df_allmetab$GPP_Total_area)
 # abline(0,1)
 # 
@@ -133,6 +143,39 @@ colors<-color.palette(length(levels(merge_df_allmetab$Site)))
 shapes<-rep(21:25, 5)
 
 
+Buoy_box <- ggplot(merge_df_allmetab) +
+  geom_boxplot(aes(x=Site, y=GPP_buoy_area, fill=Site)) +
+  scale_colour_manual(values = colors[c(1,3:5, 7)]) +
+  scale_fill_manual(values = colors[c(1,3:5, 7)]) +
+  theme_bw() + 
+  labs( y = GPPbuoyexp) + 
+  theme(legend.position='none', axis.title.x=element_blank(), legend.title=element_blank()) 
+
+O18_box <- ggplot(merge_df_allmetab) +
+  geom_boxplot(aes(x=Site, y=GPP_O18_area, fill=Site)) +
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  theme_bw() + 
+  labs( y = GPPO18exp) + 
+  theme(legend.position='none', axis.title.x=element_blank(), legend.title=element_blank()) +
+  guides(fill=guide_legend(nrow=1))
+
+
+Inc_box <- ggplot(merge_df_allmetab) +
+  geom_boxplot(aes(x=Site, y=GPP_Inc_area, fill=Site)) + 
+  scale_colour_manual(values = colors) +
+  scale_fill_manual(values = colors) +
+  theme_bw() + 
+  labs( y = GPPIncexp) + 
+  theme(legend.position='none', axis.title.x=element_blank(), legend.title=element_blank()) 
+  
+
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPPCompare_Sites_3methods.png'), width=5, height=8, units='in', res=200)
+
+grid.newpage()
+plots<-grid.draw(rbind(ggplotGrob(Buoy_box), ggplotGrob(Inc_box), ggplotGrob(O18_box), size = "first"))
+
+dev.off()
 
 # #######################
 # Comparison of 3 methods
