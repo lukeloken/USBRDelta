@@ -256,6 +256,12 @@ saveRDS(merge_df_IncMetab2, file=file.path(onedrive_dir, 'Rdata', 'NutrientExper
 
 #Plot timeseries
 
+#colors
+color.palette = colorRampPalette(c(viridis(6, begin=.2, end=.98), rev(magma(5, begin=.35, end=.98))), bias=1)
+colors<-color.palette(length(unique(merge_df_IncMetab2$Site)))
+shapes<-rep(21:25, 5)
+
+
 #Common theme for all metabolism timeseries panels
 commonTheme_metab<-list(
   scale_colour_manual(values = colors),
@@ -272,6 +278,8 @@ commonTheme_metab<-list(
 )
 
 
+
+
 #Timeseries areal rate
 p1<-ggplot(aes(x=Date, y=GPP_Inc_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab2[which(!is.na(merge_df_IncMetab2$GPP_Inc_area)),]) + 
   commonTheme_metab + 
@@ -280,7 +288,7 @@ p1<-ggplot(aes(x=Date, y=GPP_Inc_area, color=Site, group=Site, shape=Site, fill=
   geom_point(colour='black', size=2) + 
   # geom_path() + 
   theme(legend.position='none') + 
-  labs(y=expression(paste('Inc GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+  labs(y=expression(paste('Inc GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) 
 
 p2<-ggplot(aes(x=Date, y=ER_Inc_area, color=Site, group=Site, shape=Site, fill=Site), data=merge_df_IncMetab2[which(!is.na(merge_df_IncMetab2$GPP_Inc_area)),]) + 
   commonTheme_metab + 
@@ -298,7 +306,8 @@ p3<-ggplot(aes(x=Date, y=NEP_Inc_area, color=Site, group=Site, shape=Site, fill=
   geom_point(colour='black', size=2) + 
   # geom_path() + 
   theme(legend.position='none')+ 
-  labs(y=expression(paste('Inc NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+  labs(y=expression(paste('Inc NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))+
+  ggtitle(expression(paste('Incubation Metabolism')))
 
 
 plot_withlegend <- p2 + 
