@@ -33,8 +33,8 @@ DO_df_clean2$Datetime_PDT_round = round_date(DO_df_clean2$Datetime_PDT, unit="5 
 #Load gage data for water level
 GageData <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'USGSGageData.rds')) %>%
   filter(site_no == '11455095') %>%
-  select_if(not_all_na) %>%
-  select(dateTime, Wtemp_Inst, Turb_Inst, Flow_Inst, GH_Inst, SpecCond_Inst, DO_Inst, pH_Inst,  X_32316_Inst) %>%
+  dplyr::select_if(not_all_na) %>%
+  dplyr::select(dateTime, Wtemp_Inst, Turb_Inst, Flow_Inst, GH_Inst, SpecCond_Inst, DO_Inst, pH_Inst,  X_32316_Inst) %>%
   rename(Datetime_PDT_round =dateTime) %>%
   mutate(GH_Inst = approx(x=Datetime_PDT_round, y=GH_Inst, xo=Datetime_PDT_round)$y) %>%
   mutate(Flow_Inst = approx(x=Datetime_PDT_round, y=Flow_Inst, xo=Datetime_PDT_round)$y) %>%
@@ -449,6 +449,23 @@ write.table(metab.df, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperi
 saveRDS(metab.df, file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'BuoyMetabolism.rds'))
 
 
+metab.df.daily <- metab.df %>%
+  group_by(Date) %>%
+  select(-Site) %>%
+  summarize_all(mean)
+
+metab.df.wind <- input_df %>%
+  rename(Date = Date_metab) %>%
+  group_by(Date) %>%
+  summarize_at(vars(WS_ms), list(max=max, mean=mean, median=median, min=min), na.rm=T) %>%
+  right_join(metab.df.daily)
+
+metab.df.wind$windplus1 <- c(NA, metab.df.wind$mean[1:(nrow(metab.df.wind)-1)])
+
+ggplot(metab.df.wind, aes(x=mean, y=NEP)) +
+  geom_point() +
+  geom_text(aes(label=Date)) +
+  geom_text(aes(x=mean, y=NEP,label=Date), data=metab.df.wind[metab.df.wind$Date %in% as.Date(c('2019-07-24', '2019-07-27', '2019-08-12', '2019-08-13', '2019-08-14', '2019-08-15', '2019-08-22')),], col='red')
 
 
 # ####################
