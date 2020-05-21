@@ -30,7 +30,7 @@ strength <- read.csv(file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2'
 duration <- duration %>%
   mutate(Date = mdy(Timestamp..PST.)) %>%
   rename(StratificationDuration = Duration.of.Stratification..hours.) %>%
-  select(Date, StratificationDuration)
+  dplyr::select(Date, StratificationDuration)
 
 strength <- strength %>%
   mutate(DateTime = as.POSIXct(Timestamp..PST., format='%m/%d/%Y %H:%M', tz="Etc/GMT+8")) %>%
@@ -68,6 +68,13 @@ metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 
   dplyr::rename(GPP_buoy_area = GPP_roll,
                 ER_buoy_area = ER_roll,
                 NEP_buoy_area = NEP_roll)
+
+#Use daily values rather than 3 day rolling means
+metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
+  dplyr::select(Date, Site, GPP, ER, NEP) %>%
+  dplyr::rename(GPP_buoy_area = GPP,
+                ER_buoy_area = ER,
+                NEP_buoy_area = NEP)
 
 
 metab.df <- metab.df %>%
