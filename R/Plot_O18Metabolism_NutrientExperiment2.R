@@ -56,7 +56,7 @@ ER_O18<-ggplot(met.final, aes(x=Date, y=(rv), fill=Site)) +
 
 ER_O18_withLegened <- ER_O18 + 
   theme(legend.position="bottom",  legend.title=element_blank()) +
-  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+  guides(color = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
 
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'NEPGPPER_TS.png'), width=5, height=7, units='in', res=200)
@@ -89,7 +89,7 @@ ER_O18_area<-ggplot(met.final, aes(x=Date, y=(ra), fill=Site)) +
 
 ER_O18area_withLegened <- ER_O18_area + 
   theme(legend.position="bottom",  legend.title=element_blank()) +
-  guides(color = guide_legend(nrow = 1, title.position='top', title.hjust=0.5))
+  guides(color = guide_legend(nrow = 2, title.position='top', title.hjust=0.5))
 
 
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'O18Metabolism', 'NEPGPPER_area_TS.png'), width=5, height=7, units='in', res=200)
