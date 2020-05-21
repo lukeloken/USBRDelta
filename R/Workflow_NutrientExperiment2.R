@@ -94,6 +94,10 @@ source('R/PlotTimeseries_NutrientExperiment2.R')
 source('R/CompilePlankton_NutrientExperiment2.R')
 source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
 
+#USGS buoy data
+source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
+
+
 
 # ######################################################
 # All code above is functioning (Feb 27, 2020, Luke Loken)
@@ -101,9 +105,6 @@ source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
 # ######################################################
 
 
-
-#USGS buoy data
-# source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
 
 
 # source('R/.R')
