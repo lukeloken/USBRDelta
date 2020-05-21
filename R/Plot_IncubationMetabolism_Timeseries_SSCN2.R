@@ -12,9 +12,9 @@ library(viridis)
 
 library(lubridate)
 library(LakeMetabolizer)
-library(drc)
-
-
+# library(drc)
+detach("package:dplyr", unload=TRUE)
+library(tidyverse)
 
 #upload merged data
 merge_df_gascals <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_withGas_Merged.rds'))
@@ -129,7 +129,7 @@ results_df$Site <-factor(results_df$Site, sitetable$site1)
 
 results_df2<-merge_df_gascals %>%
   filter(DepthCode=="S") %>%
-  dplyr::select(Site, Date, chla_mean, `NO3-ppm`) %>%
+  select(Site, Date, chla_mean, `NO3-ppm`) %>%
   group_by(Site, Date) %>%
   right_join(results_df) %>%
   dplyr::rename(ChlAJar = chla_mean,
