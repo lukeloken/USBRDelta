@@ -58,6 +58,7 @@ ggplot(wind_df, aes(y=WS_ms, x=Station, fill=Station)) +
 #Combine two stations
 #Calculate average wind direction
 wind_dir_mean <-   wind_df %>%
+  filter(Station == '121') %>%
   group_by(DateTime) %>%
   dplyr::summarize(WD_deg = mean(circular(WD_deg, units = "degrees"), na.rm=T))
 
@@ -65,6 +66,7 @@ wind_dir_mean$WD_deg[which(wind_dir_mean$WD_deg<0)]=360+wind_dir_mean$WD_deg[whi
 
 #Summarize other variables and merge with direction
 wind_df_summary <- wind_df %>%
+  filter(Station == '121') %>%
   group_by(DateTime) %>%
   select(-Date, -Hour, -Station, -WD_deg) %>%
   summarize_all(mean) %>%
@@ -98,12 +100,12 @@ windRose(wind_df[wind_df$Station == 212,], ws="WS_ms", wd="WD_deg", cols='hue', 
 
 dev.off()
 
-png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Wind', 'AnnualWind_2StationAverage.png'), width=4, height=4, units='in', res=200)
-par(mar = c(0,0.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
-
-windRose(wind_df_summary, ws="WS_ms", wd="WD_deg", cols='hue', paddle=F, auto.text=F, border='black', grid.line=list(value=10, lty=5, col="gray"), offset=4, main=paste('2018-2019 average wind: 2 stations', sep=""), dig.lab=3, angle.scale=45, key.footer=expression(paste('Wind speed (m s'^'-1', ')')))
-
-dev.off()
+# png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Wind', 'AnnualWind_2StationAverage.png'), width=4, height=4, units='in', res=200)
+# par(mar = c(0,0.5,0.5,0.5),mgp=c(1.5,0.4,0),tck=-0.02)
+# 
+# windRose(wind_df_summary, ws="WS_ms", wd="WD_deg", cols='hue', paddle=F, auto.text=F, border='black', grid.line=list(value=10, lty=5, col="gray"), offset=4, main=paste('2018-2019 average wind: 2 stations', sep=""), dig.lab=3, angle.scale=45, key.footer=expression(paste('Wind speed (m s'^'-1', ')')))
+# 
+# dev.off()
 
 
 #Calculate 3 day means and standard deviations
