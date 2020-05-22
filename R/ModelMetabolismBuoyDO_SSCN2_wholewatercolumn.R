@@ -41,7 +41,9 @@ GageData <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2',
   mutate(GH_m = round(GH_Inst*0.3048, 2)) %>%
   drop_na(GH_Inst)
 
-
+#k models based on ustar
+k_out_wind <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'k_estimates.rds'))
+attributes(k_out_wind$Datetime_PST)$tzone <- 'America/Los_Angeles'
 
 #wind and solar raddata
 wind_df_summary <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'WindDataAvg.rds'))
@@ -52,6 +54,9 @@ names(wind_pred)<-c("Datetime_PDT_round", "WS_ms")
 wind_pred$SolRad_Wsqm <- approx(x=wind_df_summary$DateTime, y=wind_df_summary$SolRad_Wsqm, xo=seq.POSIXt(min(DO_df_clean2$Datetime_PDT_round), max(DO_df_clean2$Datetime_PDT_round), by="5 mins"))$y
 
 attributes(wind_pred$Datetime_PDT_round)$tzone
+
+wind_pred$k_O2 <- approx(x=k_out_wind$Datetime_PST, y=k_out_wind$ k_O2, xo=seq.POSIXt(min(DO_df_clean2$Datetime_PDT_round), max(DO_df_clean2$Datetime_PDT_round), by="5 mins"))$y
+
 
 #load hypso data
 Depth_df <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'HypsoCurveNL74.rds'))
@@ -307,6 +312,8 @@ ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 
   wind_ms <- input_df$WS_ms[index]
   SolRad_Wsqm <- input_df$SolRad_Wsqm[index]
   
+  k_O2 <- input_df$k_O2[index]
+  
   #calculating the gas exchange coefficient for O2 empirically from lake area and wind speed:
   u10 <- wind_ms * (1+ (((0.0013^(0.5))/0.41) * (log(10/wind.height)))) #converting wind speed from 3m to 10m height following equation 3 Vachon & Prairie (2013)
   k600cmh <- 2.51 + 1.48*u10 + 0.39*u10*(log10(area)) #k600 in cm/h from table 2 equation B vachon & prairie 2013
@@ -314,7 +321,9 @@ ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 
   sco2 <- 1800.6 - (120.1*wtr) + (3.7818 * (wtr^2)) - (0.047608*(wtr^3))#calculating schmidt number for oxygen from Jahne et al (1987)
   ko2md <- k600md * ((sco2/600)^(-2/3)) #converting k600 to ko2 in m/d for use in mass balance
   
-  k_buoy<-ko2md
+  # k_buoy<-ko2md
+  
+  k_buoy<-k_O2*24*3600
   
   isday <- which(SolRad_Wsqm>100)
   isnight <- which(SolRad_Wsqm<10)
