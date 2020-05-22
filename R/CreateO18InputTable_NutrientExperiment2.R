@@ -26,14 +26,31 @@ wind_avg <- wind_df_summary %>%
 
   
 #assume a wind height of 10m (completely made up. Should check what the wind height is at the airports)
-wind_avg$wind.height.ms=10
+wind_avg$wind.height.ms=2.5
+
+
+#k models based on ustar
+k_out_wind <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'k_estimates.rds'))
+
+k_out_avg <- k_out_wind %>%
+  mutate(Date = as.Date(Datetime_PST , tz="Etc/GMT+8")) %>%
+  dplyr::select(Date, k_O2, k_O2_theory_low, k_O2_theory_high) %>%
+  group_by(Date) %>%
+  summarize_all(mean, na.rm=T) %>%
+  mutate(k_O2 = k_O2*3600*24,
+         k_O2_theory_low = k_O2_theory_low*3600*24,
+         k_O2_theory_high = k_O2_theory_high*3600*24) %>%
+  mutate(k_O2_3day = roll_mean(k_O2, 3, align='right', fill=NA)) %>%
+  mutate(k_O2_3day_sd = roll_sd(k_O2, 3, align='right', fill=NA)) %>%
+  dplyr::rename(k_O2_daily = k_O2) 
 
 
 #Big data frame
 merge_df_IncMetab <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
 
 
-merge_df_wind <- left_join(merge_df_IncMetab, wind_avg)
+merge_df_wind <- left_join(merge_df_IncMetab, wind_avg) %>%
+  left_join(k_out_avg)
 
 waterO18table <- merge_df_wind %>%
   select(Site, d18OVSMOW, d2HVSMOW) %>%
