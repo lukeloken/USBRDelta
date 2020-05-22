@@ -34,7 +34,7 @@ Mean_depth <- Total_volume/Surface_area
 
 lake.area.km2<-0.153
 zmix.m <- Mean_depth
-wind.height.ms <- 10
+wind.height.ms <- 2.5
 
 
 
@@ -50,7 +50,7 @@ met.fun <- function(args){
   
   #all input terms added and renamed here
   wind.ms <- merge_df_wind$WS_ms_3day
-  wind.height <-rep(wind.height.ms, nrow(merge_df_wind))
+  wind.height <- rep(wind.height.ms, nrow(merge_df_wind))
   area <- rep(lake.area.km2, nrow(merge_df_wind))
   temp <- merge_df_wind$YSI_Temp_C
   zmix <- rep(zmix.m, nrow(merge_df_wind))
@@ -64,7 +64,12 @@ met.fun <- function(args){
   k600cmh <- 2.51 + 1.48*u10 + 0.39*u10*(log10(area)) #k600 in cm/h from table 2 equation B vachon & prairie 2013
   k600md <- k600cmh * 24/100 #converting k600 to m/d
   sco2 <- 1800.6 - (120.1*temp) + (3.7818 * (temp^2)) - (0.047608*(temp^3))#calculating schmidt number for oxygen from Jahne et al (1987)
-  ko2md <- k600md * ((sco2/600)^(-2/3)) #converting k600 to ko2 in m/d for use in mass balance
+  # ko2md <- k600md * ((sco2/600)^(-2/3)) #converting k600 to ko2 in m/d for use in mass balance
+  
+  #Use Ustar k model
+  ko2md <- merge_df_wind$k_O2_3day
+  
+  
   #2/3 power used for wind speed less than 3.7 m/s following Vachon et al. (2010) and Guerin et al. (2007)
   k.z <- ko2md / zmix #input term for volumetric gas exchange
   
