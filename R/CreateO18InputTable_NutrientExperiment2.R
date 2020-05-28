@@ -40,8 +40,8 @@ k_out_avg <- k_out_wind %>%
   mutate(k_O2 = k_O2*3600*24,
          k_O2_theory_low = k_O2_theory_low*3600*24,
          k_O2_theory_high = k_O2_theory_high*3600*24) %>%
-  mutate(k_O2_3day = roll_mean(k_O2, 3, align='right', fill=NA)) %>%
-  mutate(k_O2_3day_sd = roll_sd(k_O2, 3, align='right', fill=NA)) %>%
+  mutate(k_O2_3day = roll_mean(k_O2, 4, align='right', fill=NA)) %>%
+  mutate(k_O2_3day_sd = roll_sd(k_O2, 4, align='right', fill=NA)) %>%
   dplyr::rename(k_O2_daily = k_O2) 
 
 
