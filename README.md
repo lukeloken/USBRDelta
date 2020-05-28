@@ -12,7 +12,7 @@ These scripts are entitled:
 
 1. Workflow_MonthlySampling.R
 2. Workflow_NutrientExperiment.R
-3. Workflow_NutrientExeperiment2.R
+3. Workflow_NutrientExperiment2.R
 
 Each script begins by loading a handful of libraries, custom functions, and a character string noting the data directory. As of Feb 2020, data are being moved to a OneDrive folder entitled "USBR_DWSC"
 

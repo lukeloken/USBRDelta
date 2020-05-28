@@ -33,7 +33,9 @@ Mean_depth <- Total_volume/Surface_area
 
 
 lake.area.km2<-0.153
-zmix.m <- Mean_depth
+# zmix.m <- Mean_depth
+zmix.m <- 8
+
 wind.height.ms <- 2.5
 
 
@@ -55,19 +57,20 @@ met.fun <- function(args){
   temp <- merge_df_wind$YSI_Temp_C
   zmix <- rep(zmix.m, nrow(merge_df_wind))
   do <- rowMeans(merge_df_wind[c("FLAMe_EXODOmgL", "YSI_DO_mgL")], na.rm=T)
-  do.pct.sat <- merge_df_wind$YSI_DO_perSat
+  do.pct.sat <- rowMeans(merge_df_wind[c("FLAMe_EXODOSAT", "YSI_DO_perSat")], na.rm=T)
+  # do.pct.sat <- merge_df_wind$YSI_DO_perSat
   delo18.o2 <- merge_df_wind$d180_02.vs.VSMOW
   delo18.h2o <- merge_df_wind$d18OVSMOW_mean
   
   #calculating the gas exchange coefficient for O2 empirically from lake area and wind speed:
-  u10 <- wind.ms * (1+ (((0.0013^(0.5))/0.41) * (log(10/wind.height)))) #converting wind speed from 3m to 10m height following equation 3 Vachon & Prairie (2013)
+  u10 <- wind.ms * (1+ (((0.0013^(0.5))/0.41) * (log(10/wind.height)))) #converting wind speed from 2.5m to 10m height following equation 3 Vachon & Prairie (2013)
   k600cmh <- 2.51 + 1.48*u10 + 0.39*u10*(log10(area)) #k600 in cm/h from table 2 equation B vachon & prairie 2013
   k600md <- k600cmh * 24/100 #converting k600 to m/d
   sco2 <- 1800.6 - (120.1*temp) + (3.7818 * (temp^2)) - (0.047608*(temp^3))#calculating schmidt number for oxygen from Jahne et al (1987)
   # ko2md <- k600md * ((sco2/600)^(-2/3)) #converting k600 to ko2 in m/d for use in mass balance
   
   #Use Ustar k model
-  ko2md <- merge_df_wind$k_O2_3day
+  ko2md <- rep(mean(merge_df_wind$k_O2_3day, na.rm=T), length(merge_df_wind))
   
   
   #2/3 power used for wind speed less than 3.7 m/s following Vachon et al. (2010) and Guerin et al. (2007)
