@@ -21,11 +21,15 @@ library(gridExtra)
 source('R/read_excel_allsheets.R')
 source('R/g_legend.R')
 
-# Project folder where outputs are stored
-dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# # Project folder where outputs are stored
+# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# 
+# #Where data come from
+# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-#Where data come from
-google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+#As of Feb 2020, new single folder where all data and outputs live
+onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
+
 
 
 #colors and plotting factors
