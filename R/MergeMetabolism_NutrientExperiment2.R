@@ -55,7 +55,9 @@ strat_df <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2',
 strat_df_daily <- strat_df %>%
   mutate(Date = as.Date(Datetime_PDT_round, tz='America/Los_Angeles')) %>%
   group_by(Site, Date) %>%
-  summarize_at("Schmidt", .funs=c(min, mean, max, median))
+  summarize_at("Schmidt", .funs=c(min, mean, max, median, length=length)) %>%
+  filter(length>120) %>%
+  select(-length)
 
 names(strat_df_daily)[3:6] <- paste0('Schmidt_', c('min', 'mean', 'max', 'median'))
 
@@ -63,15 +65,15 @@ names(strat_df_daily)[3:6] <- paste0('Schmidt_', c('min', 'mean', 'max', 'median
 # ###########################################
 #Buoy metabolism
 # ############################################
-metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
-  dplyr::select(Date, Site, GPP_roll, ER_roll, NEP_roll) %>%
-  dplyr::rename(GPP_buoy_area = GPP_roll,
-                ER_buoy_area = ER_roll,
-                NEP_buoy_area = NEP_roll)
+# metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
+#   dplyr::select(Date, Site, GPP_roll, ER_roll, NEP_roll) %>%
+#   dplyr::rename(GPP_buoy_area = GPP_roll,
+#                 ER_buoy_area = ER_roll,
+#                 NEP_buoy_area = NEP_roll)
 
 #Use daily values rather than 3 day rolling means
 metab.df<- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'BuoyMetabolism.rds')) %>%
-  dplyr::select(Date, Site, GPP, ER, NEP) %>%
+  # dplyr::select(Date, Site, GPP, ER, NEP) %>%
   dplyr::rename(GPP_buoy_area = GPP,
                 ER_buoy_area = ER,
                 NEP_buoy_area = NEP)
@@ -81,6 +83,8 @@ metab.df <- metab.df %>%
   left_join(stratification) %>%
   left_join(strat_df_daily) %>%
   mutate(Site = factor(Site, sitetable$site1))
+
+metab.df$DepthCode <- rep("S", nrow(metab.df))
 
 metab.buoy.dailymean <- metab.df %>%
   group_by(Date) %>%
@@ -101,7 +105,9 @@ merge_df_allmetab <- merge_df_all %>%
   # drop_na(GPP_Total_area, GPP_buoy_area) %>%
   dplyr::rename(GPP_O18_area = gppa,
                 ER_O18_area =  ra,
-                NEP_O18_area = nepa)
+                NEP_O18_area = nepa) 
+
+
 
 head(merge_df_allmetab)
 head(merge_df_all)
@@ -109,17 +115,27 @@ head(merge_df_all)
 
 metab_summary<-merge_df_allmetab %>%
   group_by(Date) %>%
-  summarize_all(mean, na.rm=T)
+  summarize_if(is.numeric, mean, na.rm=T)
 
 metab_summary_all <- metab_summary %>%
   group_by() %>%
   summarize_at(vars(c(GPP_O18_area, ER_O18_area, NEP_O18_area,
                       GPP_buoy_area, ER_buoy_area, NEP_buoy_area,
                       GPP_Inc_area, ER_Inc_area, NEP_Inc_area)), 
-               list(mean=mean, min=min, max=max), na.rm=T)
+               list(mean=mean, min=min, max=max, sd=sd), na.rm=T) %>%
+  gather(key='Method', value='value') %>%
+  mutate(value = round(value, digits=2)) %>%
+  separate(col='Method', into = c('Metric', 'Method', 'Area', 'Stat')) %>%
+  tidyr::spread(key = Stat, value = value) %>%
+  select(Metric, Method, mean, sd, min, max) %>%
+  mutate(Metric = factor(Metric, c('NEP', 'GPP', 'ER')),
+         Method = factor(Method, c('buoy', 'Inc', 'O18'))) %>%
+  arrange(Metric, Method)
 
 
+data.frame(metab_summary_all)
 
+write.table(metab_summary_all, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'MetabolismSummaryTable.csv'), row.names=F, sep=',')
 
 # plot(merge_df_allmetab$GPP_Inc_area, merge_df_allmetab$GPP_Total_area)
 # abline(0,1)
@@ -151,7 +167,8 @@ shapes<-rep(21:25, 5)
 
 
 Buoy_box <- ggplot(merge_df_allmetab) +
-  geom_boxplot(aes(x=Site, y=GPP_buoy_area, fill=Site)) +
+  geom_boxplot(aes(x=Site, y=GPP_buoy_area, fill=Site), outlier.shape=NA) +
+  scale_y_continuous(limits=c(0,15)) + 
   scale_colour_manual(values = colors[c(1,3:5, 7)]) +
   scale_fill_manual(values = colors[c(1,3:5, 7)]) +
   theme_bw() + 
@@ -159,7 +176,8 @@ Buoy_box <- ggplot(merge_df_allmetab) +
   theme(legend.position='none', axis.title.x=element_blank(), legend.title=element_blank()) 
 
 O18_box <- ggplot(merge_df_allmetab) +
-  geom_boxplot(aes(x=Site, y=GPP_O18_area, fill=Site)) +
+  geom_boxplot(aes(x=Site, y=GPP_O18_area, fill=Site), outlier.shape=NA) +
+  scale_y_continuous(limits=c(0,15)) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) +
   theme_bw() + 
@@ -169,7 +187,8 @@ O18_box <- ggplot(merge_df_allmetab) +
 
 
 Inc_box <- ggplot(merge_df_allmetab) +
-  geom_boxplot(aes(x=Site, y=GPP_Inc_area, fill=Site)) + 
+  geom_boxplot(aes(x=Site, y=GPP_Inc_area, fill=Site), outlier.shape=NA) + 
+  scale_y_continuous(limits=c(0,15)) + 
   scale_colour_manual(values = colors) +
   scale_fill_manual(values = colors) +
   theme_bw() + 
@@ -183,6 +202,43 @@ grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(Buoy_box), ggplotGrob(Inc_box), ggplotGrob(O18_box), size = "first"))
 
 dev.off()
+
+
+merge_df_allmeab_siteplot <- merge_df_allmetab %>%
+  select(Site, Date, GPP_Inc_area, GPP_buoy_area, GPP_O18_area,
+         NEP_Inc_area, NEP_buoy_area, NEP_O18_area,
+         ER_Inc_area, ER_buoy_area, ER_O18_area) %>%
+  mutate(GPP_buoy_area = ifelse(GPP_buoy_area < -4, NA,
+                                ifelse(GPP_buoy_area > 16, NA, GPP_buoy_area)),
+         NEP_buoy_area = ifelse(NEP_buoy_area < -8, NA,
+                                ifelse(NEP_buoy_area > 5, NA, NEP_buoy_area)),
+         ER_buoy_area = ifelse(ER_buoy_area < -20, NA,
+                                ifelse(ER_buoy_area > 5, NA, ER_buoy_area))) %>%
+  gather(key = 'Method', value = 'value', 3:11) %>%
+  separate(col = Method, into = c('Metric', 'Method', 'unit'), sep="_" ) %>%
+  mutate(Metric = factor(Metric, c('NEP', 'GPP', 'ER'))) %>%
+  mutate(Method = case_when(Method == 'Inc' ~'Incubation', 
+                            Method == 'buoy' ~ 'Buoy',
+                            Method == 'O18' ~ 'O18')) %>%
+  mutate(Method = factor(Method, c('Incubation', 'O18', 'Buoy')))
+
+
+GPP_box_bysite <- ggplot(merge_df_allmeab_siteplot) +
+  geom_hline(yintercept = 0, linetype='dashed') +
+  geom_boxplot(aes(x=Site, y=value, fill=Method), outlier.shape=NA, 
+               position = position_dodge(preserve = "single")) + 
+  scale_y_continuous(limits = c(NA, NA), expand=c(0,0)) + 
+  # scale_colour_manual(values = colors) +
+  scale_fill_brewer(palette='Set1') +
+  theme_bw() + 
+  labs( y = expression(paste('Metabolic rate (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))  +
+  theme(legend.position='bottom', legend.title=element_blank()) +
+  facet_wrap(~Metric, scales = 'free_y', ncol=1) +
+  theme(strip.background = element_rect(fill=NA, color=NA))
+
+print(GPP_box_bysite)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Metab_Compare_Sites_3methods.png'),GPP_box_bysite, width=5, height=8, units='in')
 
 # #######################
 # Comparison of 3 methods
@@ -502,7 +558,7 @@ dev.off()
 # Timeseries boxplots
 # ###################
 
-xlim<-range(metab.df$Date[which(is.finite(metab.df$NEP))], na.rm=T)
+xlim<-range(metab.df$Date, na.rm=T)
 
 
 commonBox<-list(
@@ -1097,3 +1153,230 @@ print(randomForest::varImpPlot(mod))
 
 ggplot(data=merge_df_allmetab, aes(x=Site, y=Schmidt_max)) +
   geom_boxplot(aes(fill=Site))
+
+
+stratvars <- c("Strength_mean", "Strength_median", "Strength_min", "Strength_max", 
+               "StratificationDuration", "Schmidt_min", "Schmidt_mean", 
+               "Schmidt_max", "Schmidt_median")
+
+#Estimate Stratification for buoyless sites
+strat_site2 <- merge_df_allmetab %>%
+  filter(Site %in% c('NL70', 'Site2', 'Site3')) %>%
+  filter(Date %in% unique(site_df$Date)) %>%
+  group_by(Date) %>%
+  summarize_at(stratvars, mean, na.rm=T) %>%
+  left_join(filter(merge_df_allmetab, Site == 'Site2') %>%
+              select(-stratvars))
+
+strat_site6 <- merge_df_allmetab %>%
+  filter(Site %in% c('NL76', 'Site6', 'Site5')) %>%
+  filter(Date %in% unique(site_df$Date)) %>%
+  group_by(Date) %>%
+  summarize_at(stratvars, mean, na.rm=T) %>%
+  left_join(filter(merge_df_allmetab, Site == 'Site6') %>%
+              select(-stratvars))
+
+strat_site2$Site <- 'Site2'
+strat_site6$Site <- 'Site6'
+
+merge_df_allmetab <- merge_df_allmetab %>%
+  filter(Site != 'Site2', Site != ' Site6') %>%
+  full_join(strat_site2) %>%
+  full_join(strat_site6) %>%
+  mutate(Site = factor (Site,  levels(merge_df_allmetab$Site)))
+#Compare drivers
+
+driver_table <- merge_df_allmetab %>%
+  filter(DepthCode == 'S') %>%
+  select(c('Site', 'Date', 
+           names(merge_df_allmetab)[grepl('GPP', names(merge_df_allmetab))], 
+           names(merge_df_allmetab)[grepl('NEP', names(merge_df_allmetab))],
+           names(merge_df_allmetab)[grepl('ER', names(merge_df_allmetab))],
+           predict_vars)) %>%
+  gather(key = method, value = metab, names(merge_df_allmetab)[grepl(paste(c('GPP', 'NEP', 'ER'), collapse = "|"), names(merge_df_allmetab))])
+
+
+driver_common <- list(
+  theme_bw(),
+  theme(plot.title = element_text(hjust=0.5)), 
+  scale_shape_manual(values=shapes), 
+  scale_fill_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))),
+  scale_colour_manual(values = color.palette(length(unique(merge_df_allmetab$Site)))) 
+)
+
+metab_labels = c('Incubation', 'O18', 'Buoy')
+
+GPP_plot_methods <- c("GPP_Inc_area", "GPP_O18_area", "GPP_buoy_area")
+names(metab_labels) <- GPP_plot_methods
+# GPP_plot_methods <- c("GPP_Inc_area", "GPP_O18_area", "GPP_3day")
+
+GPP_schmidt_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods), 
+       aes(x=Schmidt_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
+       y=expression(paste('GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+GPP_NO3_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods), 
+                        aes(x=`NO3-ppm`, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  # scale_x_sqrt() +
+  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
+
+GPP_turb_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods), 
+                    aes(x=YSI_Turb_FNU, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none', axis.title.y = element_blank(), strip.background = element_rect(fill=NA, color=NA)) +
+  facet_wrap(~method, ncol=1, scales='free_y', strip.position='right', labeller = labeller(method = metab_labels)) + 
+  scale_x_sqrt() +
+  labs(x=expression(paste('Turbidity (FNU)')))
+
+GPP_chl_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods), 
+                     aes(x=chla_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  scale_x_sqrt() +
+  labs(x=expression(paste('Chl ', italic(a), ' (', mu, 'g L'^'-1', ')')))
+
+
+GPPFacetDrivers <- grid.arrange(GPP_schmidt_facet, GPP_chl_facet, GPP_NO3_facet, GPP_turb_facet, nrow=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'DailyGPP_All_Versus_Drivers.png'), plot=GPPFacetDrivers, height=6, width=10, dpi=300, units='in')
+
+
+
+#NEP drivers
+
+NEP_plot_methods <- c("NEP_Inc_area", "NEP_O18_area", "NEP_buoy_area")
+names(metab_labels) <- NEP_plot_methods
+
+NEP_schmidt_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods), 
+                        aes(x=Schmidt_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
+       y=expression(paste('NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+NEP_NO3_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods), 
+                    aes(x=`NO3-ppm`, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  # scale_x_sqrt() +
+  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
+
+NEP_turb_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods), 
+                     aes(x=YSI_Turb_FNU, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none', axis.title.y = element_blank(), strip.background = element_rect(fill=NA, color=NA)) +
+  facet_wrap(~method, ncol=1, scales='free_y', strip.position='right', labeller = labeller(method = metab_labels)) + 
+  scale_x_sqrt() +
+  labs(x=expression(paste('Turbidity (FNU)')))
+
+NEP_chl_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods), 
+                    aes(x=chla_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  scale_x_sqrt() +
+  labs(x=expression(paste('Chl ', italic(a), ' (', mu, 'g L'^'-1', ')')))
+
+
+NEPFacetDrivers <- grid.arrange(NEP_schmidt_facet, NEP_chl_facet, NEP_NO3_facet, NEP_turb_facet, nrow=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'DailyNEP_All_Versus_Drivers.png'), plot=NEPFacetDrivers, height=6, width=10, dpi=300, units='in')
+
+
+
+
+
+#NEP drivers
+
+ER_plot_methods <- c("ER_Inc_area", "ER_O18_area", "ER_buoy_area")
+names(metab_labels) <- ER_plot_methods
+
+# GPP_plot_methods <- c("GPP_Inc_area", "GPP_O18_area", "GPP_3day")
+
+ER_schmidt_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods), 
+                        aes(x=Schmidt_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
+       y=expression(paste('ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+
+ER_NO3_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods), 
+                    aes(x=`NO3-ppm`, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  # scale_x_sqrt() +
+  labs(x=expression(paste(NO[3], ' (mg N L'^'-1', ')')))
+
+ER_turb_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods), 
+                     aes(x=YSI_Turb_FNU, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(legend.position='none', axis.title.y = element_blank(), strip.background = element_rect(fill=NA, color=NA)) +
+  facet_wrap(~method, ncol=1, scales='free_y', strip.position='right', labeller = labeller(method = metab_labels)) + 
+  scale_x_sqrt() +
+  labs(x=expression(paste('Turbidity (FNU)')))
+
+ER_chl_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods), 
+                    aes(x=chla_mean, y=metab)) +
+  geom_smooth(color='black', method='lm', se=F, alpha=0.5, linetype = 'dashed') +
+  geom_point(aes(fill=Site, shape=Site)) + 
+  driver_common +
+  theme(strip.background = element_blank(), strip.text = element_blank(), 
+        axis.title.y = element_blank()) + 
+  theme(legend.position='none') +
+  facet_wrap(~method, ncol=1, scales='free_y') +
+  scale_x_sqrt() +
+  labs(x=expression(paste('Chl ', italic(a), ' (', mu, 'g L'^'-1', ')')))
+
+
+ERFacetDrivers <- grid.arrange(ER_schmidt_facet, ER_chl_facet, ER_NO3_facet, ER_turb_facet, nrow=1)
+
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'DailyER_All_Versus_Drivers.png'), plot=ERFacetDrivers, height=6, width=10, dpi=300, units='in')
+
+
+
