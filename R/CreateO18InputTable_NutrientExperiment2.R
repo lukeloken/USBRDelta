@@ -48,7 +48,6 @@ k_out_avg <- k_out_wind %>%
 #Big data frame
 merge_df_IncMetab <- readRDS(file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.rds'))
 
-
 merge_df_wind <- left_join(merge_df_IncMetab, wind_avg) %>%
   left_join(k_out_avg)
 
