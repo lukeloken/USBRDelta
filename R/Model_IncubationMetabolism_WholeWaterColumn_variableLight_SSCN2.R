@@ -61,7 +61,7 @@ sunset<-sun.rise.set(wind_pred$Datetime_PDT_round, lat=38.5064)[,2]
 daylength<- as.numeric(sunset-sunrise, unit='hours')
 
 
-lights <- c(600, 200, 20)
+lights <- c(600, 175, 10)
 
 MergeTreat <- data.frame(lights, TreatmentLevels)
 
@@ -247,7 +247,11 @@ ggplot(FullMetab, aes(x=Date, y=NEP_Inc_area, color=site)) +
 FullMetab_out <- data.frame(FullMetab) %>%
   rename(Site = site) 
 
-merge_df_IncMetab2 <-  left_join(merge_df_IncMetab, FullMetab_out) 
+FullMetab_out$DepthCode = rep('S', nrow(FullMetab_out))
+
+merge_df_IncMetab2 <-  merge_df_IncMetab %>%
+  select (-intersect(names(merge_df_IncMetab), c('NEP_Inc_area', 'ER_Inc_area', 'GPP_Inc_area'))) %>%
+  left_join(FullMetab_out) 
 
 
 write.csv(merge_df_IncMetab2, file=file.path(onedrive_dir, 'OutputData', 'NutrientExperiment2', 'SiteData_withIncMetab_Merged.csv'), row.names=F)
@@ -324,7 +328,7 @@ plot3<-grid.arrange(grobs=list(p3, p1, p2), ncol=1, as.table=F)
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'IncubationMetabolism_Area_VariableLight_Timeseries.png'), width=5, height=7, units='in', res=200)
 
 grid.newpage()
-plots<-grid.draw(rbind(ggplotGrob(p3), ggplotGrob(p1), ggplotGrob(plot_withlegend), size = "first"))
+plots<-grid.draw(rbind(ggplotGrob(p3), ggplotGrob(p1), ggplotGrob(plot_withlegend), size = "last"))
 
 # grid.arrange(plot3, mylegend, nrow=2, heights=c(15,1))
 
