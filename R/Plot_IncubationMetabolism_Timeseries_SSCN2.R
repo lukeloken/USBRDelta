@@ -13,8 +13,8 @@ library(viridis)
 library(lubridate)
 library(LakeMetabolizer)
 # library(drc)
-detach("package:dplyr", unload=TRUE)
-library(tidyverse)
+# detach("package:dplyr", unload=TRUE)
+# library(tidyverse)
 
 #upload merged data
 merge_df_gascals <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SiteData_withGas_Merged.rds'))
@@ -27,7 +27,7 @@ merge_df_gascals <- readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExper
 
 #Add photic depth and light extinction
 kd_alldates<-readRDS(file=file.path(onedrive_dir, 'RData', 'NutrientExperiment2', 'SSCN2_Kd.rds'))
-merge_df_gascals<-full_join(merge_df_gascals, kd_alldates)
+merge_df_gascals<-dplyr::full_join(merge_df_gascals, kd_alldates)
 
 
 #Model light extinction and photic depth using Secchi Depth or Turbidity
@@ -128,7 +128,7 @@ results_df$Site <- sitetable$site1[match(results_df$Site, sitetable$site2)]
 results_df$Site <-factor(results_df$Site, sitetable$site1)
 
 results_df2<-merge_df_gascals %>%
-  filter(DepthCode=="S") %>%
+  filter(DepthCode == "S" ) %>%
   select(Site, Date, chla_mean, `NO3-ppm`) %>%
   group_by(Site, Date) %>%
   right_join(results_df) %>%
@@ -223,12 +223,12 @@ PI_data <- results_df %>%
   bind_rows(data.frame(Treatment=0, MeanValue=0))
 
 # PI_data$Treatment2 = as.numeric(as.character(PI_data$Treatment))*rnorm(42, mean=1, sd=.05)
-
-m1 <- drm(MeanValue ~ Treatment, data = PI_data, fct = MM.2())
-summary(m1)
-m1
-plot(m1, log='')
-coef(m1)
+# 
+# m1 <- drm(MeanValue ~ Treatment, data = PI_data, fct = MM.2())
+# summary(m1)
+# m1
+# plot(m1, log='')
+# coef(m1)
 
 
 
