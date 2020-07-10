@@ -388,12 +388,28 @@ ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Buoys', 'DO', 
   }
   }
   
-
+  metab.roll2 <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 2, mean, align='right', fill=NA) %>%
+    as_tibble() %>%
+    rename(GPP_2day = GPP, ER_2day = ER, NEP_2day = NEP)
+  
+  metab.roll3 <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 3, mean, align='right', fill=NA) %>%
+    as_tibble() %>%
+    rename(GPP_3day = GPP, ER_3day = ER, NEP_3day = NEP)
+  
+  metab.roll4 <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 4, mean, align='right', fill=NA) %>%
+    as_tibble() %>%
+    rename(GPP_4day = GPP, ER_4day = ER, NEP_4day = NEP)
+  
+  metab.roll5 <- rollapply(metab.out[c('GPP', 'ER', 'NEP')], 5, mean, align='right', fill=NA) %>%
+    as_tibble() %>%
+    rename(GPP_5day = GPP, ER_5day = ER, NEP_5day = NEP)
+  
   
   metab.roll <- rollapply(metab.out[c('GPP', 'ER', 'NEP', 'GPP_v1', 'ER_v1', 'NEP_v1')], 3, mean, align='center', fill=NA)
   colnames(metab.roll)<-paste0(colnames(metab.roll), '_roll')
   
-  metab.out2 <- bind_cols(metab.out, data.frame(metab.roll))
+  metab.out2 <- bind_cols(metab.out, data.frame(metab.roll)) %>%
+    bind_cols(metab.roll2, metab.roll3, metab.roll4, metab.roll5)
   
   metab.list[[buoy_nu]]<-metab.out2
   
