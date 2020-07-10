@@ -7,6 +7,7 @@ rm(list = ls())
 
 #Code to extract surface water measurements from profile data at fixed sites
 
+library(drc)
 library(readxl)
 library(plyr)
 library(dplyr)
@@ -95,7 +96,7 @@ source('R/CompilePlankton_NutrientExperiment2.R')
 source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
 
 #USGS buoy data
-source('R/PlotUSGSBuoyData_NutrientExperiment2.R'))
+source('R/PlotUSGSBuoyData_NutrientExperiment2.R')
 
 
 
