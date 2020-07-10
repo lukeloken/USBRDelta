@@ -70,7 +70,7 @@ met.fun <- function(args){
   # ko2md <- k600md * ((sco2/600)^(-2/3)) #converting k600 to ko2 in m/d for use in mass balance
   
   #Use Ustar k model
-  ko2md <- rep(mean(merge_df_wind$k_O2_3day, na.rm=T), length(merge_df_wind))
+  ko2md <- rep(mean(merge_df_wind$k_O2_3day, na.rm=T), nrow(merge_df_wind))
   
   
   #2/3 power used for wind speed less than 3.7 m/s following Vachon et al. (2010) and Guerin et al. (2007)
