@@ -79,7 +79,12 @@ air_df <- gas_df %>%
          Air_ppmN2O = ppmN2O)
 
 gas_join<-left_join(water_df, air_df) %>% mutate(Date = as.Date(Date))
-gas_join[gas_join$SampleCode == 'SSCN2_06_05_S',c("Air_ppmCH4", "Air_ppmCO2", "Air_ppmN2O")] <- colMeans(gas_join[gas_join$Date == as.Date('2019-07-15'),c("Air_ppmCH4", "Air_ppmCO2", "Air_ppmN2O")], na.rm=T)
+
+gas_join[gas_join$SampleCode == 'SSCN2_06_05_S',c("Air_ppmCH4")] <- colMeans(gas_join[gas_join$Date == as.Date('2019-07-15'),c("Air_ppmCH4")], na.rm=T)
+
+gas_join[gas_join$SampleCode == 'SSCN2_06_05_S',c("Air_ppmCO2")] <- colMeans(gas_join[gas_join$Date == as.Date('2019-07-15'),c("Air_ppmCO2")], na.rm=T)
+
+gas_join[gas_join$SampleCode == 'SSCN2_06_05_S',c("Air_ppmN2O")] <- colMeans(gas_join[gas_join$Date == as.Date('2019-07-15'),c("Air_ppmN2O")], na.rm=T)
 
 merge_df_gas <- right_join (merge_df, gas_join)
 
