@@ -33,14 +33,20 @@ for (File_i in 1:length(PhytoFiles)){
 
 Phyto_df<-ldply(Phyto_list, data.frame)
 
-Phyto_FullRecord<- Phyto_df %>%
+Phyto_FullRecord <- Phyto_df %>%
   drop_na(STATION, SAMPLE) %>%
-  dplyr::rename(bottle.ID = STATION) 
+  dplyr::rename(bottle.ID = STATION) %>%
+  mutate(Date=as.Date(SAMPLE))
+
+Phyto_FullRecord$bottle.ID <- gsub(" ", "", Phyto_FullRecord$bottle.ID)
+
 Phyto_FullRecord <- Phyto_FullRecord %>% 
-  mutate(Date=as.Date(SAMPLE), 
-         site3=paste0("", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3])) %>%
+  mutate(site3=paste0("", str_split(Phyto_FullRecord$bottle.ID, "_", simplify=T)[,3])) %>%
   left_join(sitetable) %>%
-  mutate(Station=factor(site1, (sitetable$site1)))
+  mutate(site1 = case_when(site1 %in% sitetable$site1 ~ site1,
+                           is.na(site1) ~ bottle.ID)) %>%
+  mutate(Station=factor(site1, (sitetable$site1))) %>%
+  select(-site1, -site3, -bottle.ID)
 
 head(Phyto_FullRecord)
 
