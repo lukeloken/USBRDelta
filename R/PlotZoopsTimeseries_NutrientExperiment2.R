@@ -214,8 +214,8 @@ png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_genus) +
     scale_shape_manual(values=rep(21:25, 5))  + 
-    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
-    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) +
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
     geom_point() +
     geom_path() +
@@ -233,34 +233,36 @@ png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_majorgenus) +
     scale_shape_manual(values=rep(21:25, 5))  + 
-    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
-    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) +
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
     # geom_path(aes(color=Station), size=1.5) +
     # geom_point(size=3, aes(fill=Station, shape=Station)) +
     geom_point() +
     geom_path() +
     facet_wrap(~GENUS) + 
-    theme_bw()
+    theme_bw() +
+    scale_y_log10()
 )
 
 dev.off()
 
 
 
-png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_Totals_Division_TimeSeries.png'), units='in', width=6, height=4, res=400, bg='white')
+png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_Totals_Division_TimeSeries.png'), units='in', width=8, height=6, res=400, bg='white')
 
 print(
-  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_division) +
+  ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=filter(Phyto_totals_division, !is.na(DIVISION))) +
     scale_shape_manual(values=rep(21:25, 5))  + 
-    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
-    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) +
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
     geom_point() +
     geom_path() +
     facet_wrap(~DIVISION) +
     theme_bw() +
-    labs(y='Total Biovolume')
+    labs(y='Total Biovolume') +
+    scale_y_log10()
 )
 
 dev.off()
@@ -271,13 +273,14 @@ png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Phytos', 'Phytos_
 print(
   ggplot(aes(x=Date, y=TOTAL.BV, group=Station, colour=Station), data=Phyto_totals_all) +
     scale_shape_manual(values=rep(21:25, 5))  + 
-    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
-    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) +
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
     geom_point() +
     geom_path() +
     theme_bw() +
     labs(y='Total Biovolume')
+    # scale_y_log10()
 )
 
 dev.off()
@@ -291,9 +294,9 @@ dev.off()
 png(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'Timeseries', 'Phytos_Zoops_TotalBiomass_TimeSeries.png'), units='in', width=4, height=5, res=400, bg='white')
 
 phyto_ts<-  ggplot(aes(x=Date, y=TOTAL.BV/1000000000, group=Station, shape=Station), data=Phyto_totals_all) +
-    scale_shape_manual(values=shapes[c(1,3:5,7)])  + 
-    scale_fill_manual(values = colors[c(1,3:5,7)]) + 
-    scale_colour_manual(values = colors[c(1,3:5,7)]) +
+    scale_shape_manual(values=shapes)  + 
+    scale_fill_manual(values = colors) + 
+    scale_colour_manual(values = colors) +
     geom_vline(xintercept=fert_dates, linetype="dashed", color = "green", size=0.5) + 
     geom_path(aes(colour=Station)) +
     geom_point(aes(fill=Station), size=1.5) +
