@@ -109,16 +109,17 @@ full_dates <- huey_withstrat %>%
   group_by(Date) %>%
   filter(!is.na(Primary.Power)) %>%
   summarize_at(vars(Temperature:ODO, Turbidity., Chlorophyll.ug.L, 
-                    BGA.PC.ug.L, Nitrate.uM, Schmidt), funs(sum(!is.na(.)))) %>%
+                    BGA.PC.ug.L, Nitrate.uM, Nitrate.mg.L, Schmidt), 
+               funs(sum(!is.na(.)))) %>%
   filter(Chlorophyll.ug.L >86.4, Schmidt >43.2)
 
 huey_daily <- huey_withstrat %>%
   group_by(Date) %>%
   filter(!is.na(Primary.Power)) %>%
   summarize_at(vars(Temperature:ODO, Turbidity., Chlorophyll.ug.L, 
-                    BGA.PC.ug.L, Nitrate.uM, Schmidt), 
+                    BGA.PC.ug.L, Nitrate.uM, Nitrate.mg.L, Schmidt), 
                list(mean=mean, max=max,
-                    Q3 = quantile), probs = c(0.75), na.rm=T) 
+                    Q3 = quantile), probs = c(0.75), na.rm=T)
 
 huey_daily_full<- huey_daily %>%
   right_join(select(full_dates, Date))
@@ -165,10 +166,10 @@ dev.off()
 #3 panel scatterplot
 #drivers of daily max chlA
 
-chla_no3 <- ggplot(huey_daily_full, aes(x=Nitrate.uM_mean, y=Chlorophyll.ug.L_Q3)) +
+chla_no3 <- ggplot(huey_daily_full, aes(x=Nitrate.mg.L_mean, y=Chlorophyll.ug.L_Q3)) +
   geom_point(size=2, col='darkgreen') +
   theme_bw() +
-  labs(x=expression(paste("daily mean nitrate (", mu, "M)")),
+  labs(x=expression(paste("daily mean ", NO[3], " (mg N L"^"-1", ")")),
        y=expression(paste("daily 75"^"th", " Quantile Chl ", italic(a), " (", mu, 'g L'^"-1", ")"))) 
   # ggtitle ('Daily max')
 
