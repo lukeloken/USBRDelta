@@ -1219,7 +1219,7 @@ GPP_schmidt_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods),
   theme(legend.position='none') +
   facet_wrap(~method, ncol=1, scales='free_y') +
   labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
-       y=expression(paste('GPP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+       y=expression(paste('GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
 
 GPP_NO3_facet <- ggplot(filter(driver_table, method %in% GPP_plot_methods), 
                         aes(x=`NO3-ppm`, y=metab)) +
@@ -1276,7 +1276,7 @@ NEP_schmidt_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods),
   theme(legend.position='none') +
   facet_wrap(~method, ncol=1, scales='free_y') +
   labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
-       y=expression(paste('NEP (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+       y=expression(paste('NEP (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
 
 NEP_NO3_facet <- ggplot(filter(driver_table, method %in% NEP_plot_methods), 
                     aes(x=`NO3-ppm`, y=metab)) +
@@ -1337,7 +1337,7 @@ ER_schmidt_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods),
   theme(legend.position='none') +
   facet_wrap(~method, ncol=1, scales='free_y') +
   labs(x=expression(paste('Schmidt stability (J m'^'-2', ')')),
-       y=expression(paste('ER (mg ', O[2], ' m'^'-2', ' d'^'-1', ')')))
+       y=expression(paste('ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')')))
 
 ER_NO3_facet <- ggplot(filter(driver_table, method %in% ER_plot_methods), 
                     aes(x=`NO3-ppm`, y=metab)) +
@@ -1378,5 +1378,52 @@ ERFacetDrivers <- grid.arrange(ER_schmidt_facet, ER_chl_facet, ER_NO3_facet, ER_
 
 ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'DailyER_All_Versus_Drivers.png'), plot=ERFacetDrivers, height=6, width=10, dpi=300, units='in')
 
+metab_vars <- c(names(merge_df_allmetab)[grepl('GPP', names(merge_df_allmetab))],
+                names(merge_df_allmetab)[grepl('ER', names(merge_df_allmetab))],
+                names(merge_df_allmetab)[grepl('NEP', names(merge_df_allmetab))])
 
+metab_vars <- c("GPP_O18_area", "ER_O18_area", "NEP_O18_area",
+                "GPP_buoy_area", "ER_buoy_area", "NEP_buoy_area",
+                "GPP_Inc_area", "ER_Inc_area", "NEP_Inc_area")
+
+merge_df_spatialmean <- merge_df_allmetab %>%
+  group_by(Site) %>%
+  summarize_at(metab_vars, mean, na.rm=T) %>%
+  pivot_longer(-Site, names_to='metric', values_to='value') %>%
+  separate(metric, sep="_", into = c('metric', 'Method', 'area'))  %>%
+  dplyr::select(-area) %>% 
+  pivot_wider(id_cols = c('Site', 'Method'), names_from = 'metric', values_from = 'value') %>%
+  mutate(Method = factor(Method, c('Inc', 'O18', 'buoy')))
+
+library(ggConvexHull)
+
+HoelleinFig <- ggplot(merge_df_spatialmean, aes(x=ER, y=GPP, group=Method, fill=Method, color=Site)) +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+  geom_abline() + 
+  geom_vline(xintercept = 0) +
+  geom_hline(yintercept = 0) + 
+  scale_x_reverse(limits = c(0,-7.5), expand=c(0,0)) + 
+  scale_y_continuous(limits = c(0,7.5), expand=c(0,0)) +
+  coord_fixed() + 
+  scale_colour_manual(values = color.palette(length(unique(merge_df_spatialmean$Site)))) +
+  scale_fill_brewer(palette='Set1') +
+  geom_convexhull(alpha=.2, color='black') + 
+  geom_point(aes(shape=Method), size=3) +
+  # geom_point(aes(x=ER_O18_area, y=GPP_O18_area, color=Site), 
+  #            shape=17, size=1, data = merge_df_allmetab, 
+  #            inherit.aes = F, alpha=.5) +
+  # geom_point(aes(x=ER_Inc_area, y=GPP_Inc_area, color=Site),
+  #            shape=16, size=1, data = merge_df_allmetab, 
+  #            inherit.aes = F, alpha=.5) +
+  # geom_point(aes(x=ER_buoy_area, y=GPP_buoy_area, color=Site),
+  #            shape=15, size=1, data = merge_df_allmetab,
+  #            inherit.aes = F, alpha=.5) + 
+  labs(x=expression(paste('ER (g ', O[2], ' m'^'-2', ' d'^'-1', ')')),
+       y=expression(paste('GPP (g ', O[2], ' m'^'-2', ' d'^'-1', ')'))) +
+  theme(legend.position = c(0.01,.99), legend.justification = c(0,1))
+
+print(HoelleinFig)
+  
+ggsave(file.path(onedrive_dir, 'Figures', 'NutrientExperiment2', 'GPP_Versus_ER_SiteAvgs.png'), plot=HoelleinFig, height=5, width=6)
 
