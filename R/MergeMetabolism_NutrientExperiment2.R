@@ -222,6 +222,8 @@ merge_df_allmeab_siteplot <- merge_df_allmetab %>%
                             Method == 'O18' ~ 'O18')) %>%
   mutate(Method = factor(Method, c('Incubation', 'O18', 'Buoy')))
 
+merge_df_allmetab %>% group_by(Site) %>%
+  summarize(meanGPP = mean(GPP_O18_area, na.rm=T))
 
 GPP_box_bysite <- ggplot(merge_df_allmeab_siteplot) +
   geom_hline(yintercept = 0, linetype='dashed') +
