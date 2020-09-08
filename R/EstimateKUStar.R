@@ -80,7 +80,14 @@ attributes(wind_pred$Datetime_PST)$tzone
 k_out_wind <- k_out %>%
   left_join(wind_pred)
 
+k_daily_summary <- k_out_wind %>%
+  mutate(Date = as.Date(Datetime_PST, tz = "Etc/GMT+8")) %>%
+  group_by(Date) %>%
+  summarize(mean_k_O2_m_d = 3600*24*mean(k_O2, na.rm = TRUE))
+
 saveRDS(k_out_wind, file=file.path(onedrive_dir, 'Rdata', 'NutrientExperiment2', 'k_estimates.rds'))
+
+
 
 #Old code from Bogard
 z.mean<-8
