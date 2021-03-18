@@ -19,7 +19,13 @@ library(RColorBrewer)
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
 
-Zoo_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_select.rds'))
+Zoo_summary_select <- readRDS(file = file.path(onedrive_dir, 
+                                               "RData", 
+                                               "MonthlyCruises", 
+                                               "Zoo_summary_select.rds"))
+
+# Zoo_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_select.rds'))
+
 Zoo_summary_no64<-filter(Zoo_summary_select, Station!='64')
 
 # Also need Zoo_monthly and Zoo_total_monthly
@@ -61,79 +67,103 @@ commonTheme_boxplot_monthly<-list(
 )
 
 
-
-png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir,     
+                     "Figures",               
+                     "MonthlyCruises",    
+                     "Zoops",
+                     "BoxplotGenusbyStation.png"),
+    res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
-  labs(x='Station', y=BiomassExp) +
-  commonTheme_boxplot + 
-  # scale_y_log10() +
-  scale_y_continuous(limits=c(0, 150)) +
-  guides(fill=guide_legend(title="")) + 
-  geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
+  ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+    labs(x='Station', y=BiomassExp) +
+    commonTheme_boxplot + 
+    # scale_y_log10() +
+    scale_y_continuous(limits=c(0, 150)) +
+    guides(fill=guide_legend(title="")) + 
+    geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
 )
 
 dev.off()
 
-png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStation_log.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir,
+                     "Figures",           
+                     "MonthlyCruises",      
+                     "Zoops",
+                     "BoxplotGenusbyStation_log.png"), 
+    res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
-  labs(x='Station', y=BiomassExp) +
-  commonTheme_boxplot + 
-  scale_y_log10() +
-  # scale_y_continuous(limits=c(0, 150)) +
-  guides(fill=guide_legend(title="")) + 
-  geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
+  ggplot(Zoo_summary_no64, aes(x=Station, y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+    labs(x='Station', y=BiomassExp) +
+    commonTheme_boxplot + 
+    scale_y_log10() +
+    # scale_y_continuous(limits=c(0, 150)) +
+    guides(fill=guide_legend(title="")) + 
+    geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
 )
 
 dev.off()
 
-png(paste0(dropbox_dir, "/Figures/Zoops/DensityBoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir, 
+                     "Figures",                
+                     "MonthlyCruises",            
+                     "Zoops", 
+                     "DensityBoxplotGenusbyStation.png"), 
+    res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x=Station, y=Total_NumberPerLiter, fill=division)) + 
-  labs(x='Station', y='Density') +
-  commonTheme_boxplot + 
-  scale_y_log10() +
-  # scale_y_continuous(limits=c(0, 100000000)) +
-  guides(fill=guide_legend(title="")) + 
-  geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
+  ggplot(Zoo_summary_no64, aes(x=Station, y=Total_NumberPerLiter, fill=division)) + 
+    labs(x='Station', y='Density') +
+    commonTheme_boxplot + 
+    scale_y_log10() +
+    # scale_y_continuous(limits=c(0, 100000000)) +
+    guides(fill=guide_legend(title="")) + 
+    geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA)
 )
 
 dev.off()
 
 
 # Boxplots by month
-png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyMonth.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir,
+                     "Figures",                 
+                     "MonthlyCruises",       
+                     "Zoops",
+                     "BoxplotGenusbyMonth.png"), 
+    res=300, width=8,height=4, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x=as.factor(Month), y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
-  labs(x='Month', y=BiomassExp) +
-  commonTheme_boxplot + 
-  # scale_y_log10() + 
-  scale_y_continuous(limits=c(0,200)) +
-  geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA) + 
-  guides(fill=guide_legend(title="")) 
+  ggplot(Zoo_summary_no64, aes(x=as.factor(Month), y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+    labs(x='Month', y=BiomassExp) +
+    commonTheme_boxplot + 
+    # scale_y_log10() + 
+    scale_y_continuous(limits=c(0,200)) +
+    geom_boxplot(outlier.size=0.5, na.rm=T, outlier.shape=NA) + 
+    guides(fill=guide_legend(title="")) 
 )
 
 dev.off()
 
 
 #Boxplots by station by month by species
-png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyMonthbyStation.png", sep=""), res=300, width=12,height=12, units="in")
+png(file = file.path(onedrive_dir,  
+                     "Figures",         
+                     "MonthlyCruises",  
+                     "Zoops", 
+                     "BoxplotGenusbyMonthbyStation.png"),
+    res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x= Station, y=Total_SpeciesBiomass_ugdwL, color=as.factor(Month))) + 
-  labs(x='Station', y=BiomassExp) +
-  commonTheme_boxplot_monthly + 
-  # scale_y_continuous(limits=c(0, 50)) +
-  scale_y_log10() +
-  geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  facet_grid( division ~ .) + 
-  guides(color=guide_legend(title="Month"))
+  ggplot(Zoo_summary_no64, aes(x= Station, y=Total_SpeciesBiomass_ugdwL, color=as.factor(Month))) + 
+    labs(x='Station', y=BiomassExp) +
+    commonTheme_boxplot_monthly + 
+    # scale_y_continuous(limits=c(0, 50)) +
+    scale_y_log10() +
+    geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    facet_grid( division ~ .) + 
+    guides(color=guide_legend(title="Month"))
 )
 
 dev.off()
@@ -143,36 +173,46 @@ dev.off()
 #Boxplots by month by station by species
 
 
-png(paste0(dropbox_dir, "/Figures/Zoops/BoxplotGenusbyStationbyMonth.png", sep=""), res=300, width=12,height=12, units="in")
+png(file = file.path(onedrive_dir,
+                     "Figures",              
+                     "MonthlyCruises",              
+                     "Zoops",
+                     "BoxplotGenusbyStationbyMonth.png"),
+    res=300, width=12,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x= as.factor(Month) , y=Total_SpeciesBiomass_ugdwL, color=Station)) + 
-  labs(x='Month', y=BiomassExp) +
-  commonTheme_boxplot_monthly + 
-  scale_y_log10() + 
-  # scale_y_continuous(limits=c(0, 50)) +
-  geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  facet_grid( division ~ .) + 
-  guides(color=guide_legend(title="Station"))
+  ggplot(Zoo_summary_no64, aes(x= as.factor(Month) , y=Total_SpeciesBiomass_ugdwL, color=Station)) + 
+    labs(x='Month', y=BiomassExp) +
+    commonTheme_boxplot_monthly + 
+    scale_y_log10() + 
+    # scale_y_continuous(limits=c(0, 50)) +
+    geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    facet_grid( division ~ .) + 
+    guides(color=guide_legend(title="Station"))
 )
 
 dev.off()
 
 
 #Boxplots by month by station by species geom_area
-png(paste0(dropbox_dir, "/Figures/Zoops/StatckedPlotdivisionbyStationbyDate.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,    
+                     "Figures",       
+                     "MonthlyCruises",  
+                     "Zoops",
+                     "StatckedPlotdivisionbyStationbyDate.png"),
+    res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Zoo_summary_no64, aes(x= Date , y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
-  labs(x='Month', y=BiomassExp) +
-  commonTheme_boxplot + 
-  # scale_y_log10(limits=c(10000, 10000000000)) + 
-  geom_area(position='stack') + 
-  # geom_path()
-  # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  facet_grid( Station ~ .)
+  ggplot(Zoo_summary_no64, aes(x= Date , y=Total_SpeciesBiomass_ugdwL, fill=division)) + 
+    labs(x='Month', y=BiomassExp) +
+    commonTheme_boxplot + 
+    # scale_y_log10(limits=c(10000, 10000000000)) + 
+    geom_area(position='stack') + 
+    # geom_path()
+    # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    facet_grid( Station ~ .)
 )
 
 dev.off()
@@ -180,20 +220,25 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, "/Figures/Zoops/StatckedPlotdivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,      
+                     "Figures",          
+                     "MonthlyCruises",  
+                     "Zoops",
+                     "StatckedPlotdivisionbyStationbyMonth.png"),
+    res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Zoo_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL, fill=division)) + 
-  labs(x='Month', y=Median_BiomassExp) +
-  commonTheme_boxplot + 
-  scale_y_continuous() +
-  geom_area(position='stack') + 
-  # geom_path()
-  # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  scale_x_continuous(breaks=1:12) + 
-  guides(fill=guide_legend(title="")) + 
-  facet_grid( Station ~ .)
+  ggplot(Zoo_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL, fill=division)) + 
+    labs(x='Month', y=Median_BiomassExp) +
+    commonTheme_boxplot + 
+    scale_y_continuous() +
+    geom_area(position='stack') + 
+    # geom_path()
+    # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    scale_x_continuous(breaks=1:12) + 
+    guides(fill=guide_legend(title="")) + 
+    facet_grid( Station ~ .)
 )
 
 dev.off()
@@ -202,21 +247,26 @@ dev.off()
 
 # lines by month/station/division
 
-png(paste0(dropbox_dir, "/Figures/Zoops/LinePlotdivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,   
+                     "Figures",                
+                     "MonthlyCruises",  
+                     "Zoops",
+                     "LinePlotdivisionbyStationbyMonth.png"),
+    res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Zoo_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL, color=division)) + 
-  labs(x='Month', y=Median_BiomassExp) +
-  commonTheme_boxplot + 
-  # scale_y_log10() +
-  # geom_jitter(size=3, width=0.1) + 
-  geom_path(size=2) + 
-  # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  scale_x_continuous(breaks=1:12) + 
-  facet_grid( Station ~ .) + 
-  guides(color=guide_legend(title="")) + 
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  ggplot(Zoo_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL, color=division)) + 
+    labs(x='Month', y=Median_BiomassExp) +
+    commonTheme_boxplot + 
+    # scale_y_log10() +
+    # geom_jitter(size=3, width=0.1) + 
+    geom_path(size=2) + 
+    # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    scale_x_continuous(breaks=1:12) + 
+    facet_grid( Station ~ .) + 
+    guides(color=guide_legend(title="")) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 )
 
 dev.off()
@@ -225,21 +275,26 @@ dev.off()
 
 # Total Zooplankton biomass
 
-png(paste0(dropbox_dir, "/Figures/Zoops/TotalZoo_LinePlotdivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,    
+                     "Figures",         
+                     "MonthlyCruises",   
+                     "Zoops",
+                     "TotalZoo_LinePlotdivisionbyStationbyMonth.png"),
+    res=300, width=6,height=12, units="in")
 
 print(
-ggplot(Zoo_total_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL)) + 
-  labs(x='Month', y=Median_BiomassExp) +
-  commonTheme_boxplot + 
-  # scale_y_log10() +
-  # geom_jitter(size=3, width=0.1) + 
-  geom_path(size=2) + 
-  # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
-  # geom_point(na.rm=T) + 
-  scale_x_continuous(breaks=1:12) + 
-  facet_grid( Station ~ .) + 
-  guides(color=guide_legend(title="")) + 
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  ggplot(Zoo_total_monthly, aes(x= Month , y=Median_SpeciesBiomass_ugdwL)) + 
+    labs(x='Month', y=Median_BiomassExp) +
+    commonTheme_boxplot + 
+    # scale_y_log10() +
+    # geom_jitter(size=3, width=0.1) + 
+    geom_path(size=2) + 
+    # geom_boxplot(outlier.size=0.5, na.rm=T, size=1, outlier.shape=NA) + 
+    # geom_point(na.rm=T) + 
+    scale_x_continuous(breaks=1:12) + 
+    facet_grid( Station ~ .) + 
+    guides(color=guide_legend(title="")) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 )
 
 dev.off()
@@ -261,11 +316,17 @@ for (Zoo_i in 1:length(Zoo_dates)){
     theme_bw() + 
     labs(x='Station', y=BiomassExp)+ 
     ggtitle(Zoo_date)
-
-  png(paste0(dropbox_dir, "/Figures/Zoops/MonthlyBarplots/ZooTotals_", Zoo_date, ".png", sep=""), res=300, width=6,height=4, units="in")
+  
+  png(file = file.path(onedrive_dir,  
+                       "Figures",     
+                       "MonthlyCruises",    
+                       "Zoops",
+                       "MonthlyBarplots", 
+                       paste0("ZooTotals_", Zoo_date, ".png", sep="")),
+      res=300, width=6,height=4, units="in")
   
   print(zoo_barplot)
-
+  
   dev.off()
-    
+  
 }

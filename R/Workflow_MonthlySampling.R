@@ -27,9 +27,13 @@ source('R/g_legend.R')
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
+
 #As of Feb 2020, new single folder where all data and outputs live
 onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 
+dropbox_dir <- "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/USBR_Delta-CopyFromDropbox/Dropbox_Copy/USBR Delta Project"
+
+google_dir <- "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeltaNutrientExperiment-CopyFromGoogleDrive/DeltaNutrientExperiment"
 
 
 #colors and plotting factors

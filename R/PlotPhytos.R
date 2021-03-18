@@ -20,7 +20,13 @@ library(RColorBrewer)
 
 # stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"76" ,"84" ,"WSP")
 
-Phyto_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_select.rds'))
+# Phyto_summary_select<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_select.rds'))
+
+Phyto_summary_select <- readRDS(file = file.path(onedrive_dir, 
+                                               "RData", 
+                                               "MonthlyCruises", 
+                                               "Phyto_summary_select.rds"))
+
 Phyto_summary_no64<-filter(Phyto_summary_select, Station!='64')
 
 #Also need Phyto_total_monthly and Phyto_monthly
@@ -62,7 +68,12 @@ commonTheme_boxplot_monthly<-list(
 
 
 #Boxplots biovolume by station
-png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir, 
+                     "Figures",  
+                     "MonthlyCruises", 
+                     "Phytos",           
+                     "BoxplotGenusbyStation.png"),
+    res=300, width=8,height=4, units="in")
 
 print(
   ggplot(Phyto_summary_no64, aes(x=Station, y=Total_BioVolume, fill=DIVISION)) + 
@@ -77,7 +88,12 @@ print(
 dev.off()
 
 #Boxplots density by station
-png(paste0(dropbox_dir, "/Figures/Phytos/DensityBoxplotGenusbyStation.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir,    
+                     "Figures",     
+                     "MonthlyCruises",   
+                     "Phytos",          
+                     "DensityBoxplotGenusbyStation.png"), 
+    res=300, width=8,height=4, units="in")
 
 print(
 ggplot(Phyto_summary_no64, aes(x=Station, y=Density, fill=DIVISION)) + 
@@ -93,7 +109,12 @@ dev.off()
 
 
 # Boxplots by month
-png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyMonth.png", sep=""), res=300, width=8,height=4, units="in")
+png(file = file.path(onedrive_dir,   
+                     "Figures",     
+                     "MonthlyCruises",    
+                     "Phytos",            
+                     "BoxplotGenusbyMonth.png"), 
+    res=300, width=8,height=4, units="in")
 
 print(
 ggplot(Phyto_summary_no64, aes(x=as.factor(Month), y=Total_BioVolume, fill=DIVISION)) + 
@@ -109,7 +130,12 @@ dev.off()
 
 
 #Boxplots by station by month by species
-png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyMonthbyStation.png", sep=""), res=300, width=12,height=12, units="in")
+png(file = file.path(onedrive_dir,         
+                     "Figures",      
+                     "MonthlyCruises",   
+                     "Phytos",          
+                     "BoxplotGenusbyMonthbyStation.png"),
+    res=300, width=12,height=12, units="in")
 
 print(
 ggplot(Phyto_summary_no64, aes(x= Station, y=Total_BioVolume, color=as.factor(Month))) + 
@@ -128,7 +154,12 @@ dev.off()
 
 
 #Boxplots by month by station by species
-png(paste0(dropbox_dir, "/Figures/Phytos/BoxplotGenusbyStationbyMonth.png", sep=""), res=300, width=12,height=12, units="in")
+png(file = file.path(onedrive_dir,  
+                     "Figures",    
+                     "MonthlyCruises", 
+                     "Phytos",          
+                     "BoxplotGenusbyStationbyMonth.png"),
+    res=300, width=12,height=12, units="in")
 
 print(
 ggplot(Phyto_summary_no64, aes(x= as.factor(Month) , y=Total_BioVolume, color=Station)) + 
@@ -148,7 +179,12 @@ dev.off()
 
 
 #Boxplots by month by station by species geom_area
-png(paste0(dropbox_dir, "/Figures/Phytos/StatckedPlotDivisionbyStationbyDate.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,                
+                     "Figures",           
+                     "MonthlyCruises",    
+                     "Phytos",            
+                     "StatckedPlotDivisionbyStationbyDate.png"), 
+    res=300, width=6,height=12, units="in")
 
 print(
 ggplot(Phyto_summary_no64, aes(x= Date , y=Total_BioVolume, fill=DIVISION)) + 
@@ -166,7 +202,12 @@ dev.off()
 
 
 # Stacked Area by month
-png(paste0(dropbox_dir, "/Figures/Phytos/StatckedPlotDivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,     
+                     "Figures",     
+                     "MonthlyCruises",  
+                     "Phytos",            
+                     "StatckedPlotDivisionbyStationbyMonth.png"), 
+    res=300, width=6,height=12, units="in")
 
 print(
 ggplot(Phyto_monthly, aes(x= Month , y=Median_BioVolume, fill=DIVISION)) + 
@@ -188,7 +229,12 @@ dev.off()
 
 
 # Line plot by month
-png(paste0(dropbox_dir, "/Figures/Phytos/LinePlotDivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,       
+                     "Figures",     
+                     "MonthlyCruises", 
+                     "Phytos",             
+                     "LinePlotDivisionbyStationbyMonth.png"),
+    res=300, width=6,height=12, units="in")
 
 print(
 ggplot(Phyto_monthly, aes(x= Month , y=Median_BioVolume, color=DIVISION)) + 
@@ -210,7 +256,12 @@ dev.off()
 
 
 # Total biovolume line plot by month
-png(paste0(dropbox_dir, "/Figures/Phytos/TotalPhyto_LinePlotDivisionbyStationbyMonth.png", sep=""), res=300, width=6,height=12, units="in")
+png(file = file.path(onedrive_dir,      
+                     "Figures",         
+                     "MonthlyCruises",    
+                     "Phytos",            
+                     "TotalPhyto_LinePlotDivisionbyStationbyMonth.png"), 
+    res=300, width=6,height=12, units="in")
 
 print(
 ggplot(Phyto_total_monthly, aes(x= Month , y=Median_BioVolume)) + 
@@ -246,7 +297,13 @@ for (Phyto_i in 1:length(Phyto_dates)){
     labs(x='Station', y=BioVolExp)+ 
     ggtitle(Phyto_date)
   
-  png(paste0(dropbox_dir, "/Figures/Phytos/MonthlyBarplots/PhytoTotals_", Phyto_date, ".png", sep=""), res=300, width=6,height=4, units="in")
+  png(file = file.path(onedrive_dir,  
+                       "Figures",     
+                       "MonthlyCruises",    
+                       "Phytos",
+                       "MonthlyBarplots", 
+                       paste0("PhytoTotals_", Phyto_date, ".png", sep="")),
+      res=300, width=6,height=4, units="in")
   
   print(phyto_barplot)
   

@@ -13,56 +13,88 @@ library(lubridate)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-PhytoFiles<-list.files(paste(google_dir, 'Data', 'Phyto', sep='/'))
+# PhytoFiles<-list.files(paste(google_dir, 'Data', 'Phyto', sep='/'))
+# PhytoFiles<-PhytoFiles[grep('.xls', PhytoFiles)]
+
+PhytoFiles<-list.files(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 
+                             'Phyto2'))
 PhytoFiles<-PhytoFiles[grep('.xls', PhytoFiles)]
 
-KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTAL BV', 'DENSITY (cells/L)', 'NOTES')
+KeepNames<-c('STATION', 'SAMPLE', 'GENUS', 'DIVISION', 'TALLY', 'DENSITY', 'TOTAL BV', 'DENSITY (cells/L)', 'NOTES', 'DATE')
 
-File_i=1
+File_i=14
 Phyto_list<-list()
 for (File_i in 1:length(PhytoFiles)){
-  Phyto_list[[File_i]]<-read_excel(paste(google_dir, 'Data', 'Phyto', PhytoFiles[File_i], sep='/'), skip=1)
-  PhytoNames<-names(read_excel(paste(google_dir, 'Data', 'Phyto', PhytoFiles[File_i], sep='/'), skip=0))
+  Phyto_list[[File_i]] <- read_excel(file.path(onedrive_dir, 
+                                             'RawData', 
+                                             'MonthlyCruises',
+                                             'Phyto2', 
+                                             PhytoFiles[File_i]),
+                                   skip=1)
+  PhytoNames <- names(read_excel(file.path(onedrive_dir, 
+                                         'RawData', 
+                                         'MonthlyCruises',
+                                         'Phyto2', 
+                                         PhytoFiles[File_i]),
+                               skip=0))
   
   PhytoNames[which(PhytoNames=="DENSITY (cells/L)")]<-"DENSITY"
-  names(Phyto_list[[File_i]])<-PhytoNames
+  
+  PhytoNames[grepl("DATE",names(Phyto_list[[File_i]]), ignore.case = TRUE)] <- "DATE"
+  names(Phyto_list[[File_i]]) <- PhytoNames
  
   Phyto_list[[File_i]]<-Phyto_list[[File_i]][,intersect(KeepNames, PhytoNames)]
 
 }
 
-Phyto_df<-ldply(Phyto_list, data.frame)
+if (length(Phyto_list) != length(PhytoFiles)) {
+  warning("Not all files in Phyto list")
+}
+
+Phyto_df<-ldply(Phyto_list, data.frame) %>% distinct()
+
+
+
 
 # head(Phyto_df)
 # head(Phyto_list[[1]])
 
 Phyto_FullRecord<- Phyto_df %>%
-  drop_na(STATION, SAMPLE) %>%
+  drop_na(STATION) %>%
   dplyr::rename(bottle.ID = STATION) %>%
-  mutate(Date=as.Date(SAMPLE), Station=NA)
+  mutate(DATE=as.Date(DATE), Station=NA)
 
 rm(Phyto_list, Phyto_df, PhytoFiles, PhytoNames, KeepNames, File_i)
+
+ggplot(Phyto_FullRecord, aes(x = Date, y = bottle.ID)) + geom_point()
+
 
 # ###########
 # Zooplankton
 # ###########
 
-ZooFiles<-list.files(paste(google_dir, 'Data', 'Zoops', sep='/'))
+ZooFiles<-list.files(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 
+                                 'Zoops2'))
+
+# ZooFiles<-list.files(paste(google_dir, 'Data', 'Zoops', sep='/'))
 ZooFiles<-ZooFiles[grep('.xls', ZooFiles)]
-ZooFiles<-ZooFiles[-grep('SSC Zoops Date comparison', ZooFiles)]
+# ZooFiles<-ZooFiles[-grep('SSC Zoops Date comparison', ZooFiles)]
 
 
 
 File_i=1
 Zoo_list<-list()
 for (File_i in 1:length(ZooFiles)){
-  col1<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=0)[,1]
+  col1<-read_excel(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 
+                             'Zoops2', ZooFiles[File_i]), skip=0)[,1]
   
   headerrow<-which(col1=='bottle ID')
   if(length(headerrow)==0){
-    zoo_i<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'))
+    zoo_i<-read_excel(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 
+                                'Zoops2', ZooFiles[File_i]))
   } else if (length(headerrow)>0){
-    zoo_i<-read_excel(paste(google_dir, 'Data', 'Zoops', ZooFiles[File_i], sep='/'), skip=(headerrow))
+    zoo_i<-read_excel(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 
+                                'Zoops2', ZooFiles[File_i]), skip=(headerrow))
   }
   
 
@@ -72,7 +104,13 @@ for (File_i in 1:length(ZooFiles)){
   
   Zoo_list[[File_i]]<-zoo_i
 
+  rm(headerrow)
 }
+
+if (length(Zoo_list) != length(ZooFiles)) {
+  warning("Not all files in Phyto list")
+}
+
 
 Zoo_df<-ldply(Zoo_list, data.frame)
 
@@ -97,7 +135,10 @@ Zoo_FullRecord <- Zoo_df %>%
   dplyr::select(one_of(ZooKeepNames)) %>%
   mutate(SpeciesBiomass_ugdwL = as.numeric(SpeciesBiomass_ugdwL),
          BiomassFactor = as.numeric(BiomassFactor), 
-         Station=NA)
+         Station=NA) %>% distinct()
+
+
+ggplot(Zoo_FullRecord, aes(x = Date, y = bottle.ID)) + geom_point()
 
 
 rm(Zoo_list, Zoo_df, zoo_i, File_i, headerrow, ZooKeepNames, ZooFiles, col1)
@@ -124,7 +165,7 @@ names74<-c(74, AllStations[grep('74', AllStations)])
 names76<-c(76, AllStations[grep('76', AllStations)])
 names84<-c(84, AllStations[grep('84', AllStations)])
 
-namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect/Stair Steps", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM", "PS")
+namesPro <- c("Pro", "Prospect", "Prospect-1/PS" , "PSL", "Prospect 1", "Prospect 51", "Prospect-1",   "Prospect -1", "Prospect AM", "PS")
 namesWSP<-c("WSP","COE West Sac", "COE Gate/W. Sac", "West Sac Port", "WS-Port", "COE Gate / W. Sac. Port", "W. Sac. Port","West Sac.", "W. Sac PM", "W. Sac AM", "West Sac", "W. Sac", "W.S.P.", "West Sacs", "COE Gate W. Sac Port", "Port", "Port-gate", "COE Gate", "COE Gates", "West Steps", "West Steps/W. Sac", "West Steps/W. Sac.")
 
 names_list<-list(names16, names34, names44, namesPro, names56, names62, names64, names66, names70, names74, names76, names84, namesWSP)
@@ -155,10 +196,18 @@ write.csv(Zoo_FullRecord, file=paste(google_dir, 'DataOutputs', 'ZoopsCountsAll.
 saveRDS(Phyto_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata/Phyto_FullRecord.rds'))
 saveRDS(Zoo_FullRecord , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_FullRecord.rds'))
 
+saveRDS(Phyto_FullRecord , file = file.path(onedrive_dir, "RData", "MonthlyCruises", "Phyto_FullRecord.rds"))
+saveRDS(Zoo_FullRecord , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_FullRecord.rds'))
+
+write.csv(Phyto_FullRecord, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'PhytoCountsAll.csv'), row.names = FALSE)
+write.csv(Zoo_FullRecord, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'ZoopsCountsAll.csv'), row.names=FALSE)
+
+
 rm(list=as.character(paste("names", LongTermSites, sep='')))
 rm(AllStations, LongTermSites, station, names_list)
    
 # End
 
-
+ggplot(Phyto_FullRecord, aes(x = DATE, y = Station)) + geom_point()
+ggplot(Zoo_FullRecord, aes(x = Date, y = Station)) + geom_point()
 

@@ -16,9 +16,24 @@ library(RColorBrewer)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-Zoo_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_FullRecord.rds'))
+Zoo_FullRecord <- readRDS(file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_FullRecord.rds'))
 
-#Need to update everything below
+Zoo_FullRecord_clean <- Zoo_FullRecord %>%
+  filter(!is.na(Station), !grepl(" PM", bottle.ID)) %>%
+  group_by(bottle.ID, 
+           Date,
+           genus,
+           species,
+           division, 
+           Station) %>%
+  summarize(across(c("NumberIndividualsCounted", "NumberPerLiter", "SpeciesBiomass_ugdwL"), ~sum(.x)), 
+            notes = paste(notes, collapse = ",")) %>%
+  ungroup() %>%
+  select(-bottle.ID) %>%
+  distinct()
+
+dim(Zoo_FullRecord_clean)
+
 
 
 # names(Zoo_FullRecord)[match(c("X.individuals.counted", "X....L", "species.biomass..µg.d.w..L."), names(Zoo_FullRecord))]<-c("Tally", "NumberPerLiter", "SpeciesBiomass_ugdwL")
@@ -28,10 +43,10 @@ Zoo_FullRecord <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_FullRecord.r
 # ############################
 
 #All Zoo species recorded
-GenusList<-unique(Zoo_FullRecord[c('genus', 'species', 'division')])
+GenusList<-unique(Zoo_FullRecord_clean[c('genus', 'species', 'division')])
 
 #Unique combinations of Date and Site
-StationDates<-expand(Zoo_FullRecord, nesting(Station, Date))
+StationDates<-expand(Zoo_FullRecord_clean, nesting(Station, Date))
 
 #Create empty data.frame with every sample site/date with every Zoo genus
 StationDatesGenus<-data.frame(matrix(ncol=5, nrow=nrow(StationDates)*nrow(GenusList)))
@@ -47,8 +62,10 @@ for (StationDate in 1:nrow(StationDates)){
 }
 
 #Join empty data.frame with observations
-Zoo_CompleteList<-full_join(StationDatesGenus, Zoo_FullRecord)
+Zoo_CompleteList<-full_join(StationDatesGenus, Zoo_FullRecord_clean) %>% distinct()
 
+dim(Zoo_CompleteList)
+dim(StationDatesGenus)
 
 #Replace NAs with zeros (not observed)
 Zoo_CompleteList$NumberPerLiter[which(is.na(Zoo_CompleteList$NumberIndividualsCounted))]<-0
@@ -61,6 +78,10 @@ Zoo_CompleteList$Month<-month(Zoo_CompleteList$Date)
 #Save complete recrod with NAs
 write.csv(Zoo_CompleteList, file=paste(google_dir, 'DataOutputs', 'Zoo_CompleteList.csv', sep='/'), row.names=F)
 saveRDS(Zoo_CompleteList , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_CompleteList.rds'))
+
+saveRDS(Zoo_CompleteList , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_CompleteList.rds'))
+
+write.csv(Zoo_CompleteList, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'Zoo_CompleteList.csv'), row.names=FALSE)
 
 
 # ##################################################
@@ -77,6 +98,10 @@ Zoo_summary<- Zoo_CompleteList %>%
 write.csv(Zoo_summary, file=paste(google_dir, 'DataOutputs', 'ZooSummaryAllDivisionLongTable.csv', sep='/'), row.names=F)
 saveRDS(Zoo_summary , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary.rds'))
 
+saveRDS(Zoo_summary , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_summary.rds'))
+
+write.csv(Zoo_summary, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'ZooSummaryAllDivisionLongTable.csv'), row.names=FALSE)
+
 
 Zoo_summary_select<- Zoo_summary %>%
   filter(division %in% c("Bivalvia", "Cladocera", "Copepoda", "Gastropoda", "Ostracoda", "Rotifera"))
@@ -84,6 +109,11 @@ Zoo_summary_select<- Zoo_summary %>%
 #Export summary by division table to ggplot
 write.csv(Zoo_summary_select, file=paste(google_dir, 'DataOutputs', 'ZooSummaryMainDivisionsLongTable.csv', sep='/'), row.names=F)
 saveRDS(Zoo_summary_select , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_select.rds'))
+
+saveRDS(Zoo_summary_select , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_summary_select.rds'))
+
+write.csv(Zoo_summary_select, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'ZooSummaryMainDivisionsLongTable.csv'), row.names=FALSE)
+
 
 
 Zoo_summary_spread <- Zoo_summary_select %>%
@@ -96,11 +126,17 @@ Zoo_summary_spread$Zoo_total <- rowSums(Zoo_summary_spread[,c("Bivalvia", "Clado
 write.csv(Zoo_summary_spread, file=paste(google_dir, 'DataOutputs', 'ZooSummaryDivision.csv', sep='/'), row.names=F)
 saveRDS(Zoo_summary_spread , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_spread.rds'))
 
+saveRDS(Zoo_summary_spread , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_summary_spread.rds'))
+
+write.csv(Zoo_summary_spread, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'ZooSummaryDivision.csv'), row.names=FALSE)
+
+
 
 #Summarize by month to look at seasonal patterns
 Zoo_monthly <- Zoo_summary_select %>% 
   filter(Station !='64') %>%
   group_by(Station, division, Month) %>%
+  distinct() %>%
   dplyr::summarize(Mean_SpeciesBiomass_ugdwL=mean(Total_SpeciesBiomass_ugdwL, na.rm=T), Median_SpeciesBiomass_ugdwL=median(Total_SpeciesBiomass_ugdwL, na.rm=T), Mean_NumberPerLiter=mean(Total_NumberPerLiter, na.rm=T))
 
 Zoo_monthly$Mean_SpeciesBiomass_ugdwL_log<-Zoo_monthly$Mean_SpeciesBiomass_ugdwL
@@ -124,4 +160,10 @@ Zoo_total_monthly <-Zoo_total  %>%
 write.csv(Zoo_total, file=paste(google_dir, 'DataOutputs', 'ZooTotalBiomass.csv', sep='/'), row.names=F)
 saveRDS(Zoo_total , file=paste0(dropbox_dir, '/Data/Rdata/Zoo_total.rds'))
 
+saveRDS(Zoo_total , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 'Zoo_total.rds'))
 
+write.csv(Zoo_total, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 'ZooTotalBiomass.csv'), row.names=FALSE)
+
+
+plot(Zoo_total$Date, Zoo_total$Total_SpeciesBiomass_ugdwL)
+# points(SSC_joined_data$Date, SSC_joined_data$Zoo_total, col = "red")
