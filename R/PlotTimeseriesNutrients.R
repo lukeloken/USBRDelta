@@ -23,9 +23,11 @@ library(MASS)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+# SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
 
 
+SSC_joined_data <- readRDS(file = file.path(onedrive_dir, 'RData', 'MonthlyCruises', 
+                                            'SSC_joined_data.rds'))
 
 
 # #loop through sites and plot NO3
@@ -77,8 +79,10 @@ mylegend<-g_legend(p1)
 # arrange plots without legend
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
-
-png(paste0(dropbox_dir, '/Figures/Timeseries/InorganicNutrients_AllStations_TimeSeries.png'), units='in', width=7, height=7, res=400, bg='white')
+# png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", '
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'InorganicNutrients_AllStations_TimeSeries.png'),
+    units='in', width=7, height=7, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(10, 1.2))
 
@@ -118,7 +122,9 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/InorganicNutrients_UpperStations_TimeSeries.png'), units='in', width=7, height=7, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'InorganicNutrients_UpperStations_TimeSeries.png'), 
+    units='in', width=7, height=7, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(10, 0.5))
 
@@ -164,7 +170,9 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/TotalNutrients_AllStations_TimeSeries.png'), units='in', width=7, height=5, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'TotalNutrients_AllStations_TimeSeries.png'), 
+    units='in', width=7, height=5, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(8, 1.2))
 
@@ -204,7 +212,9 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/TotalNutrients_UpperStations_TimeSeries.png'), units='in', width=7, height=5, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'TotalNutrients_UpperStations_TimeSeries.png'), 
+    units='in', width=7, height=5, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(8, 0.5))
 
@@ -251,7 +261,9 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/Physical_AllStations_TimeSeries.png'), units='in', width=7, height=8.5, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'Physical_AllStations_TimeSeries.png'), 
+    units='in', width=7, height=8.5, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(12, 1.2))
 
@@ -291,7 +303,9 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/Physical_UpperStations_TimeSeries.png'), units='in', width=7, height=8.5, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'Physical_UpperStations_TimeSeries.png'), 
+    units='in', width=7, height=8.5, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(12, 0.5))
 
@@ -344,7 +358,9 @@ p2_box<-grid.arrange(grobs=box_list, ncol=2, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByZoneByMonth.png'), width=8, height=5, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'ChemistryByZoneByMonth.png'),
+    width=8, height=5, units='in', res=200)
 
 grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 1))
 
@@ -392,7 +408,9 @@ p2_box<-grid.arrange(grobs=box_list, ncol=2, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationAllMonths.png'), width=8, height=5, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'ChemistryByStationAllMonths.png'), 
+    width=8, height=5, units='in', res=200)
 
 grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 2),  top='All months')
 
@@ -432,7 +450,9 @@ p2_box<-grid.arrange(grobs=box_list, ncol=2, as.table=F)
 
 
 #Add legend to bottom of figure and save
-png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationSummerMonths.png'), width=8, height=5, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'ChemistryByStationSummerMonths.png'),
+    width=8, height=5, units='in', res=200)
 
 grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 2), top='June through Sept')
 
@@ -495,7 +515,9 @@ for (plot_nu in 1:length(variables_print)){
 
 
 #Save
-png(paste0(dropbox_dir, '/Figures/Timeseries/ChemistryByStationSummerMonths_6panelprint.png'), width=7, height=6, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Timeseries", 
+              'ChemistryByStationSummerMonths_6panelprint.png'),
+    width=7, height=6, units='in', res=200)
 
 # arrange plots without legend
 # grid.newpage()
@@ -584,7 +606,8 @@ heatplot<- viz + geom_tile(aes(fill = (ChlA))) +
 
 # print(heatplot)
 
-png(paste0(dropbox_dir, '/Figures/Heatmaps_ChlA.png'), width=12, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Heatmaps_ChlA.png'), width=12, height=8, units='in', res=200)
 
 print(heatplot)
 
@@ -625,7 +648,8 @@ heatplot<- viz + geom_tile(aes(fill = (Temp))) +
 
 # print(heatplot)
 
-png(paste0(dropbox_dir, '/Figures/Heatmaps_Temp.png'), width=12, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Heatmaps_Temp.png'), width=12, height=8, units='in', res=200)
 
 print(heatplot)
 
@@ -669,7 +693,8 @@ heatplot<- viz + geom_tile(aes(fill = (SPC))) +
 
 # print(heatplot)
 
-png(paste0(dropbox_dir, '/Figures/Heatmaps_SPC.png'), width=12, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Heatmaps_SPC.png'), width=12, height=8, units='in', res=200)
 
 print(heatplot)
 
@@ -713,7 +738,8 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
 
 # print(heatplot)
 
-png(paste0(dropbox_dir, '/Figures/Heatmaps_NO3.png'), width=12, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Heatmaps_NO3.png'), width=12, height=8, units='in', res=200)
 
 print(heatplot)
 
@@ -743,7 +769,9 @@ heatplot<- viz + geom_tile(aes(fill = (NO3))) +
 
 # print(heatplot)
 
-png(paste0(dropbox_dir, '/Figures/Heatmaps_withContour_NO3.png'), width=12, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Heatmaps_withContour_NO3.png'), 
+    width=12, height=8, units='in', res=200)
 
 print(heatplot)
 
@@ -767,7 +795,9 @@ slopes_summer<-slopes[which(month(slopes$Date) %in% 4:9),]
 colorset<-'Spectral'
 colors_slopes<-rev(brewer.pal(length(unique(slopes_summer$Month)), colorset))
 
-png(paste0(dropbox_dir, '/Figures/Timeseries/NO3_byYear.png'), width=10, height=8, units='in', res=200)
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              'Timeseries', 'NO3_byYear.png'), 
+    width=10, height=8, units='in', res=200)
 
 print(
 ggplot(aes(x=Dist_km, y=NO3Nppm, group=Month, colour=Month), data=slopes_summer) + 

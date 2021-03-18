@@ -30,7 +30,7 @@ library(grid)
 # Find all filenames in directory
 # These will be used to loop through all old data
 
-inc_directory<-paste0(dropbox_dir, "/Data/Rdata/IncubationMetabolism")
+inc_directory<-file.path(onedrive_dir, "Rdata", "MonthlyCruises", "IncubationMetabolism")
 
 filenames<-list.files(inc_directory)
 
@@ -107,7 +107,8 @@ Day3<-ggplot(IncMetab_summary[which(IncMetab_summary$Day==3),], aes(SampleDate, 
   facet_grid(Site~Metric)
 
 
-png(paste0(dropbox_dir, '/Figures/Incubations/GPPERNEP_meanbyday.png'), width=7, height=12, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 'GPPERNEP_meanbyday.png'), 
+    width=7, height=12, units='in', res=200)
 
 grid.newpage()
 
@@ -117,60 +118,26 @@ dev.off()
 
 
 
-png(paste0(dropbox_dir, '/Figures/Incubations/GPPERNEP_Day1_Timeseries.png'), width=8, height=6, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 'GPPERNEP_Day1_Timeseries.png'), 
+    width=8, height=6, units='in', res=200)
 
 print(Day1 + theme(legend.position='bottom'))
 
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/Incubations/GPPERNEP_Day2_Timeseries.png'), width=8, height=6, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 'GPPERNEP_Day2_Timeseries.png'), 
+    width=8, height=6, units='in', res=200)
 
 print(Day2 + theme(legend.position='bottom'))
 
 dev.off()
 
 
-png(paste0(dropbox_dir, '/Figures/Incubations/GPPERNEP_Day3_Timeseries.png'), width=8, height=6, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 'GPPERNEP_Day3_Timeseries.png'), 
+    width=8, height=6, units='in', res=200)
 
 print(Day3 + theme(legend.position='bottom'))
 
 dev.off()
-
-
-# YSI_surf <- YSI_AllDepths %>%
-#   subset(Depth.feet<3) %>%
-#   group_by(Station, Date) %>% 
-#   summarize_all(mean, na.rm=T) %>%
-#   mutate(DepthStrata = 'lessthan3')
-# 
-# 
-# YSI_mid <- YSI_AllDepths %>%
-#   subset(Depth.feet>8 & Depth.feet<12) %>%
-#   group_by(Station, Date) %>% 
-#   summarize_all(mean, na.rm=T) %>%
-#   mutate(DepthStrata = '8to10')
-# 
-# 
-# YSI_deep <- YSI_AllDepths %>%
-#   subset(Depth.feet>20) %>%
-#   group_by(Station, Date) %>% 
-#   summarize_all(mean, na.rm=T) %>%
-#   mutate(DepthStrata = 'morethan20')
-# 
-# 
-# YSI_ThreeDepths<-bind_rows(YSI_surf, YSI_mid, YSI_deep) %>%
-#   dplyr::arrange(Date, Station, Depth.feet)
-# 
-# 
-# write.csv(YSI_AllDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_AllDepths.csv'), row.names=F)
-# saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_AllDepths.rds'))
-# 
-# write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_ThreeDepths.csv'), row.names=F)
-# saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_ThreeDepths.rds'))
-
-
-
-
-
 

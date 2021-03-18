@@ -27,7 +27,7 @@ library(gtools)
 # Find all filenames in directory
 # These will be used to loop through all old data
 
-ysi_directory<-paste0(dropbox_dir, "/Data/Rdata/YSIProfiles")
+ysi_directory<-file.path(onedrive_dir, "RData", "MonthlyCruises", "YSIVerticalProfiles")
 
 filenames<-list.files(ysi_directory)
 
@@ -89,6 +89,14 @@ saveRDS(YSI_AllDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_AllDepths.rds'
 
 write.csv(YSI_ThreeDepths, file=paste0(google_dir, '/DataOutputs/YSILongTermSites_ThreeDepths.csv'), row.names=F)
 saveRDS(YSI_ThreeDepths , file=paste0(dropbox_dir, '/Data/Rdata/YSI_ThreeDepths.rds'))
+
+
+write.table(YSI_AllDepths , file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 'YSILongTermSites_AllDepths.csv'), row.names=F)
+saveRDS(YSI_AllDepths , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 'YSI_AllDepths.rds'))
+
+write.table(YSI_ThreeDepths , file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 'YSILongTermSites_ThreeDepths.csv'), row.names=F)
+saveRDS(YSI_ThreeDepths , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 'YSI_ThreeDepths.rds'))
+
 
 
 rm(YSI_deep, YSI_mid, YSI_surf, filename, filenames, ysi_directory)

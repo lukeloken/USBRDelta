@@ -23,8 +23,10 @@ source('R/lightmodel.R')
 
 
 #light<-read.csv(paste0(dropbox_dir, '/Data/NutrientExperiment/LightProfiles/LightProfiles_SSCN_Oct2018.csv'), stringsAsFactors = F)
+# light<-read.csv(paste0(dropbox_dir, '/Data/LightProfiles/Delta_LightProfileData_raw.csv'), stringsAsFactors = F)
 
-light<-read.csv(paste0(dropbox_dir, '/Data/LightProfiles/Delta_LightProfileData_raw.csv'), stringsAsFactors = F)
+light<-read.csv(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 'LightProfiles', 'Delta_LightProfileData_raw.csv'), stringsAsFactors = F)
+
 
 # light_df<-light[light$Depth_m>0,]
 light_df<-light
@@ -83,7 +85,8 @@ kd_alldates<-ldply(output_list, data.frame)
 
 kd_alldates$PhoticDepth_m=log(1/100)/(kd_alldates$kd_meters*(-1))
 
-png(paste0(dropbox_dir,"/Figures/LightExtinction_MonthlyRuns.png"), width = 12, height = 8, units = "in", res = 250)
+
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', "LightExtinction_MonthlyRuns.png"), width = 12, height = 8, units = "in", res = 250)
 
 par(mar=c(3.25,3.25,2.5,2.5), mgp=c(3,1,0), tck = -.02)
 
@@ -99,7 +102,7 @@ ggplot(aes(x=Date, y=kd_meters, group=Site, colour=Site), data=kd_alldates)+
 dev.off()
 
 
-png(paste0(dropbox_dir,"/Figures/PhoticDepths_MonthlyRuns.png"), width = 12, height = 8, units = "in", res = 250)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', "PhoticDepths_MonthlyRuns.png"), width = 12, height = 8, units = "in", res = 250)
 
 ggplot(aes(x=Date, y=PhoticDepth_m, group=Site, colour=Site), data=kd_alldates)+
   geom_path() + 
@@ -115,6 +118,11 @@ plot(kd_alldates$kd_meters, kd_alldates$PhoticDepth_m)
 
 write.csv(kd_alldates, file=paste(google_dir, 'DataOutputs', 'Kd_MonthlyRuns.csv', sep='/'), row.names=F)
 saveRDS(kd_alldates , file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds'))
+
+write.table(kd_alldates , file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 'Kd_MonthlyRuns.csv'), row.names=F)
+saveRDS(kd_alldates , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 'kd_alldates.rds'))
+
+
 
 rm(data_i, kd_alldates, light, light_df, models, out_df, output_list, water_data, dates, day, good_stations, slopes, stations, lightModel)
 

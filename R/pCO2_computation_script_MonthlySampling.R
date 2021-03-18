@@ -53,12 +53,13 @@ library(wql)
 
 # SSC_joined_data <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
 
-SSC_joined_data <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+SSC_joined_data <- readRDS(file = file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'SSC_joined_data.rds'))
 
 
 
 #load exetainer gas data for SSCN2
-gas_df<-read_excel(paste0(dropbox_dir, "/Data/DissolvedGases/SSCN2_DissolvedGasData.xlsx"), skip=0)
+gas_df<-read_excel(file.path(onedrive_dir, "RawData", "MonthlyCruises", "DissolvedGases", 
+                             "SSCN2_DissolvedGasData.xlsx"), skip=0)
 names(gas_df) <- str_replace_all(names(gas_df), c(" " = "" , "," = "" ))
 
 water_df<- gas_df %>%
@@ -93,9 +94,10 @@ gas_join<-left_join(water_df, air_df) %>% mutate(Date = as.Date(Date)) %>%
 
 #load exetainer gas data for CO2 only dates. 
 #CO2 ran on IRGA in lab
-co2_list<-read_excel_allsheets(paste0(dropbox_dir, "/Data/DissolvedGases/SacDelta_pCO2_corrected.xlsx"))
+co2_list <- read_excel_allsheets(file.path(onedrive_dir, "RawData", "MonthlyCruises", "DissolvedGases", 
+                               "SacDelta_pCO2_corrected.xlsx"))
 
-co2_df<-ldply(co2_list[1:3], data.frame) %>%
+co2_df <- ldply(co2_list[1:3], data.frame) %>%
   filter(Source=='Sample', SampleType !='DIC') %>%
   dplyr::select(Source, SampleDate, SampleType, Location,  pCO2_corrected) %>%
   dplyr::rename(Date=SampleDate, Station = Location)
@@ -264,6 +266,12 @@ merge_df_gascals<-left_join(SSC_joined_data, gas_out)
 write.csv(merge_df_gascals, file=paste0(google_dir, '/DataOutputs/SSC_joined_data_withGas_Merged.csv'), row.names=F)
 saveRDS(merge_df_gascals , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data_withGas.rds'))
 
+write.csv(merge_df_gascals, file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 
+                                           'SSC_joined_data_withGas_Merged.csv'), row.names=F)
+saveRDS(merge_df_gascals , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 
+                                          'SSC_joined_data_withGas.rds'))
+
+
 
 # plot(merge_df_gascals$N2OuM ~ merge_df_gascals$Station)
 # plot(merge_df_gascals$CH4uM ~ merge_df_gascals$Station)
@@ -296,7 +304,8 @@ CH4plot <- ggplot(merge_df_gascals[which(!is.na(merge_df_gascals$CO2uM)),], aes(
   theme_bw() + 
   theme(legend.position='none')
 
-png(paste0(dropbox_dir, '/Figures/DissolvedGasesByStation.png'), width=6, height=6, units='in', res=200)
+png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'DissolvedGasesByStation.png'), 
+    width=6, height=6, units='in', res=200)
 
 grid.newpage()
 plots<-grid.draw(rbind(ggplotGrob(CH4plot), ggplotGrob(N2Oplot),  ggplotGrob(CO2plot), size = "first"))

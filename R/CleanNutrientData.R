@@ -23,7 +23,10 @@ library(stringr)
 
 
 #Find the correct water chemistry filename
-WQ_files<-list.files(paste0(google_dir, '/Data/WaterQuality'))
+
+
+
+WQ_files <- list.files(file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 'WaterQuality'))
 SSC_WQ_files<-WQ_files[grep('SSC Nutrients', WQ_files)]
 
 if (length(grep('~', SSC_WQ_files))>0){
@@ -37,23 +40,29 @@ if (length(SSC_WQ_files)!=1){
 
 #Load water chemistry file and format
 #Data file as two rows as a header with mixed units/labels
-WQ_df1<-read_excel(paste0(google_dir, '/Data/WaterQuality/', SSC_WQ_files, sep=''), skip=1)
-WQ_df2<-read_excel(paste0(google_dir, '/Data/WaterQuality/', SSC_WQ_files, sep=''), skip=0)
+WQ_df1 <- read_excel(file.path(onedrive_dir, 'RawData', 
+                               'MonthlyCruises', 'WaterQuality', SSC_WQ_files), 
+                     skip=1)
+WQ_df2 <- read_excel(file.path(onedrive_dir, 'RawData', 
+                               'MonthlyCruises', 'WaterQuality', SSC_WQ_files),
+                     skip=0)
 
 
-names1A<-gsub("\\_.*","",names(WQ_df1))
+names1A<-gsub("\\..*","", names(WQ_df1))
 names1B<-gsub("X", '', names1A)
 names1C<-gsub("2012", '', names1B)
 
-names2A<-gsub("\\X.*","",names(WQ_df2))
 
-names<-paste0(names2A, names1C)
+names2A <- gsub("\\..*","",names(WQ_df2))
+names2B <- gsub("\\+", "", names2A)
+names2B[grepl("ChloPheo", names2B)] <- paste0(names2B[grepl("ChloPheo", names2B)], c("_1", ""))
+
+names<-paste0(names2B, names1C)
 
 names(WQ_df1)<-names
 
 #Change weird header names
-df_sub<-WQ_df1[,-which(names(WQ_df1) %in% c("", "Chlo+Pheoppb",  "Pre-HClPost-HCl"))]
-names(df_sub)[which(names(df_sub)=="Chlo+Pheo__1ppb")]<-"ChloPheoppb"
+df_sub<-WQ_df1[,-which(names(WQ_df1) %in% c("", "ChloPheo_1ppb",  "Pre-HClPost-HCl"))]
 names(df_sub)[which(names(df_sub)=="location")]<-'Station'
 names(df_sub)[which(names(df_sub)=="pH")]<-'pH_WQ'
 names(df_sub)[grep('Lab #', names(df_sub))]<-'Lab_nu'
@@ -65,9 +74,9 @@ names(df_sub)<-gsub('-', '', names(df_sub))
 names(df_sub)<-gsub('/', '', names(df_sub))
 
 #Exclude rows without data and calculate additional values
-WQ_AllSamples<-df_sub %>%
+WQ_AllSamples <- df_sub %>%
   drop_na(Date, Lab_nu) %>% 
-  dplyr::select (-c('NH4+NO3')) %>%
+  dplyr::select (-c('NH4NO3')) %>%
     mutate(DINppm = NH4Nppm + NO3Nppm, 
          DONppm = TDNppm - DINppm,
          TPNppm = TNppm - TDNppm,
@@ -80,6 +89,13 @@ WQ_AllSamples<-df_sub %>%
 
 write.table(WQ_AllSamples, file=paste0(google_dir, '/DataOutputs/WaterChemistryAllSamples.csv'), row.names=F, sep=',')
 saveRDS(WQ_AllSamples , file=paste0(dropbox_dir, '/Data/Rdata/WQ_AllSamples'))
+
+write.table(WQ_AllSamples , file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 'WaterChemistryAllSamples.csv'))
+
+saveRDS(WQ_AllSamples , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 'WQ_AllSamples.rds'))
+
+
+
 
 #Exclude weird station names
 unique(WQ_AllSamples$Station)
@@ -94,6 +110,11 @@ WQ_stations$Station<-gsub('RB ', '', WQ_stations$Station)
 
 write.table(WQ_stations, file=paste0(google_dir, '/DataOutputs/WaterChemistryLongTermStations.csv'), row.names=F, sep=',')
 saveRDS(WQ_stations , file=paste0(dropbox_dir, '/Data/Rdata/WQ_stations'))
+
+
+write.table(WQ_stations , file=file.path(onedrive_dir, 'OutputData', 'MonthlyCruises', 'WaterChemistryLongTermStations.csv'))
+saveRDS(WQ_stations , file=file.path(onedrive_dir, 'RData', 'MonthlyCruises', 'WQ_stations.rds'))
+
 
 
 rm(df_sub, WQ_df1, WQ_df2, SSC_WQ_files, WQ_files, goodstations)

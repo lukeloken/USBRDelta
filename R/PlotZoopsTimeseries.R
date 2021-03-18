@@ -20,7 +20,10 @@ library(RColorBrewer)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+# SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+
+SSC_joined_data <- readRDS(file = file.path(onedrive_dir, "RData", "MonthlyCruises", 
+                                           "SSC_joined_data.rds"))
 
 # #############################################
 # Plot zooplankton
@@ -64,7 +67,11 @@ mylegend<-g_legend(p1)
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Zoops/AllGenus_TimeSeries.png'), units='in', width=7, height=12, res=400, bg='white')
+png(file = file.path(onedrive_dir,     
+                     "Figures",               
+                     "MonthlyCruises",    
+                     "Zoops",
+                     'AllGenus_TimeSeries.png'), units='in', width=7, height=12, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(10, 1.2))
 

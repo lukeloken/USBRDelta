@@ -55,7 +55,7 @@ colorset_incubation<-'Dark2'
 colors_incubation<-brewer.pal(3, colorset_incubation)[c(1,3,2)]
 
 
-directory_incubation<-paste0(dropbox_dir, '/Data/Incubations')
+directory_incubation <- file.path(onedrive_dir, 'RawData', 'MonthlyCruises', 'Incubations')
 
 #Find the correct file and load it
 
@@ -63,8 +63,8 @@ folders<-list.files(directory_incubation)
 
 folders<-folders[-which(folders %in% c("MetabolismCalculations", "030518"))]
 
-folder_nu<-2
-for (folder_nu in 1:length(folders)){
+folder_nu<-3
+for (folder_nu in 2:length(folders)){
   Date<-folders[folder_nu] #Date must be mmddyy
   Date_ymd<-mdy(Date) #For saving data
   
@@ -134,7 +134,9 @@ for (folder_nu in 1:length(folders)){
     
     
     #Add legend to bottom of figure and save
-    png(paste0(dropbox_dir, '/Figures/Incubations/', Date, 'Metabolism_Boxplot.png'), width=8, height=3, units='in', res=200)
+    png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 
+                  paste0('Metabolism_Boxplot.png', Date_ymd, '.png')), 
+        width=8, height=3, units='in', res=200)
     
     if (length(levels(DOrate_mean_long_table$Day)) == 1) {
       grid.arrange(p2_box)
@@ -154,9 +156,17 @@ for (folder_nu in 1:length(folders)){
     # write.csv(DOrate_mean_long_table, file=paste0(dropbox_dir, '/Data/Incubations/MetabolismCalculations/JarMetabolism_', Date, '.csv'), row.names=F)
     # 
     
-    write.csv(DOrate_mean_long_table, file=paste0(google_dir, '/DataOutputs/IncubationMetabolism/IncubationMetabolism_', Date_ymd, '.csv'), row.names=F)
-    saveRDS(DOrate_mean_long_table , file=paste0(dropbox_dir, '/Data/Rdata/IncubationMetabolism/IncubationMetabolism_', Date_ymd, '.rds'))
-    
+    # write.csv(DOrate_mean_long_table, file=paste0(google_dir, '/DataOutputs/IncubationMetabolism/IncubationMetabolism_', Date_ymd, '.csv'), row.names=F)
+    # saveRDS(DOrate_mean_long_table , file=paste0(dropbox_dir, '/Data/Rdata/IncubationMetabolism/IncubationMetabolism_', Date_ymd, '.rds'))
+    # 
+    write.table(DOrate_mean_long_table , file = file.path(onedrive_dir, 'OutputData', 'MonthlyCruises',
+                                                        'IncubationMetabolism', 
+                                                        paste0('IncubationMetabolism_', Date_ymd, '.csv')), 
+                row.names = FALSE)
+                                                        
+    saveRDS(DOrate_mean_long_table , file = file.path(onedrive_dir, 'RData', 'MonthlyCruises',
+                                                      'IncubationMetabolism', 
+                                                      paste0('IncubationMetabolism_', Date_ymd, '.rds')))
     
     
     # ########################################
@@ -233,7 +243,11 @@ for (folder_nu in 1:length(folders)){
     p2<-grid.arrange(grobs=plot_list, ncol=length(unique(uniquetable$Metric)), as.table=F)
     
     #Add legend to bottom of figure and save
-    png(paste0(dropbox_dir, '/Figures/Incubations/MetabolismTimeseries_', Date_ymd, '.png'), width=8, height=12, units='in', res=200)
+    png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 
+                  paste0('MetabolismTimeseries_', Date_ymd, '.png')), 
+        width=8, height=12, units='in', res=200)
+    
+
     
     grid.arrange(p2, mylegend, nrow=2,heights=c(10, length(unique(uniquetable$Site))/16))
     
@@ -249,8 +263,10 @@ for (folder_nu in 1:length(folders)){
     # Each box is a timepoint, y is the within-jar standard deviation, color is AM/PM
     # #############################################
     
+    png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 
+                  paste0('MetabolismWithinSampleSD_', Date_ymd, '.png')), 
+        width=5, height=4, units='in', res=200)
     
-    png(paste0(dropbox_dir, '/Figures/Incubations/MetabolismWithinSampleSD_', Date_ymd, '.png'), width=5, height=4, units='in', res=200)
     par(mar=c(2.5,3,0.5,0.5))
     par(mgp=c(3,0.5,0))
     xlabels<-paste0('T', 1:(ncol(DOsd)-1))
@@ -314,7 +330,9 @@ for (folder_nu in 1:length(folders)){
     
     
     #Add legend to bottom of figure and save
-    png(paste0(dropbox_dir, '/Figures/Incubations/MetabolismBoxplot_', Date_ymd, '.png'), width=8, height=3, units='in', res=200)
+    png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'Incubations', 
+                  paste0('MetabolismBoxplot_', Date_ymd, '.png')), 
+        width=8, height=3, units='in', res=200)
     
     grid.arrange(p2_box, mylegend_box, nrow=2,heights=c(10, 1))
     

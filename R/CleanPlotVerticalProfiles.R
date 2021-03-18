@@ -20,12 +20,12 @@
 
 # Find all filenames in directory
 # These will be used to loop through all old data
-YSIfilenames<-list.files(paste0(google_dir, "/Data/DepthProfiles"))
+YSIfilenames<-list.files(file.path(onedrive_dir, "RawData", "MonthlyCruises", "DepthProfiles"))
 
 #Exclude non-excel files
 YSIfilenames<-YSIfilenames[grep('.xls', YSIfilenames)]
 YSIfilenames<-YSIfilenames[-grep('may 27 2015 report.xlsx', YSIfilenames)]
-YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 21 2014 report', YSIfilenames)]
+# YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 21 2014 report', YSIfilenames)]
 YSIfilenames<-YSIfilenames[-grep('Channel Data Depth Profiles Oct 23 2014 report', YSIfilenames)]
 YSIfilenames<-YSIfilenames[-grep('Sac Ship Channel Surface Summary', YSIfilenames)]
 
@@ -40,7 +40,8 @@ if (length(grep('~', YSIfilenames))>0){
 # Loop through filenames and read in data
 i=9
 for (i in 1:length(YSIfilenames)){
-  YSI_list_i<-read_excel_allsheets(paste0(google_dir, "/Data/DepthProfiles/", YSIfilenames[i]))
+  YSI_list_i<-read_excel_allsheets(file.path(onedrive_dir, "RawData", "MonthlyCruises", "DepthProfiles/",
+                                             YSIfilenames[i]))
   
   #Order each sheet by depth
   depth_name<-names(YSI_list_i[[1]])[grep('Depth', names(YSI_list_i[[1]]))]
@@ -155,8 +156,11 @@ for (i in 1:length(YSIfilenames)){
   df_plot<-df_plot[order(df_plot$Station),]
   
   #Export to dropbox (.rds) and to google_dir (csv)
-  write.csv(df_plot, file=paste0(google_dir, '/DataOutputs/YSIVerticalProfiles/VertialProfile_', Date, '.csv'), row.names=F)
-  saveRDS(df_plot , file=paste0(dropbox_dir, '/Data/Rdata/YSIProfiles/VerticalProfile_', Date, '.rds'))
+  write.csv(df_plot, file=file.path(onedrive_dir, "OutputData", "MonthlyCruises", "YSIVerticalProfiles", 
+                                    paste0('VertialProfile_', Date, '.csv')), row.names=F)
+  
+  saveRDS(df_plot , file=file.path(onedrive_dir, "RData", "MonthlyCruises", "YSIVerticalProfiles", 
+                                   paste0('VerticalProfile_', Date, '.rds')))
   
   
   # ###########
@@ -203,13 +207,18 @@ for (i in 1:length(YSIfilenames)){
   p2<-grid.arrange(grobs=plot_list, ncol=2, as.table=F)
   
   # arrange multi plot with legend below and save to project folder
-  png(paste0(dropbox_dir, '/Figures/VerticalProfiles/VertialProfile_', Date, '.png'), width=8, height=16, units='in', res=200)
+  png(file.path(onedrive_dir, 'Figures', 'MonthlyCruises', 'VerticalProfiles', 
+             paste0('VertialProfile_', Date, '.png')),
+      width=8, height=16, units='in', res=200)
   
   grid.arrange(p2, mylegend, nrow=2,heights=c(10, 0.5))
   
   dev.off()
   
+  print(paste0(i, ": ", Date, " : ", YSIfilenames[i]))
 }
+
+
 
 rm(df_plot, mylegend, p1, p2, plot_list, YSI_df_i, YSI_list_i, YSI_list_i_noNA, YSI_list_i_ordered, YSI_list_i2, YSI_list_i3, mylegend, p1, p2, plot_list, YSI_df_i, YSI_list_i, YSI_list_i_noNA, YSI_list_i_ordered, YSI_list_i2, YSI_list_i3)
 

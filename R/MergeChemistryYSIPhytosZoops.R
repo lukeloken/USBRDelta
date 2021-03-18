@@ -29,22 +29,29 @@ stationfactors<-c("16", "34", "44", "Pro", "56", "62", "64", "66" ,"70" ,"74" ,"
 
 #Input Data
 #nutrients
-WQ_stations<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/WQ_stations'))
+WQ_stations<-readRDS(file=file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'WQ_stations.rds'))
 WQ_stations$Station<-factor(WQ_stations$Station, stationfactors)
 WQ_stations <- dplyr::select(WQ_stations, -NH4_20_ftppm, -NO3_20_ftppm, -PO4_20_ft)
 
 #YSI
-YSI_ThreeDepths<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/YSI_ThreeDepths.rds'))
-YSI_surf<-dplyr::filter(YSI_ThreeDepths, DepthStrata=='lessthan3')
+YSI_ThreeDepths<-readRDS(file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'YSI_ThreeDepths.rds'))
+YSI_surf <- YSI_ThreeDepths %>%
+  ungroup() %>%
+  dplyr::filter(DepthStrata=='lessthan3')
 
 #Phyto
-Phyto_summary_spread <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Phyto_summary_spread.rds'))
+Phyto_summary_spread <- readRDS(file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'Phyto_summary_spread.rds')) %>% ungroup()
+
 
 #Zoops
-Zoo_summary_spread <- readRDS(file=paste0(dropbox_dir, '/Data/Rdata/Zoo_summary_spread.rds'))
+Zoo_summary_spread <- readRDS(file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'Zoo_summary_spread.rds')) %>% ungroup()
+
+ggplot(Phyto_summary_spread, aes(x = Date, y = Station)) + geom_point()
+ggplot(Zoo_summary_spread, aes(x = Date, y = Station)) + geom_point()
+
 
 #Light extinction
-kd_alldates<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/kd_alldates.rds')) %>%
+kd_alldates <- readRDS(file.path(onedrive_dir, 'Rdata', 'MonthlyCruises', 'kd_alldates.rds')) %>%
   dplyr::rename(Station=Site) %>%
   mutate(Station = gsub("NL", "", Station)) %>%
   mutate(Station = gsub("RB", "", Station)) %>%
@@ -70,20 +77,30 @@ SSC_joined_data$Zone[SSC_joined_data$Station %in% c('44', '56', 'Pro')]<-'2'
 SSC_joined_data$Zone[SSC_joined_data$Station %in% c('16', '34')]<-'1'
 
 
-write.table(SSC_joined_data, file=paste0(google_dir, '/DataOutputs/SSC_JoinedSurfaceData.csv'), row.names=F, sep=',')
-saveRDS(SSC_joined_data , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+# write.table(SSC_joined_data, file=paste0(google_dir, '/DataOutputs/SSC_JoinedSurfaceData.csv'), row.names=F, sep=',')
+# saveRDS(SSC_joined_data , file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data.rds'))
+
+saveRDS(SSC_joined_data , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 
+                                           "SSC_joined_data.rds"))
+write.csv(SSC_joined_data, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 
+                                            'SSC_JoinedSurfaceData.csv'), row.names = FALSE)
 
 
 
 light_data<-SSC_joined_data %>%
   filter(!is.na(kd_meters)) %>%
-  dplyr::select(Date, Station, Time, LabTurbidity, FieldTurbidity, Secchicm, Turbid..NTU, kd_meters, PhoticDepth_m) %>%
+  dplyr::select(Date, Station, Time, LabTurbidity, FieldTurbidity,
+                Secchicm, Turbid..NTU, kd_meters, PhoticDepth_m) %>%
   rename(LabTurbidity_NTU = LabTurbidity,
          FieldTurbidity_NTU = FieldTurbidity,
          Secchi_cm = Secchicm, 
          SensorTurbidity_NTU = Turbid..NTU)
 
-write.table(light_data, file=paste0(google_dir, '/DataOutputs/light_data.csv'), row.names=F, sep=',')
-saveRDS(light_data , file=paste0(dropbox_dir, '/Data/Rdata/light_data.rds'))
+# write.table(light_data, file=paste0(google_dir, '/DataOutputs/light_data.csv'), row.names=F, sep=',')
+# saveRDS(light_data , file=paste0(dropbox_dir, '/Data/Rdata/light_data.rds'))
 
 
+saveRDS(light_data , file = file.path(onedrive_dir, "RData", "MonthlyCruises", 
+                                           "light_data.rds"))
+write.csv(light_data, file = file.path(onedrive_dir, "OutputData", "MonthlyCruises", 
+                                            'light_data.csv'), row.names = FALSE)

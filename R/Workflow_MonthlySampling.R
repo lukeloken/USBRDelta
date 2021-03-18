@@ -66,7 +66,7 @@ source('R/Calculatekd_MonthlyRuns.R')
 
 # Input date to link new folder
 # Date<-'102218'
-source('R/IncubationMetabolism_Workflow.R')
+# source('R/IncubationMetabolism_Workflow.R')
 source('R/CompileIncubationMetabolism.R')
 
 
@@ -77,7 +77,7 @@ source('R/CompileIncubationMetabolism.R')
 # Loop through vertical profiles and plot all
 # Might want to change this to only run the most recent date?
 # Also saves a surface, mid, and deep measurement for each time/place
-source('R/CleanPlotVerticalProfiles.R')
+# source('R/CleanPlotVerticalProfiles.R')
 source('R/CompileVerticalProfiles.R')
 
 

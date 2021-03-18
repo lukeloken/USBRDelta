@@ -20,7 +20,10 @@ library(MASS)
 # #Where data come from
 # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
 
-SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+# SSC_joined_data<-readRDS(file=paste0(dropbox_dir, '/Data/Rdata/SSC_joined_data'))
+
+SSC_joined_data <- readRDS(file = file.path(onedrive_dir, 'RData', 'MonthlyCruises', 
+                                            'SSC_joined_data.rds'))
 
 # #############################################
 # Plot phytoplankton and chlorlophyll patterns
@@ -63,8 +66,11 @@ mylegend<-g_legend(p1)
 # arrange plots without legend
 p2<-grid.arrange(grobs=plot_list, ncol=1, as.table=F)
 
+# png(file.path(onedrive_dir, "Figures", "MonthlyCruises", "Phytos", '
 
-png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlA_TimeSeries.png'), units='in', width=7, height=12, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'AllGenus_ChlA_TimeSeries.png'), 
+    units='in', width=7, height=12, res=400, bg='white')
 
 grid.arrange(p2, mylegend, nrow=2, heights=c(10, 1.2))
 
@@ -132,14 +138,18 @@ plot2_zone<-grid.arrange(grobs=plot_list2_zone, ncol=2, as.table=F)
 
 # plot_list2[[length(variables)+1]]<-mylegend2
 
-png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlA_Scatterplots.png'), units='in', width=6, height=9, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'AllGenus_ChlA_Scatterplots.png'), 
+    units='in', width=6, height=9, res=400, bg='white')
 
 grid.arrange(plot2, mylegend2, nrow=2, heights=c(10, 1))
 
 dev.off()
 
 #Zone
-png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlA_Scatterplots_byZone.png'), units='in', width=6, height=9, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'AllGenus_ChlA_Scatterplots_byZone.png'), 
+    units='in', width=6, height=9, res=400, bg='white')
 
 grid.arrange(plot2_zone, mylegend2_zone, nrow=2, heights=c(10, 1))
 
@@ -192,7 +202,9 @@ mylegend2<-g_legend(p)
 plot2<-grid.arrange(grobs=plot_list2, ncol=2, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlAPheo_Scatterplots.png'), units='in', width=6, height=9, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'AllGenus_ChlAPheo_Scatterplots.png'), 
+    units='in', width=6, height=9, res=400, bg='white')
 
 grid.arrange(plot2, mylegend2, nrow=2, heights=c(10, 1))
 
@@ -234,7 +246,9 @@ mylegend2<-g_legend(p)
 plot2<-grid.arrange(grobs=plot_list2, ncol=2, as.table=F)
 
 
-png(paste0(dropbox_dir, '/Figures/Phytos/AllGenus_ChlAYSI_Scatterplots.png'), units='in', width=6, height=9, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'AllGenus_ChlAYSI_Scatterplots.png'), 
+    units='in', width=6, height=9, res=400, bg='white')
 
 grid.arrange(plot2, mylegend2, nrow=2, heights=c(10, 1))
 
@@ -262,7 +276,9 @@ colorset<-'Accent'
 colors_divisions<-brewer.pal(length(unique(dom_phyto$species)), colorset)
 colors_divisions<-colors_divisions[c(2,1,3,4,5)]
 
-dominantspeciesplot<-ggplot(dom_phyto[which(is.finite(dom_phyto$Chloroappb)),], aes_string('Chloroappb', 'max', shape='species', fill='species', group='species')) + 
+dominantspeciesplot<-ggplot(dom_phyto[which(is.finite(dom_phyto$Chloroappb)),], 
+                            aes_string('Chloroappb', 'max', shape='species', 
+                                       fill='species', group='species')) + 
   labs(x='Total Chl a (lab extraction)', y='Volume of dominant phytoplankton division') +
   scale_shape_manual(values=rep(21:25, 5))  + 
   scale_fill_manual(values = colors_divisions) + 
@@ -278,7 +294,9 @@ dominantspeciesplot<-ggplot(dom_phyto[which(is.finite(dom_phyto$Chloroappb)),], 
   theme(legend.title = element_blank()) + 
   facet_wrap(~species)
 
-png(paste0(dropbox_dir, '/Figures/Phytos/DominantGenus_ChlA_Scatterplots.png'), units='in', width=6, height=5, res=400, bg='white')
+png(file.path(onedrive_dir, "Figures", "MonthlyCruises", 
+              "Phytos", 'DominantGenus_ChlA_Scatterplots.png'), 
+    units='in', width=6, height=5, res=400, bg='white')
 
 print(dominantspeciesplot)
 
