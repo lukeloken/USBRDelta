@@ -20,7 +20,7 @@ library(lubridate)
 
 
 
-ReadBuoySensorData <- function(box_dir, save_to_file = FALSE){
+ReadBuoySensorData <- function(box_dir, save_to_file = FALSE, compile_corrections = FALSE){
   
   #load some packages
   library(lubridate)
@@ -79,98 +79,107 @@ ReadBuoySensorData <- function(box_dir, save_to_file = FALSE){
   # cdom_folder <- correction_folders[grepl("cDOM", correction_folders)]
   # turb_folder <- correction_folders[grepl("Turbidity", correction_folders)]
   # chla_folder <- correction_folders[grepl("Chla", correction_folders)]
-  
-  #CDOM, Turbidity, and ChlA are already compiled into a single file
-  #Download 2, Aug 9, 2024
-  correction_folders <- dir_folders[grepl("corrections", dir_folders)]
-  correction_folders2 <- list.files(file.path(box_dir, "DWSC_Data_Raw", correction_folders[1]))
-  correction_folders2 <- correction_folders2[which(grepl("corrections",  correction_folders2))]
-  
-  cdom_folder <- correction_folders2[grepl("cDOM", correction_folders2)]
-  turb_folder <- correction_folders2[grepl("Turbidity", correction_folders2)]
-  chla_folder <- correction_folders2[grepl("Chla", correction_folders2)]
-  
-  #Luke needs to fix for second deployment
-  correction_list <- list()
-  folder <- correction_folders2[2]
-  for (folder in correction_folders2){
-    # files <- list.files(file.path(box_dir, "DWSC_Data_Raw", folder)) #download 1
-    files <- list.files(file.path(box_dir, "DWSC_Data_Raw", correction_folders[1], folder)) #download 2
     
-    loadfile <- files[endsWith(files, "correction.xlsx")]
+    #CDOM, Turbidity, and ChlA are already compiled into a single file
+    #Download 2, Aug 9, 2024
+    correction_folders <- dir_folders[grepl("corrections", dir_folders)]
+    correction_folders2 <- list.files(file.path(box_dir, "DWSC_Data_Raw", correction_folders[1]))
+    correction_folders2 <- correction_folders2[which(grepl("Archive",  correction_folders2))]
     
-    if(grepl("Turbidity", loadfile)){sheet_name = "Corrected"}
-    if(grepl("cDOM", loadfile)){sheet_name = "Raw download"}
-    if(grepl("Chla", loadfile)){sheet_name = "Corrected"}
+    correction_folders3 <- list.files(file.path(box_dir, "DWSC_Data_Raw", correction_folders[1], 
+                                                correction_folders2[1]))
+    correction_folders3 <- correction_folders3[which(grepl("corrections",  correction_folders3))]
     
-    cat("\n", "Processing ", paste("File =", loadfile," Sheet = ", sheet_name))
+    cdom_folder <- correction_folders3[grepl("cDOM", correction_folders2)]
+    turb_folder <- correction_folders3[grepl("Turbidity", correction_folders2)]
+    chla_folder <- correction_folders3[grepl("Chla", correction_folders2)]
     
-    df_i <- suppressMessages(readxl::read_excel(file.path(box_dir,
-                                                          "DWSC_Data_Raw", 
-                                                          correction_folders[1],
-                                                          folder,
-                                                          loadfile),
-                                                sheet = sheet_name,
-                                                skip = 1))
-    
-    df_header1_i <- suppressMessages(readxl::read_excel(file.path(box_dir,
-                                                                  "DWSC_Data_Raw", 
-                                                                  correction_folders[1],
-                                                                  folder,
-                                                                  loadfile),
-                                                        sheet = sheet_name,
-                                                        skip = 0)) %>%
-      names()
-    
-    head(df_i)
-    df_header1_i
-    time_cols <- which(grepl("Time", df_header1_i) | grepl("GMT", df_header1_i))
-    tzones_string <- df_header1_i[time_cols]
-    if(length(time_cols) == 0){
-      time_cols <- which(grepl("Time", names(df_i)) | grepl("GMT",  names(df_i)))
-      tzones_string <- names(df_i)[time_cols]
+    #Luke needs to fix for second deployment
+    correction_list <- list()
+    folder <- correction_folders3[2]
+    for (folder in correction_folders3){
+      # files <- list.files(file.path(box_dir, "DWSC_Data_Raw", folder)) #download 1
+      files <- list.files(file.path(box_dir, 
+                                    "DWSC_Data_Raw",
+                                    correction_folders[1],
+                                    correction_folders2[1],
+                                    folder)) #download 2
+      
+      loadfile <- files[endsWith(files, "correction.xlsx")]
+      
+      if(grepl("Turbidity", loadfile)){sheet_name = "Corrected"}
+      if(grepl("cDOM", loadfile)){sheet_name = "Raw download"}
+      if(grepl("Chla", loadfile)){sheet_name = "Corrected"}
+      
+      cat("\n", "Processing ", paste("File =", loadfile," Sheet = ", sheet_name))
+      
+      df_i <- suppressMessages(readxl::read_excel(file.path(box_dir,
+                                                            "DWSC_Data_Raw", 
+                                                            correction_folders[1],
+                                                            correction_folders2[1],
+                                                            folder,
+                                                            loadfile),
+                                                  sheet = sheet_name,
+                                                  skip = 1))
+      
+      df_header1_i <- suppressMessages(readxl::read_excel(file.path(box_dir,
+                                                                    "DWSC_Data_Raw", 
+                                                                    correction_folders[1],
+                                                                    correction_folders2[1],
+                                                                    folder,
+                                                                    loadfile),
+                                                          sheet = sheet_name,
+                                                          skip = 0)) %>%
+        names()
+      
+      head(df_i)
+      df_header1_i
+      time_cols <- which(grepl("Time", df_header1_i) | grepl("GMT", df_header1_i))
+      tzones_string <- df_header1_i[time_cols]
+      if(length(time_cols) == 0){
+        time_cols <- which(grepl("Time", names(df_i)) | grepl("GMT",  names(df_i)))
+        tzones_string <- names(df_i)[time_cols]
+        
+      }
+      
+      # tzones <- ifelse(grepl("Pacific Standard", tzones_string), "Etc/GMT+7", 
+      #                  ifelse(grepl("GMT-08", tzones_string), "Etc/GMT+8", 
+      #                         NA))
+      
+      tzones <- ifelse(grepl("Pacific Standard", tzones_string), "America/Los_Angeles", 
+                       ifelse(grepl("GMT-08", tzones_string), "Etc/GMT+8", 
+                              NA))
+      
+      
+      names(df_i)[time_cols] <- paste0("Datetime_", 1:length(time_cols))
+      
+      columns_clean <- gsub("\\..*","", df_header1_i) 
+      serial_numbers <- suppressWarnings(unique(as.numeric(columns_clean)))
+      serial_numbers <- serial_numbers[which(!is.na(serial_numbers))]
+      
+      x = serial_numbers[1]
+      column_list <- lapply(serial_numbers, function(x) c(time_cols[which(serial_numbers == x)], which(columns_clean == x)))
+      
+      data_list <- lapply(column_list, function(l) df_i[,l])
+      data_list <- lapply(data_list, function(l) setNames(l, nm =  gsub("\\..*","", names(l))))
+      data_list <- lapply(data_list, function(l) setNames(l, nm =  c("Datetime", names(l)[2:ncol(l)])))
+      data_list <- lapply(1:length(data_list), function(i) mutate(data_list[[i]], Datetime = as.POSIXct(Datetime, 
+                                                                                                        format = "%Y-%m-%d %H:%M:%S",
+                                                                                                        tz = tzones[i])))
+      data_list <- lapply(data_list, function(l) mutate(l, 
+                                                        Datetime_UTC = lubridate::with_tz(Datetime, "UTC")) %>%
+                            select(-Datetime))
+      
+      names(data_list) <- serial_numbers
+      
+      correction_list[[which(correction_folders3 == folder)]] <- bind_rows(data_list, .id = "SerialNumber") %>%
+        mutate(SerialNumber = as.numeric(SerialNumber))
+      
+      if(grepl("cDOM", folder)) {names(correction_list)[[which(correction_folders3 == folder)]] <- "cdom_corrected_df"}
+      if(grepl("Chla", folder)) {names(correction_list)[[which(correction_folders3 == folder)]] <- "chl_corrected_df"}
+      if(grepl("Turb", folder)) {names(correction_list)[[which(correction_folders3 == folder)]] <- "turb_corrected_df"}
       
     }
-    
-    # tzones <- ifelse(grepl("Pacific Standard", tzones_string), "Etc/GMT+7", 
-    #                  ifelse(grepl("GMT-08", tzones_string), "Etc/GMT+8", 
-    #                         NA))
-    
-    tzones <- ifelse(grepl("Pacific Standard", tzones_string), "America/Los_Angeles", 
-                     ifelse(grepl("GMT-08", tzones_string), "Etc/GMT+8", 
-                            NA))
-    
-    
-    names(df_i)[time_cols] <- paste0("Datetime_", 1:length(time_cols))
-    
-    columns_clean <- gsub("\\..*","", df_header1_i) 
-    serial_numbers <- suppressWarnings(unique(as.numeric(columns_clean)))
-    serial_numbers <- serial_numbers[which(!is.na(serial_numbers))]
-    
-    x = serial_numbers[1]
-    column_list <- lapply(serial_numbers, function(x) c(time_cols[which(serial_numbers == x)], which(columns_clean == x)))
-    
-    data_list <- lapply(column_list, function(l) df_i[,l])
-    data_list <- lapply(data_list, function(l) setNames(l, nm =  gsub("\\..*","", names(l))))
-    data_list <- lapply(data_list, function(l) setNames(l, nm =  c("Datetime", names(l)[2:ncol(l)])))
-    data_list <- lapply(1:length(data_list), function(i) mutate(data_list[[i]], Datetime = as.POSIXct(Datetime, 
-                                                                                                      format = "%Y-%m-%d %H:%M:%S",
-                                                                                                      tz = tzones[i])))
-    data_list <- lapply(data_list, function(l) mutate(l, 
-                                                      Datetime_UTC = lubridate::with_tz(Datetime, "UTC")) %>%
-                          select(-Datetime))
-    
-    names(data_list) <- serial_numbers
-    
-    correction_list[[which(correction_folders2 == folder)]] <- bind_rows(data_list, .id = "SerialNumber") %>%
-      mutate(SerialNumber = as.numeric(SerialNumber))
-    
-    if(grepl("cDOM", folder)) {names(correction_list)[[which(correction_folders2 == folder)]] <- "cdom_corrected_df"}
-    if(grepl("Chla", folder)) {names(correction_list)[[which(correction_folders2 == folder)]] <- "chl_corrected_df"}
-    if(grepl("Turb", folder)) {names(correction_list)[[which(correction_folders2 == folder)]] <- "turb_corrected_df"}
-    
-  }
-  
   
   #DO, temp, cond, and PAR data are with 'interval folders'
   interval_folders <- c(dir_folders[endsWith(dir_folders, "23")], 
@@ -229,6 +238,8 @@ ReadBuoySensorData <- function(box_dir, save_to_file = FALSE){
     
     #Identify the buoy folders that contain all of the data
     buoy_folders_i <- buoy_folders_i[startsWith(buoy_folders_i, "CM")]
+    
+    if(length(buoy_folders_i) == 0){next}
     
     # next loop goes through each buoy array (CM66, CM74, CM84)
     buoy_folder_nu = 1

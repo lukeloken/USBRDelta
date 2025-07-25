@@ -40,8 +40,8 @@ onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2024-08-12/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2024-11-01/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-01-24/DeepWaterShipChannel"
-box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-05-01/DeepWaterShipChannel"
-
+# box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-05-01/DeepWaterShipChannel"
+box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-07-18/DeepWaterShipChannel"
 
 # check if raw data folder is in directory
 if(any("DWSC_Data_Raw" == list.files(box_dir))){
