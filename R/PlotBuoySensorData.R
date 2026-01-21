@@ -44,6 +44,14 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
   unique(df_list[[13]]$IntervalName)
   summary(df_list[[13]]$Datetime_UTC)
   
+
+  #data for polygon during non-deployments  
+  poly_start <- as.POSIXct(c(-Inf, df_list[[1]]$DateTime_UTC_End), tz = "UTC")
+  poly_end <- as.POSIXct(c(df_list[[1]]$DateTime_UTC_Start, Inf))
+  
+  poly <- data.frame(poly_start, poly_end)
+  
+
   
   #summaries
   summary_DO <- df_list$DO_df %>%
@@ -55,7 +63,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
   #Visualization
   theme_timeseries_common <- list(theme_bw(), 
                                   scale_x_datetime(date_labels = "%b%e\n%Y", 
-                                                   date_breaks = "6 months"), 
+                                                   date_breaks = "year"), 
                                   theme(strip.background = element_rect(fill = NA, color = NA), 
                                         panel.grid.minor = element_blank()))
   
@@ -211,7 +219,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
                                       # Datetime_UTC < date_test[2], 
                                       
                                       inwater), 
-                               size = 1), 
+                               size = .01), 
                    aes(x = Datetime_UTC, 
                        y = Temp_C, 
                        color = Depth_cm,
@@ -223,7 +231,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     # geom_point(size = .5) + 
     geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_temp)
@@ -258,7 +266,53 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     fig_details_df[length(fig_list), c("width", "height")] <- c(10,6)
   }
   
-  p_temp_heat <- ggplot(sample_frac(filter(df_list$temp_df, 
+  # 
+  # #test delete between
+  # test_df <- df_list$temp_df %>%
+  #   filter(IntervalName == "07_AUG24_DEC24", 
+  #          SerialNumber == "20539692") %>%
+  #   mutate(Site = "CM74", 
+  #          Depth_cm = "150") %>%
+  #   bind_rows(df_list$temp_df)
+  # 
+  # test <- ggplot(sample_frac(filter(test_df, 
+  #                                   !is.na(Temp_C), 
+  #                                   inwater, 
+  #                                   IntervalName == "07_AUG24_DEC24", 
+  #                                   month(Datetime_UTC) == "9"
+  # ), 
+  # size = 1), 
+  # aes(x = Datetime_UTC, 
+  #     y = Temp_C, 
+  #     # color = Depth_cm,
+  #     group = IntervalName)) +
+  #   geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_Start, 
+  #              linetype = "dashed", color = "green", linewidth = 0.25) +
+  #   geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_End, 
+  #              linetype = "dashed", color = "red", linewidth = 0.25) + 
+  #   # geom_point(size = .5) + 
+  #   geom_line(linewidth = 0.5) +
+  #   theme_timeseries_common + 
+  #   facet_grid(vars(Depth_cm), vars(Site)) +
+  #   scale_color_brewer(palette = "RdYlBu") +
+  #   geom_path(data = filter(test_df, 
+  #                           SerialNumber == "20539692", 
+  #                           IntervalName == "07_AUG24_DEC24", 
+  #                           month(Datetime_UTC) == "9")
+  #             , color = "red")
+  # 
+  # print(test)
+  # 
+  # #end test
+  
+  #Merged temp
+  temp_subset <- filter(df_list[[13]], 
+                        SensorType %in% c("PAR", "DO", "TEMP/SPC")) %>%
+    filter(SensorType %in% c("PAR", "DO") | Depth_cm != "050") %>%
+    arrange(BuoyName, desc(Depth_cm), Datetime_UTC)
+  
+  
+  p_temp_heat <- ggplot(sample_frac(filter(temp_subset, 
                                            !is.na(Temp_C), 
                                            inwater), 
                                     size = 1), 
@@ -274,7 +328,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_tile() +
     theme_timeseries_common + 
     labs(y = "Depth (cm)") + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_fill_distiller(palette = "RdYlBu") +
     scale_y_reverse()
   
@@ -282,12 +336,12 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
   
   if(exists("p_temp_heat")){
     fig_list[[length(fig_list) + 1]] <- p_temp_heat
-    fig_details_df[length(fig_list), "name"] <- c("All_Temp_Data.png")
+    fig_details_df[length(fig_list), "name"] <- c("All_Temp_heat.png")
     fig_details_df[length(fig_list), c("width", "height")] <- c(10,6)
   }
   
-  #Merged temp
-  p_temp3 <- ggplot(sample_frac(filter(df_list[[13]], 
+  
+  p_temp3 <- ggplot(sample_frac(filter(temp_subset, 
                                        !is.na(Temp_C), 
                                        inwater), 
                                 size = 1), 
@@ -295,13 +349,21 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
                         y = Temp_C, 
                         color = SensorType,
                         group = IntervalName)) +
-    geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_Start, 
-               linetype = "dashed", color = "green", linewidth = 0.25) +
-    geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_End, 
-               linetype = "dashed", color = "red", linewidth = 0.25) + 
+    geom_rect(data = poly, 
+              aes(xmin = poly_start,
+                  xmax = poly_end,
+                  ymin = -Inf, ymax = Inf), 
+              inherit.aes = FALSE, 
+              alpha = .3, fill = "grey50", color = NA) + 
+    # 
+    # geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_Start, 
+    #            linetype = "dashed", color = "green", linewidth = 0.25) +
+    # geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_End, 
+    #            linetype = "dashed", color = "red", linewidth = 0.25) + 
     # geom_point(size = .5) + 
     geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
+    # theme(panel.background = element_rect(fill = "lightgrey")) + 
     facet_grid(vars(Depth_cm), vars(BuoyName)) +
     scale_color_brewer(palette = "Dark2")
   
@@ -313,24 +375,30 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     fig_details_df[length(fig_list), c("width", "height")] <- c(10,6)
   }
   
-  p_temp4 <- ggplot(filter(df_list[[13]], 
+  p_temp4 <- ggplot(filter(temp_subset, 
                            !is.na(Temp_C), 
                            # Datetime_UTC > date_test[1], 
                            # Datetime_UTC < date_test[2], 
                            inwater) %>%
-                    arrange(Site, desc(Depth_cm)), 
+                      arrange(BuoyName, desc(Depth_cm), Datetime_UTC), 
                     aes(x = Datetime_UTC, 
                         y = Temp_C, 
                         color = Depth_cm,
                         group = IntervalName)) +
-    geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_Start, 
-               linetype = "dashed", color = "green", linewidth = 0.25) +
-    geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_End, 
-               linetype = "dashed", color = "red", linewidth = 0.25) + 
+    geom_rect(data = poly, 
+              aes(xmin = poly_start,
+                  xmax = poly_end,
+                  ymin = -Inf, ymax = Inf), 
+              inherit.aes = FALSE, 
+              alpha = .3, fill = "grey50", color = NA) + 
+    # geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_Start, 
+    #            linetype = "dashed", color = "green", linewidth = 0.25) +
+    # geom_vline(xintercept = df_list$deployment_df$DateTime_UTC_End, 
+    #            linetype = "dashed", color = "red", linewidth = 0.25) + 
     # geom_point(size = .5) + 
     geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_temp4)
@@ -356,7 +424,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     # geom_point(size = .5) + 
     geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_do1)
@@ -383,7 +451,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     # geom_point(size = .5) + 
     geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_cond)
@@ -410,7 +478,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_par)
@@ -436,7 +504,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu")
   
   # print(p_cdom)
@@ -463,7 +531,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu") +
     labs(y = "Corrected chl-a (ugL)")
   
@@ -490,7 +558,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu") +
     labs(y = "Raw chl-a (ugL)")
   
@@ -517,7 +585,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu") +
     labs(y = "Raw turbidity (NTU)")
   
@@ -544,7 +612,7 @@ PlotBuoySensorData <- function(df_list, save_to_file = FALSE, box_dir = NULL){
     geom_point(size = .5) +
     # geom_line(linewidth = 0.5) +
     theme_timeseries_common + 
-    facet_grid(rows = vars(BuoyName)) +
+    facet_grid(rows = vars(forcats::fct_rev(BuoyName))) +
     scale_color_brewer(palette = "RdYlBu") +
     labs(y = "Corrected turbidity (NTU)")
   
