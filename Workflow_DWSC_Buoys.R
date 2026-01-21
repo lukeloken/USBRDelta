@@ -42,7 +42,9 @@ onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2024-11-01/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-01-24/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-05-01/DeepWaterShipChannel"
-box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-07-18/DeepWaterShipChannel"
+# box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-07-18/DeepWaterShipChannel"
+# box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-01-05/DeepWaterShipChannel"
+box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-01-09/DeepWaterShipChannel"
 
 # check if raw data folder is in directory
 if(any("DWSC_Data_Raw" == list.files(box_dir))){
@@ -53,6 +55,12 @@ if(any("DWSC_Data_Raw" == list.files(box_dir))){
 
 #if 'save_to_file' is TRUE, these take a bit of time given how large the files and images are...
 df_list <- ReadBuoySensorData(box_dir, save_to_file = TRUE)
+
+#load here to save time
+df_list <- readRDS(file = file.path(box_dir, 
+                                    "DWSC_Data_Processed",
+                                    'Buoy_Sensor_List.rds'))
+
 
 fig_list <- PlotBuoySensorData(df_list, save_to_file = TRUE, box_dir)
 
