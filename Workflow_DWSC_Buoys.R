@@ -36,6 +36,10 @@ source("R/PlotBuoySensorData.R")
 #As of Feb 2020, new single folder where all data and outputs live
 onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 
+data_url <- "https://app.box.com/folder/257177167066?s=v0aeaf8zjx7zpoir8diqyvjdraponlc4"
+fig_url <- "https://app.box.com/folder/257176753371?s=52hgsylkfwaipmnz1m4eonatpjgd97wg"
+
+
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2024-08-09/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2024-08-12/DeepWaterShipChannel"
@@ -44,7 +48,9 @@ onedrive_dir <- 'C:/Users/lloken/OneDrive - DOI/USBR_DWSC'
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-05-01/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2025-07-18/DeepWaterShipChannel"
 # box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-01-05/DeepWaterShipChannel"
-box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-01-09/DeepWaterShipChannel"
+# box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-01-09/DeepWaterShipChannel"
+box_dir = "C:/Users/lloken/OneDrive - DOI/USBR_DWSC/CopyFromLokenComputer/DeepWaterShipChannel_2026-11-16/DeepWaterShipChannel"
+
 
 # check if raw data folder is in directory
 if(any("DWSC_Data_Raw" == list.files(box_dir))){
@@ -61,87 +67,121 @@ df_list <- readRDS(file = file.path(box_dir,
                                     "DWSC_Data_Processed",
                                     'Buoy_Sensor_List.rds'))
 
-
 fig_list <- PlotBuoySensorData(df_list, save_to_file = TRUE, box_dir)
 
 
+cat("Opening data and figure urls and local box dir.", "\n",
+    "Manually copy 'DWSC_Data_Processed' and 'Figures' files to Box.", 
+    sep = "")
+httr::BROWSE(url = data_url)
+httr::BROWSE(url = fig_url)
+
+utils::browseURL(file.path(box_dir))
 
 
-# Old locations on Loken-UCD-laptop
-# dropbox_dir<-'C:/Dropbox/USBR Delta Project'
-# google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
-# box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
 
-# fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
-# fert_posix<-as.POSIXct(c("2019-07-22 08:00", "2019-07-23 08:00","2019-07-24 08:00", "2019-07-25 08:00", "2019-08-05 08:00", "2019-08-06 08:00","2019-08-07 08:00", "2019-08-08 08:00"), format='%Y-%m-%d %H:%M', tz="Etc/GMT+8")
-
-#Field data
-source('R/CleanFieldData_NutrientExperiment2.R')
-
-#Longitudinal Data (Script works, but takes a long time)
-# source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
-
-#Vertical profiles (Scripts works, just take a long time)
-# source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
-# source('R/CompileVerticalProfiles_NutrientExperiment2.R')
-
-#Nutrient data
-source('R/CleanNutrientData_NutrientExperiment2.R')
-
-#Light profiles
-source('R/Calculatekd_NutrientExperiment2.R')
-
-#Merge multiple datasets together. 
-#This script is still a work in progress and more datasets can be included in the merger
-source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
-
-
-#Compute dissolved gases and merge with data
-source('R/pCO2_computation_script_NutrientExperiment2.R')
-
-
-#Incubation data
-# source('R/IncubationMetabolism_SSCN2_Workflow.R') 
-source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
-source('R/Model_IncubationMetabolism_WholeWaterColumn_variableLight_SSCN2.R')
-
-#Wind and solar data
-source('R/CleanCIMISWeather.R')
-
-#Oxygen18 metabolism
-source('R/CreateO18InputTable_NutrientExperiment2.R')
-source('R/CalculateO18metabolism_NutrientExperiment2.R')
-source('R/Plot_O18Metabolism_NutrientExperiment2.R')
-
-
-#Buoy metabolism
-source('R/CombineBuoySensorData_SSCN2.R')
-source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
-source('R/CalculateSchmidtStability_NutrientExperiment2.R')
-source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
-
-#Combine metabolism
-source('R/MergeMetabolism_NutrientExperiment2.R')
-
-#Plot a bunch of stuff
-source('R/PlotTimeseries_NutrientExperiment2.R')
-
-#Zooplankton, Phytoplankton, Picoplankton
-source('R/CompilePlankton_NutrientExperiment2.R')
-source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
-
-#USGS buoy data
-source('R/PlotUSGSBuoyData_NutrientExperiment2.R')
-
-
-
-# ######################################################
-# All code above is functioning (Feb 27, 2020, Luke Loken)
-# updated to onedrive above
-# ######################################################
-
-
-
-
-# source('R/.R')
+# # Old locations on Loken-UCD-laptop
+# # dropbox_dir<-'C:/Dropbox/USBR Delta Project'
+# # google_dir<-'C:/GoogleDrive/DeltaNutrientExperiment'
+# # box_dir<-'C:/Users/lcloken/Box/SadroLab/Luke/SSCN2'
+# 
+# # fert_dates<-as.Date(c("2019-07-22", "2019-07-23","2019-07-24", "2019-07-25", "2019-08-05", "2019-08-06","2019-08-07", "2019-08-08"))
+# # 
+# # fert_posix<-as.POSIXct(c("2019-07-22 08:00", "2019-07-23 08:00","2019-07-24 08:00", "2019-07-25 08:00", "2019-08-05 08:00", "2019-08-06 08:00","2019-08-07 08:00", "2019-08-08 08:00"), format='%Y-%m-%d %H:%M', tz="Etc/GMT+8")
+# 
+# #Field data
+# source('R/CleanFieldData_NutrientExperiment2.R')
+# 
+# #Longitudinal Data (Script works, but takes a long time)
+# # source('R/PlotLongitudinalProfiles_NutrientExperiment2.R')
+# 
+# #Vertical profiles (Scripts works, just take a long time)
+# # source('R/CleanPlotVerticalProfiles_NutrientExperiment2.R')
+# # source('R/CompileVerticalProfiles_NutrientExperiment2.R')
+# 
+# #Nutrient data
+# source('R/CleanNutrientData_NutrientExperiment2.R')
+# 
+# #Light profiles
+# source('R/Calculatekd_NutrientExperiment2.R')
+# 
+# #Merge multiple datasets together. 
+# #This script is still a work in progress and more datasets can be included in the merger
+# source('R/MergeSurfaceYSI_FieldData_NutrientExperiment2.R')
+# 
+# 
+# #Compute dissolved gases and merge with data
+# source('R/pCO2_computation_script_NutrientExperiment2.R')
+# 
+# 
+# #Incubation data
+# # source('R/IncubationMetabolism_SSCN2_Workflow.R') 
+# source('R/Plot_IncubationMetabolism_Timeseries_SSCN2.R')
+# source('R/Model_IncubationMetabolism_WholeWaterColumn_variableLight_SSCN2.R')
+# 
+# #Wind and solar data
+# source('R/CleanCIMISWeather.R')
+# 
+# #Oxygen18 metabolism
+# source('R/CreateO18InputTable_NutrientExperiment2.R')
+# source('R/CalculateO18metabolism_NutrientExperiment2.R')
+# source('R/Plot_O18Metabolism_NutrientExperiment2.R')
+# 
+# 
+# #Buoy metabolism
+# source('R/CombineBuoySensorData_SSCN2.R')
+# source('R/CleanPlotBuoyOxygen_NutrientExperiment2.R')
+# source('R/CalculateSchmidtStability_NutrientExperiment2.R')
+# source('R/ModelMetabolismBuoyDO_SSCN2_wholewatercolumn.R')
+# 
+# #Combine metabolism
+# source('R/MergeMetabolism_NutrientExperiment2.R')
+# 
+# #Plot a bunch of stuff
+# source('R/PlotTimeseries_NutrientExperiment2.R')
+# 
+# #Zooplankton, Phytoplankton, Picoplankton
+# source('R/CompilePlankton_NutrientExperiment2.R')
+# source('R/PlotZoopsTimeseries_NutrientExperiment2.R')
+# 
+# #USGS buoy data
+# source('R/PlotUSGSBuoyData_NutrientExperiment2.R')
+# 
+# 
+# 
+# # ######################################################
+# # All code above is functioning (Feb 27, 2020, Luke Loken)
+# # updated to onedrive above
+# # ######################################################
+# 
+# 
+# 
+# 
+# # source('R/.R')
