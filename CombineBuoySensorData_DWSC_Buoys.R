@@ -50,7 +50,8 @@ ReadBuoySensorData <- function(box_dir, save_to_file = FALSE, compile_correction
   names(deployment_details) <- c("Interval", 
                                  "DateTime_UTC_Start",
                                  "DateTime_UTC_End", 
-                                 "CalibrationPerson")
+                                 "CalibrationPerson", 
+                                 "Notes")
   
   # Convert to correct timezone, then to UTC
   # By default read_excel will load datetimes, and use the computer's timezone. 
@@ -1272,6 +1273,11 @@ ReadBuoySensorData <- function(box_dir, save_to_file = FALSE, compile_correction
                   Turb_NTU_raw, Turb_volts, Turb_bat_volts) %>%
     dplyr::mutate(SensorType = "TURB")
   
+  ggplot(filter(temp_prep, 
+                IntervalName == "10_JUN25_SEP25", 
+                Datetime_UTC > as.POSIXct("2025-12-08"))) +
+    geom_point(aes(x = Datetime_UTC, y = Temp_C)) +
+    facet_grid(cols = vars(Site), rows = vars(Depth_cm))
   
   sensor_merge_df <- temp_prep %>%
     full_join(do_prep) %>%
