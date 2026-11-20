@@ -1290,6 +1290,43 @@ ReadBuoySensorData <- function(box_dir, save_to_file = FALSE, compile_correction
   
   list_out$sensor_merge_df <- sensor_merge_df
   
+  
+  # #Interpolate to 1 minute intervals
+  # #Clean up times
+  # sensor_merge_df_ <- 
+  #   sensor_merge_df %>%
+  #   
+  # filter(df_list[[13]], 
+  #        SensorType %in% c("PAR", "DO", "TEMP/SPC")) %>% 
+  #   
+  # 
+  # 
+  # #subset data for Steve testing
+  # best_temp_df <- filter(sensor_merge_df, 
+  #                   SensorType %in% c("PAR", "DO", "TEMP/SPC")) %>%
+  #   filter(SensorType %in% c("PAR", "DO") | Depth_cm != "050") %>%
+  #   select(SerialNumber:inwater, SensorType, Temp_C) %>%
+  #   arrange(BuoyName, desc(Depth_cm), Datetime_UTC)
+  # 
+  # minutes <- best_temp_df %>%
+  #   mutate(minute = minute(Datetime_UTC)) %>%
+  #   # group_by(SerialNumber, SensorType, Site, Depth_cm) %>%
+  #   count(SensorType, minute)
+  # 
+  # ggplot(slice_sample(best_temp_df, prop = 0.1), 
+  #        aes(x = minute(Datetime_UTC))) + 
+  #   geom_point(aes(y = after_stat(prop), x = SensorType), alpha = 0.1)
+  # 
+  # ggplot(slice_sample(best_temp_df, prop = 1), 
+  #        aes(x = minute(Datetime_UTC))) + 
+  #       geom_bar(aes(y = after_stat(prop))) +
+  #   facet_grid(rows = vars(SensorType), 
+  #              cols = vars(Site)
+  #              , scale = "free") +
+  #   labs(x = "Measurement minute", y = "frequency") 
+  # 
+  
+  
   #Save to file
   if (save_to_file){
     
